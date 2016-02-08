@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string translatable="false" name="com_appboy_api_key">$APPBOY_API_KEY</string>
+  <bool name="com_appboy_push_gcm_messaging_registration_enabled">$APPBOY_PUSH_REGISTRATION_ENABLED</bool>
+  <string translatable="false" name="com_appboy_push_gcm_sender_id">$APPBOY_GCM_SENDER_ID</string>
+</resources>
