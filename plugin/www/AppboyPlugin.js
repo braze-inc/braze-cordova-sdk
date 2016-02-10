@@ -93,6 +93,14 @@ AppboyPlugin.prototype.submitFeedback = function (email, feedback, isBug) {
 
 // Appboy user methods
 /**
+ * Sets the user Attribution Data. We are using this to connect our integration with Adjust
+ *    user.
+ */
+AppboyPlugin.prototype.setUserAttributionData = function (network, campaign, adgroup, creative) {
+	cordova.exec(null, null, "AppboyPlugin", "setUserAttributionData", [network, campaign, adgroup, creative]);
+}
+
+/**
  * Sets a custom user attribute. This can be any key/value pair and is used to collect extra information about the
  *    user.
  * @param {string} key - The identifier of the custom attribute. Limited to 255 characters in length, cannot begin with
@@ -270,7 +278,7 @@ AppboyPlugin.prototype.launchNewsFeed = function () {
  * Launches the Feedback UI element.  Not currently supported on Android.
  */
 AppboyPlugin.prototype.launchFeedback = function () {
-	cordova.exec(null, null, "AppboyPlugin", "launchFeedback", []); 
+	cordova.exec(null, null, "AppboyPlugin", "launchFeedback", []);
 }
 
 AppboyPlugin.prototype['NotificationSubscriptionTypes'] = {

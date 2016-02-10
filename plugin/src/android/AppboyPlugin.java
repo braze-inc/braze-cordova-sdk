@@ -10,6 +10,8 @@ import com.appboy.enums.Month;
 import com.appboy.enums.NotificationSubscriptionType;
 import com.appboy.models.outgoing.AppboyProperties;
 import com.appboy.ui.activities.AppboyFeedActivity;
+import com.appboy.models.outgoing.AttributionData;
+import com.adjust.sdk.AdjustAttribution;
 import com.appboy.ui.inappmessage.AppboyInAppMessageManager;
 
 import org.apache.cordova.CallbackContext;
@@ -70,7 +72,9 @@ public class AppboyPlugin extends CordovaPlugin {
       return true;
     }
     // Appboy User methods
-    if (action.equals("setStringCustomUserAttribute")) {
+    if (action.equals("setUserAttributionData")) {
+      Appboy.getInstance(mApplicationContext).getCurrentUser().setAttributionData(new AttributionData(args.getString(0),args.getString(1),args.getString(2),args.getString(3)));
+    } else if (action.equals("setStringCustomUserAttribute")) {
       Appboy.getInstance(mApplicationContext).getCurrentUser().setCustomUserAttribute(args.getString(0), args.getString(1));
       return true;
     } else if (action.equals("unsetCustomUserAttribute")) {
