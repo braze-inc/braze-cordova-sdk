@@ -40,6 +40,18 @@ AppboyPlugin.prototype.changeUser = function (userId) {
 }
 
 /**
+* Registers the device as eligible to receive push notifications from Appboy.
+* Appboy will use the provided For GCM/ADM applications, this takes the GCM/ADM registration ID to send the device GCM/ADM messages.
+* For apps integrating Baidu Cloud Push, this method is used to register the Baidu user with Appboy.
+* This should only be used if you already use GCM/ADM messaging in your app from another provider or are integrating Baidu Cloud Push.
+*
+* @param {string} registrationId - The registration ID, or for apps integrating Baidu Cloud Push, the Baidu user id.
+*/
+AppboyPlugin.prototype.registerAppboyPushMessages = function (gcmRegistrationID) {
+	cordova.exec(null, null, "AppboyPlugin", "registerAppboyPushMessages", [gcmRegistrationID]);
+}
+
+/**
  * Reports that the current user performed a custom named event.
  * @param {string} eventName - The identifier for the event to track. Best practice is to track generic events
  *      useful for segmenting, instead of specific user actions (i.e. track watched_sports_video instead of
@@ -93,8 +105,7 @@ AppboyPlugin.prototype.submitFeedback = function (email, feedback, isBug) {
 
 // Appboy user methods
 /**
- * Sets the user Attribution Data. We are using this to connect our integration with Adjust
- *    user.
+ * Sets the attribution information for the user. For in apps that have an install tracking integration.
  */
 AppboyPlugin.prototype.setUserAttributionData = function (network, campaign, adgroup, creative) {
 	cordova.exec(null, null, "AppboyPlugin", "setUserAttributionData", [network, campaign, adgroup, creative]);

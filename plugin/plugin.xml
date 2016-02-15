@@ -45,6 +45,7 @@
       <intent-filter>
         <action android:name="$PACKAGE_NAME.intent.APPBOY_PUSH_RECEIVED" />
         <action android:name="$PACKAGE_NAME.intent.APPBOY_NOTIFICATION_OPENED" />
+        <category android:name="$PACKAGE_NAME" />
       </intent-filter>
     </receiver>
     </config-file>
