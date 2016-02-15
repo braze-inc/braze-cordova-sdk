@@ -10,6 +10,7 @@ import com.appboy.enums.Month;
 import com.appboy.enums.NotificationSubscriptionType;
 import com.appboy.models.outgoing.AppboyProperties;
 import com.appboy.ui.activities.AppboyFeedActivity;
+import com.appboy.models.outgoing.AttributionData;
 import com.appboy.ui.inappmessage.AppboyInAppMessageManager;
 
 import org.apache.cordova.CallbackContext;
@@ -40,7 +41,10 @@ public class AppboyPlugin extends CordovaPlugin {
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
     Log.i(TAG, "Received " + action + " with the following arguments: " + args);
     // Appboy methods
-    if (action.equals("changeUser")) {
+    if (action.equals("registerAppboyPushMessages")) {
+      Appboy.getInstance(mApplicationContext).registerAppboyPushMessages(args.getString(0));
+      return true;
+    } else if (action.equals("changeUser")) {
       Appboy.getInstance(mApplicationContext).changeUser(args.getString(0));
       return true;
     } else if (action.equals("logCustomEvent")) {
@@ -70,7 +74,10 @@ public class AppboyPlugin extends CordovaPlugin {
       return true;
     }
     // Appboy User methods
-    if (action.equals("setStringCustomUserAttribute")) {
+    if (action.equals("setUserAttributionData")) {
+      Appboy.getInstance(mApplicationContext).getCurrentUser().setAttributionData(new AttributionData(args.getString(0),args.getString(1),args.getString(2),args.getString(3)));
+      return true;
+    } else if (action.equals("setStringCustomUserAttribute")) {
       Appboy.getInstance(mApplicationContext).getCurrentUser().setCustomUserAttribute(args.getString(0), args.getString(1));
       return true;
     } else if (action.equals("unsetCustomUserAttribute")) {
