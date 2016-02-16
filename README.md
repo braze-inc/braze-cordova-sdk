@@ -35,7 +35,7 @@ $APPBOY_PUSH_REGISTRATION_ENABLED // Whether Appboy should register for push (de
 $APPBOY_GCM_SENDER_ID // Your GCM sender Id as described here:  https://documentation.appboy.com/Android/#push-notifications
 ```
 
-In `AppboyBroadcastReciever.java`:
+In `AppboyBroadcastReceiver.java`:
 ```
 $PACKAGE_NAME // The package name of your Android application/Cordova project.
 ```
@@ -52,4 +52,4 @@ Users that check their platform directory into version control (enabling them to
 To remove automatic push registration on Android, set `com_appboy_push_gcm_messaging_registration_enabled` to `false` and don't include a `com_appboy_push_gcm_sender_id` element in your `appboy.xml`.  To further remove all automatic push setup, remove `AppboyBroadcastRecevier.java` from the plugin and its declaration in `plugin.xml`.
 
 #### Removing automatic push setup (iOS)
-To remove automatic push registration on iOS, remove `didFinishLaunchingListener` from `AppboyPlugin.m`.  To further remove all automatic setup, remove `AppDelegate+Appboy.h` and `AppboyDelegate+Appboy.m` from the plugin and their references in `plugin.xml`.
+To remove automatic push registration on iOS, remove `didFinishLaunchingListener` from `AppboyPlugin.m`.  To further remove all automatic setup, remove `AppDelegate+Appboy.h` and `AppboyDelegate+Appboy.m` from the plugin and their references in `plugin.xml`.
