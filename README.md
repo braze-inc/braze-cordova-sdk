@@ -4,6 +4,8 @@
 
 Effective marketing automation is an essential part of successfully scaling and managing your business. Appboy empowers you to build better customer relationships through a seamless, multi-channel approach that addresses all aspects of the user life cycle Appboy helps you engage your users on an ongoing basis. Visit the following link for details and we'll have you up and running in no time!
 
+Thanks very much to [Luis R.](https://github.com/lurecas) for contributing!
+
 ## Getting Started (Default setup)
 
 Download the SDK and run `cordova plugin add path_to_repo/plugin/` from the root your project.
@@ -23,7 +25,7 @@ Set up your applications to have the appropriate certificates for push, via the 
 
 __Note:__ By default we instrument registering for push automatically in this SDK, so push is a 0-touch integration.
 
-### Android
+### Android Manual Setup (Option 1)
 
 The Android variant of this SDK requires 4 variables (in 2 files) to be set when adding the plugin.  
 
@@ -41,6 +43,14 @@ $PACKAGE_NAME // The package name of your Android application/Cordova project.
 ```
 
 For users that don't save their platform directory in version control, consider setting these from a script as part of your initial setup.  An example exists in the sample-project directory `replace_android_tokens.sh`.
+
+### Android Automated Setup (Option 2)
+
+Alternatively, you can install the SDK so that the above variables are automatically inserted during plugin installation.  You can install pointing at our `feature/android-variable-integration` branch and pass variables using the standard cordova variable syntax, like:
+
+```
+cordova plugin add https://github.com/appboy/appboy-cordova-sdk#feature/android-variable-integration:/plugin/ --variable APPBOY_GCM_SENDER_ID=SENDER_ID --variable APPBOY_API_KEY=API_KEY --variable APPBOY_PUSH_REGISTRATION_ENABLED=true\false
+```
 
 ## Customized Setup
 
