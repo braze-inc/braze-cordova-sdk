@@ -19,21 +19,6 @@
         SEL swizzledNoregisterForNotificationSelector = @selector(appboy_swizzled_no_application:didRegisterForRemoteNotificationsWithDeviceToken:);
         [self swizzleMethodWithClass:class originalSelector:noregisterForNotificationSelector andSwizzledSelector:swizzledNoregisterForNotificationSelector];
       }
-      
-      if ([delegate respondsToSelector:@selector(application:didReceiveRemoteNotification:fetchCompletionHandler:)]) {
-        SEL receivedNotificationSelector = @selector(application:didReceiveRemoteNotification:fetchCompletionHandler:);
-        SEL swizzledReceivedNotificationSelector = @selector(appboy_swizzled_application:didReceiveRemoteNotification:fetchCompletionHandler:);
-      [self swizzleMethodWithClass:class originalSelector:receivedNotificationSelector andSwizzledSelector:swizzledReceivedNotificationSelector];
-      } else if ([delegate respondsToSelector:@selector(application:didReceiveRemoteNotification:)]) {
-        SEL receivedNotificationSelector = @selector(application:didReceiveRemoteNotification:);
-        SEL swizzledReceivedNotificationSelector = @selector(appboy_swizzled_application:didReceiveRemoteNotification:);
-        [self swizzleMethodWithClass:class originalSelector:receivedNotificationSelector andSwizzledSelector:swizzledReceivedNotificationSelector];
-      } else {
-        SEL noReceivedNotificationSelector = @selector(application:didReceiveRemoteNotification:fetchCompletionHandler:);
-        SEL swizzledNoReceivedNotificationSelector = @selector(appboy_swizzled_no_application:didReceiveRemoteNotification:fetchCompletionHandler:);
-        [self swizzleMethodWithClass:class originalSelector:noReceivedNotificationSelector andSwizzledSelector:swizzledNoReceivedNotificationSelector];
-
-      }
     });
 }
 
@@ -55,6 +40,10 @@
   } else {
     method_exchangeImplementations(originalMethod, swizzledMethod);
   }
+}
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
+  [[Appboy sharedInstance] registerApplication:application didReceiveRemoteNotification:userInfo];
 }
 
 - (void)appboy_swizzled_application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
