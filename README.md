@@ -37,7 +37,7 @@ $APPBOY_PUSH_REGISTRATION_ENABLED // Whether Appboy should register for push (de
 $APPBOY_GCM_SENDER_ID // Your GCM sender Id as described here:  https://documentation.appboy.com/Android/#push-notifications
 ```
 
-In `AppboyBroadcastReciever.java`:
+In `AppboyBroadcastReceiver.java`:
 ```
 $PACKAGE_NAME // The package name of your Android application/Cordova project.
 ```
