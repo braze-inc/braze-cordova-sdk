@@ -8,7 +8,11 @@
   <js-module src="www/AppboyPlugin.js" name="AppboyPlugin">
     <clobbers target="AppboyPlugin" />
   </js-module>
-  
+
+  <preference name="APPBOY_API_KEY" />
+  <preference name="APPBOY_PUSH_REGISTRATION_ENABLED" />
+  <preference name="APPBOY_GCM_SENDER_ID" />
+
   <!-- android -->
   <platform name="android">
     <config-file target="res/xml/config.xml" parent="/*">
@@ -41,20 +45,24 @@
       <intent-filter>
         <action android:name="$PACKAGE_NAME.intent.APPBOY_PUSH_RECEIVED" />
         <action android:name="$PACKAGE_NAME.intent.APPBOY_NOTIFICATION_OPENED" />
+        <category android:name="$PACKAGE_NAME" />
       </intent-filter>
     </receiver>
     </config-file>
     <resource-file src="src/android/appboy.xml" target="res/values/appboy.xml" />
     <source-file src="src/android/AppboyBroadcastReceiver.java"
                 target-dir="src/com/appboy/" />
+
+    <hook type="after_plugin_install" src="hooks/after_plugin_install.js" />
+
   </platform>
-  
+
   <!-- ios -->
   <platform name="ios">
     <!-- library -->
     <source-file src="src/ios/AppboyKit/libAppboyKitLibrary.a" framework="true"/>
     <source-file src="src/ios/AppboyKit/libSDWebImage.a" framework="true"/>
-    
+
     <!-- header files -->
     <header-file src="src/ios/AppboyKit/ABKAppboyEndpointDelegate.h"/>
     <header-file src="src/ios/AppboyKit/ABKAttributionData.h"/>
@@ -104,7 +112,7 @@
     <header-file src="src/ios/AppboyKit/AppboyKit.h"/>
 
     <!-- Appboy bundle -->
-    <resource-file src="src/ios/AppboyKit/Appboy.bundle" /> 
+    <resource-file src="src/ios/AppboyKit/Appboy.bundle" />
 
     <!-- frameworks -->
     <framework src="libz.dylib" />
