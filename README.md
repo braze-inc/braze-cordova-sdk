@@ -4,6 +4,8 @@
 
 Effective marketing automation is an essential part of successfully scaling and managing your business. Appboy empowers you to build better customer relationships through a seamless, multi-channel approach that addresses all aspects of the user life cycle Appboy helps you engage your users on an ongoing basis. Visit the following link for details and we'll have you up and running in no time!
 
+Official documentation for the Appboy Cordova SDK can be found for [here for iOS](https://www.appboy.com/documentation/Cordova/iOS/) and [here for Android](https://www.appboy.com/documentation/Cordova/Android_and_FireOS/).
+
 ## Getting Started
 
 Download the SDK and run `cordova plugin add path_to_repo\plugin\` from the root your project.
