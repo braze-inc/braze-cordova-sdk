@@ -36,4 +36,8 @@
 /*-------Appboy UI-------*/
 - (void) launchNewsFeed:(CDVInvokedUrlCommand*)command;
 - (void) launchFeedback:(CDVInvokedUrlCommand*)command;
+
+/*-------News Feed-------*/
+- (void) getCardCountForCategories:(CDVInvokedUrlCommand*)command;
+- (void) getUnreadCardCountForCategories:(CDVInvokedUrlCommand*)command;
 @end

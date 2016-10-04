@@ -34,6 +34,24 @@ typedef NS_ENUM(NSInteger, ABKInAppMessageDismissType) {
   ABKInAppMessageDismissManually
 };
 
+/*!
+ * The ABKInAppMessageOrientation defines preferred screen orientation for the in-app message.
+ *
+ *   ABKInAppMessageOrientationAny - This is the default value for an in-app message's orientation. This
+ *     value allows the in-app message display in any orientation.
+ *
+ *   ABKInAppMessageOrientationPortrait - This value will limit the in-app message to only display in
+ *     protrait and portrait upside down orientation.
+ *
+ *   ABKInAppMessageOrientationLandscape - This value will limit the in-app message to only display in
+ *     landscape orientation, including landscape left and landscape right.
+ */
+typedef NS_ENUM(NSInteger, ABKInAppMessageOrientation) {
+  ABKInAppMessageOrientationAny,
+  ABKInAppMessageOrientationPortrait,
+  ABKInAppMessageOrientationLandscape
+};
+
 /*
  * Appboy Public API: ABKInAppMessage
  */
@@ -49,7 +67,7 @@ NS_ASSUME_NONNULL_BEGIN
  * This property carries extra data in the form of an NSDictionary which can be sent down via the Appboy Dashboard.
  * You may want to design and implement a custom handler to access this data depending on your use-case.
  */
-@property (nullable) NSDictionary *extras;
+@property (strong, nullable) NSDictionary *extras;
 
 /*!
  * This property defines the number of seconds before the in-app message is automatically dismissed.
@@ -87,12 +105,12 @@ NS_ASSUME_NONNULL_BEGIN
  * backgroundColor defines the background color of the in-app message. The default background color is black with 0.9 alpha for
  * ABKInAppMessageSlideup, and white with 1.0 alpha for ABKInAppMessageModal and ABKInAppMessageFull.
  */
-@property (nullable) UIColor *backgroundColor;
+@property (strong, nullable) UIColor *backgroundColor;
 
 /*!
  * textColor defines the message text color of the in-app message. The default text color is black.
  */
-@property (nullable) UIColor *textColor;
+@property (strong, nullable) UIColor *textColor;
 
 /*!
  * icon defines the font awesome unicode string of the Appboy icon.
@@ -105,13 +123,13 @@ NS_ASSUME_NONNULL_BEGIN
  * iconColor defines the font color of icon property.
  * The default font color is white.
  */
-@property (nullable) UIColor *iconColor;
+@property (strong, nullable) UIColor *iconColor;
 
 /*!
  * iconBackgroundColor defines the background color of icon property.
  *  * The default background color's RGB values are R:0 G:115 B:213.
  */
-@property (nullable) UIColor *iconBackgroundColor;
+@property (strong, nullable) UIColor *iconBackgroundColor;
 
 /*!
  * imageURI defines the URI of the image icon on in-app message.
@@ -121,14 +139,51 @@ NS_ASSUME_NONNULL_BEGIN
 @property (copy, nullable) NSURL *imageURI;
 
 /*!
+ * imageContentMode defines the content mode of the image on in-app message.
+ * For immersive in-app messages, the imageContentMode defines both the image icon and the graphic
+ * image's content mode.
+ *
+ * The imageContentMode default values are:
+ *     Slideup: UIViewContentModeScaleAspectFit
+ *       Modal: UIViewContentModeScaleAspectFit
+ *        Full: UIViewContentModeScaleAspectFill
+ */
+@property UIViewContentMode imageContentMode;
+
+/*!
+ * orientation defines the preferred screen orientation for the in-app message.
+ * In-app messages will only display if the preferred orientation matches the current status bar
+ * orientation. However, there is an important exception for iPads. For in-app messages that
+ * have a preferred orientation and are being displayed on an iPad, the in-app message will appear
+ * in the style of the preferred orientation regardless of actual screen orientation.
+ */
+@property ABKInAppMessageOrientation orientation;
+
+/*!
+ * messageTextAlignment defines the preferred text alignment of the message label.
+ * The default values are:
+ *     Slideup: NSTextAlignmentNatural
+ *       Modal: NSTextAlignmentCenter
+ *        Full: NSTextAlignmentCenter
+ */
+@property NSTextAlignment messageTextAlignment;
+
+/*
+ * animateIn/animateOut define if the in-app message should be animated in/out on the screen when
+ * displaying/dismissing. The default value is YES.
+ */
+@property BOOL animateIn;
+@property BOOL animateOut;
+
+/*!
  * If you're handling in-app messages completely on your own (returning YES from onInAppMessageReceived), you should still report
  * impressions and clicks on the in-app message back to Appboy with these methods so that your campaign reporting features
  * still work in the dashboard.
  *
  * Note: Each in-app message can log at most one impression and at most one click.
  */
-- (void) logInAppMessageImpression;
-- (void) logInAppMessageClicked;
+- (void)logInAppMessageImpression;
+- (void)logInAppMessageClicked;
 
 /*!
  * This method will set the inAppMessageClickActionType property.
@@ -137,12 +192,12 @@ NS_ASSUME_NONNULL_BEGIN
  * ABKInAppMessageDisplayNewsFeed or ABKInAppMessageNoneClickAction, the parameter uri will be ignored, and property uri
  * will be set to nil.
  */
-- (void) setInAppMessageClickAction:(ABKInAppMessageClickActionType)clickActionType withURI:(nullable NSURL *)uri;
+- (void)setInAppMessageClickAction:(ABKInAppMessageClickActionType)clickActionType withURI:(nullable NSURL *)uri;
 
 /*!
  * Serializes the in-app message to binary data for use by wrappers such as Appboy's Unity SDK for iOS.
  */
-- (nullable NSData *) serializeToData;
+- (nullable NSData *)serializeToData;
 
 @end
 NS_ASSUME_NONNULL_END

@@ -47,6 +47,12 @@ onDeviceReady: function() {
     document.getElementById("incrementCustomUserAttributeBtn").addEventListener("click", incrementCustomUserAttribute);
     document.getElementById("addToCustomUserAttributeArrayBtn").addEventListener("click", addToCustomUserAttributeArray);
     document.getElementById("removeFromCustomUserAttributeArrayBtn").addEventListener("click", removeFromCustomUserAttributeArray);
+    document.getElementById("setAttributionDataBtn").addEventListener("click", setAttributionData);
+    document.getElementById("getNewsFeedUnreadCountBtn").addEventListener("click", getNewsFeedUnreadCount);
+    document.getElementById("getNewsFeedCardCountBtn").addEventListener("click", getNewsFeedCardCount);
+    document.getElementById("getCardCountForCategoriesBtn").addEventListener("click", getCardCountForCategories);
+    document.getElementById("getUnreadCardCountForCategoriesBtn").addEventListener("click", getUnreadCardCountForCategories);
+
     var success = function(message) {
         alert(message);
     }
@@ -73,6 +79,7 @@ app.initialize();
 // Appboy methods
 function changeUser() {
     AppboyPlugin.changeUser(document.getElementById("changeUserInputId").value);
+    showTextBubble("Change user called");
 }
 function logCustomEvent() {
     var properties = {};
@@ -81,6 +88,7 @@ function logCustomEvent() {
     properties["Three"] = "Can't Hide Love";
     AppboyPlugin.logCustomEvent("cordovaCustomEventWithProperties", properties);
     AppboyPlugin.logCustomEvent("cordovaCustomEventWithoutProperties");
+    showTextBubble("Logged custom event");
 }
 function logPurchase() {
     var properties = {};
@@ -91,29 +99,37 @@ function logPurchase() {
     AppboyPlugin.logPurchase("testPurchaseWithNullCurrency", 10, null, 5, properties);
     AppboyPlugin.logPurchase("testPurchaseWithNullQuantity", 10, "USD");
     AppboyPlugin.logPurchase("testPurchaseWithoutProperties", 1500, "JPY", 2);
+    showTextBubble("Logged purchase");
 }
 function submitFeedback() {
     AppboyPlugin.submitFeedback("cordova@test.com", "nice app!", true);
+    showTextBubble("Submitted feedback");
 }
 // Appboy User methods
 function setCustomUserAttribute() {
     AppboyPlugin.setCustomUserAttribute("cordovaCustomAttributeKey", "cordovaCustomAttributeValue");
     AppboyPlugin.incrementCustomUserAttribute("cordovaIncrementCustomAttributeKey", 1);
+    showTextBubble("Set Custom User Attribute");
 }
 function setCustomUserAttributeArray() {
     AppboyPlugin.setCustomUserAttribute("cordovaAttributeArrayButton", ["a", "b"]);
+    showTextBubble("Set Custom User Attribute Array");
 }
 function incrementCustomUserAttribute() {
     AppboyPlugin.incrementCustomUserAttribute("cordovaIncrementCustomAttributeKey", 2);
+    showTextBubble("Incremented Custom User Attribute");
 }
 function addToCustomUserAttributeArray() {
     AppboyPlugin.addToCustomUserAttributeArray("cordovaAttributeArrayButton", "c");
+    showTextBubble("Added To Custom User Attribute Array");
 }
 function removeFromCustomUserAttributeArray() {
     AppboyPlugin.removeFromCustomUserAttributeArray("cordovaAttributeArrayButton", "b");
+    showTextBubble("Removed From Custom User Attribute Array");
 }
 function unsetCustomUserAttribute() {
     AppboyPlugin.unsetCustomUserAttribute("double");
+    showTextBubble("Unset Custom User Attribute");
 }
 function setUserProperties() {
     AppboyPlugin.setFirstName("firstName");
@@ -132,11 +148,65 @@ function setUserProperties() {
     AppboyPlugin.setCustomUserAttribute("int", 5);
     AppboyPlugin.setCustomUserAttribute("bool", true);
     AppboyPlugin.setCustomUserAttribute("date", new Date());    
+    showTextBubble("Set User Properties");
 }
-// Other
+function setAttributionData() {
+    AppboyPlugin.setUserAttributionData("networkval", "campaignval", "adgroupval", "creativeval");
+    showTextBubble("Set Attribution Data");
+}
+
+// Launch functions
 function launchNewsFeed() {
     AppboyPlugin.launchNewsFeed();
 }
 function launchFeedback() {
     AppboyPlugin.launchFeedback();
+}
+
+// News feed functions
+function getNewsFeedUnreadCount() {
+    AppboyPlugin.getNewsFeedUnreadCount(customPluginSuccessCallback("get Unread News Feed Count is : "), customPluginErrorCallback);
+}
+
+function getNewsFeedCardCount() {
+    AppboyPlugin.getNewsFeedCardCount(customPluginSuccessCallback("get News Feed Card Count is : "), customPluginErrorCallback);
+}
+
+function getCardCountForCategories() {
+    AppboyPlugin.getCardCountForCategories(customPluginSuccessCallback("get Card Count For Categories is : "), customPluginErrorCallback, 
+        [AppboyPlugin.CardCategories.ADVERTISING, AppboyPlugin.CardCategories.SOCIAL]);
+}
+
+function getUnreadCardCountForCategories() {
+    AppboyPlugin.getUnreadCardCountForCategories(customPluginSuccessCallback("get Unread Card Count For Categories is : "), customPluginErrorCallback,
+        [AppboyPlugin.CardCategories.NEWS, AppboyPlugin.CardCategories.ANNOUNCEMENTS]);
+}
+
+// Other helper functions
+function showTextBubble(bubbleMessage) {
+    // Get the snackbar DIV
+    var bubbleElement = document.getElementById("snackbar");
+
+    // Make the bubble display our message
+    bubbleElement.innerHTML = bubbleMessage;
+
+    // Add the "show" class to DIV
+    bubbleElement.className = "show";
+
+    // After 3 seconds, remove the show class from DIV 
+    setTimeout(function(){ bubbleElement.className = bubbleElement.className.replace("show", ""); }, 3000);
+}
+
+/**
+* Serves as the success callback for the Appboy Plugin. Displays a text bubble with a message when called.
+**/
+function customPluginSuccessCallback(bubbleMessage) {
+    return function(callbackResult) { showTextBubble(bubbleMessage + " " + callbackResult) };
+}
+
+/**
+* Serves as the error callback for the Appboy Plugin. Displays a text bubble with a message when called.
+**/
+function customPluginErrorCallback(callbackResult) {
+    console.log(callbackResult);
 }

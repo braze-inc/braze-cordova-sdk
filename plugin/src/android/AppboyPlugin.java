@@ -5,13 +5,17 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.appboy.Appboy;
+import com.appboy.enums.CardCategory;
 import com.appboy.enums.Gender;
 import com.appboy.enums.Month;
 import com.appboy.enums.NotificationSubscriptionType;
+import com.appboy.events.FeedUpdatedEvent;
+import com.appboy.events.IEventSubscriber;
 import com.appboy.models.outgoing.AppboyProperties;
 import com.appboy.ui.activities.AppboyFeedActivity;
+import com.appboy.models.outgoing.AttributionData;
 import com.appboy.ui.inappmessage.AppboyInAppMessageManager;
-
+import com.appboy.support.AppboyLogger;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
@@ -19,11 +23,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.math.BigDecimal;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AppboyPlugin extends CordovaPlugin {
   private static final String TAG = String.format("Appboy.%s", AppboyPlugin.class.getName());
+  private static final String GET_CARD_COUNT_FOR_CATEGORIES_METHOD = "getCardCountForCategories";
+  private static final String GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD = "getUnreadCardCountForCategories";
   private boolean mRefreshData;
   private Context mApplicationContext;
+  private Map<String, IEventSubscriber<FeedUpdatedEvent>> feedSubscriberMap = new ConcurrentHashMap<String, IEventSubscriber<FeedUpdatedEvent>>();
 
   protected void pluginInitialize() {
     mApplicationContext = this.cordova.getActivity().getApplicationContext();
@@ -37,10 +47,13 @@ public class AppboyPlugin extends CordovaPlugin {
     }
   }
 
-  public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+  public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
     Log.i(TAG, "Received " + action + " with the following arguments: " + args);
     // Appboy methods
-    if (action.equals("changeUser")) {
+    if (action.equals("registerAppboyPushMessages")) {
+      Appboy.getInstance(mApplicationContext).registerAppboyPushMessages(args.getString(0));
+      return true;
+    } else if (action.equals("changeUser")) {
       Appboy.getInstance(mApplicationContext).changeUser(args.getString(0));
       return true;
     } else if (action.equals("logCustomEvent")) {
@@ -70,7 +83,10 @@ public class AppboyPlugin extends CordovaPlugin {
       return true;
     }
     // Appboy User methods
-    if (action.equals("setStringCustomUserAttribute")) {
+    if (action.equals("setUserAttributionData")) {
+      Appboy.getInstance(mApplicationContext).getCurrentUser().setAttributionData(new AttributionData(args.getString(0),args.getString(1),args.getString(2),args.getString(3)));
+      return true;
+    } else if (action.equals("setStringCustomUserAttribute")) {
       Appboy.getInstance(mApplicationContext).getCurrentUser().setCustomUserAttribute(args.getString(0), args.getString(1));
       return true;
     } else if (action.equals("unsetCustomUserAttribute")) {
@@ -155,7 +171,8 @@ public class AppboyPlugin extends CordovaPlugin {
       }
       return true;
     }
-    // Other methods
+
+    // Launching activities
     if (action.equals("launchNewsFeed")) {
       Intent intent = new Intent(mApplicationContext, AppboyFeedActivity.class);
       this.cordova.getActivity().startActivity(intent);
@@ -164,7 +181,91 @@ public class AppboyPlugin extends CordovaPlugin {
       Log.i(TAG, "Launch feedback actions are not currently supported on Android. Doing nothing.");
     }
 
+    // News Feed data
+    if (action.equals(GET_CARD_COUNT_FOR_CATEGORIES_METHOD) || action.equals(GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD)) {
+      return handleNewsFeedGetters(action, args, callbackContext);
+    }
+
     return false;
+  }
+
+  private boolean handleNewsFeedGetters(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
+    IEventSubscriber<FeedUpdatedEvent> feedUpdatedSubscriber = null;
+    boolean requestingFeedUpdateFromCache = false;
+
+    final Appboy mAppboy = Appboy.getInstance(mApplicationContext);
+    final String callbackId = callbackContext.getCallbackId();
+
+    if (action.equals(GET_CARD_COUNT_FOR_CATEGORIES_METHOD)) {
+      final EnumSet<CardCategory> categories = getCategoriesFromJSONArray(args);
+
+      feedUpdatedSubscriber = new IEventSubscriber<FeedUpdatedEvent>() {
+        @Override
+        public void trigger(final FeedUpdatedEvent event) {
+          // Each callback context is by default made to only be called once and is afterwards "finished". We want to ensure
+          // that we never try to call the same callback twice. This could happen since we don't know the ordering of the feed 
+          // subscription callbacks from the cache.
+          if (!callbackContext.isFinished()) {
+            callbackContext.success(event.getCardCount(categories));          
+          }
+
+          // Remove this listener from the map and from Appboy
+          mAppboy.removeSingleSubscription(feedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
+          feedSubscriberMap.remove(callbackId);
+        }
+      };
+      requestingFeedUpdateFromCache = true;
+    } else if (action.equals(GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD)) {
+      final EnumSet<CardCategory> categories = getCategoriesFromJSONArray(args);
+
+      feedUpdatedSubscriber = new IEventSubscriber<FeedUpdatedEvent>() {
+        @Override
+        public void trigger(final FeedUpdatedEvent event) {
+          if (!callbackContext.isFinished()) {
+            callbackContext.success(event.getUnreadCardCount(categories));
+          }
+
+          // Remove this listener from the map and from Appboy
+          mAppboy.removeSingleSubscription(feedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
+          feedSubscriberMap.remove(callbackId);
+        }
+      };
+      requestingFeedUpdateFromCache = true;
+    }
+
+    if (requestingFeedUpdateFromCache) {
+      // Put the subscriber into a map so we can remove it later from future subscriptions
+      feedSubscriberMap.put(callbackId, feedUpdatedSubscriber);
+
+      mAppboy.subscribeToFeedUpdates(feedUpdatedSubscriber);
+      mAppboy.requestFeedRefreshFromCache();
+      return true;
+    }
+
+    return false;
+  }
+
+  private EnumSet<CardCategory> getCategoriesFromJSONArray(JSONArray jsonArray) throws JSONException  {
+    EnumSet<CardCategory> categories = EnumSet.noneOf(CardCategory.class);
+
+    for (int i = 0; i < jsonArray.length(); i++){
+      String category = jsonArray.getString(i);
+      
+      CardCategory categoryArgument;
+      if (category.equals("all")) {
+        // "All categories" maps to a enumset and not a specific enum so we have to return that here 
+        return CardCategory.getAllCategories();
+      } else {
+       categoryArgument = CardCategory.get(category);
+      }
+
+      if (categoryArgument != null) {
+        categories.add(categoryArgument);
+      } else {
+        Log.w(TAG, "Tried to add unknown card category: " + category);
+      }
+    }
+    return categories;
   }
 
   private String[] parseJSONArrayToStringArray(JSONArray jsonArray) throws JSONException {

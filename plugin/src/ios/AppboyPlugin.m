@@ -1,8 +1,10 @@
 #import "AppboyPlugin.h"
 #import "AppboyKit.h"
+#import "ABKAttributionData.h"
 
 @interface AppboyPlugin()
   @property NSString *APIKey;
+  @property NSString *disableAutomaticPushRegistration;
 @end
 
 @implementation AppboyPlugin
@@ -10,26 +12,27 @@
 {
   NSDictionary *settings = self.commandDelegate.settings;
   self.APIKey = settings[@"com.appboy.api_key"];
+  self.disableAutomaticPushRegistration = settings[@"com.appboy.ios_disable_automatic_push_registration"];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFinishLaunchingListener:) name:UIApplicationDidFinishLaunchingNotification object:nil];
 }
 
 - (void)didFinishLaunchingListener:(NSNotification *)notification {
-  // TODO - pass api key as paramter
    [Appboy startWithApiKey:self.APIKey
             inApplication:notification.object
         withLaunchOptions:notification.userInfo
         withAppboyOptions:nil];
 
-     // TODO - take param to optionally swith off push registration
-   if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_7_1) {
-    [[UIApplication sharedApplication] registerForRemoteNotificationTypes:
-     (UIRemoteNotificationTypeAlert |
-      UIRemoteNotificationTypeBadge |
-      UIRemoteNotificationTypeSound)];
-   } else {
-     UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeBadge|UIUserNotificationTypeAlert | UIUserNotificationTypeSound) categories:nil];
-     [[UIApplication sharedApplication] registerForRemoteNotifications];
-     [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
+   if  (![self.disableAutomaticPushRegistration isEqualToString:@"YES"]) {
+     if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_7_1) {
+      [[UIApplication sharedApplication] registerForRemoteNotificationTypes:
+       (UIRemoteNotificationTypeAlert |
+        UIRemoteNotificationTypeBadge |
+        UIRemoteNotificationTypeSound)];
+     } else {
+       UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeBadge|UIUserNotificationTypeAlert | UIUserNotificationTypeSound) categories:nil];
+       [[UIApplication sharedApplication] registerForRemoteNotifications];
+       [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
+      }
     }
 }
 
@@ -133,6 +136,15 @@
   [[Appboy sharedInstance].user setEmailNotificationSubscriptionType:[self getSubscriptionTypeFromString:subscriptionType]];
 }
 
+- (void) setUserAttributionData:(CDVInvokedUrlCommand*)command {
+  ABKAttributionData *attributionData = [[ABKAttributionData alloc]
+                                         initWithNetwork:[command argumentAtIndex:0 withDefault:nil]
+                                         campaign:[command argumentAtIndex:1 withDefault:nil]
+                                         adGroup:[command argumentAtIndex:2 withDefault:nil]
+                                         creative:[command argumentAtIndex:3 withDefault:nil]];
+  [[Appboy sharedInstance].user setAttributionData:attributionData];
+}
+
 - (ABKNotificationSubscriptionType) getSubscriptionTypeFromString:(NSString *)typeString {
   if ([typeString.lowercaseString isEqualToString:@"opted_in"]) {
     return ABKOptedIn;
@@ -234,4 +246,67 @@
   ABKFeedbackViewControllerModalContext *feedbackModal = [[ABKFeedbackViewControllerModalContext alloc] init];
   [self.viewController presentViewController:feedbackModal animated:YES completion:nil];
 }
+
+/*-------News Feed-------*/
+- (void) getCardCountForCategories:(CDVInvokedUrlCommand*)command {
+  int categoryMask = [self getCardCategoryMaskWithStringArray:command.arguments];
+  
+  if (categoryMask == 0) {
+    [self sendCordovaErrorPluginResultWithString:@"Category could not be set." andCommand:command];
+    return;
+  }
+  
+  NSInteger cardCount = [[Appboy sharedInstance].feedController cardCountForCategories:categoryMask];
+  [self sendCordovaSuccessPluginResultWithInt:cardCount andCommand:command];
+}
+
+- (void) getUnreadCardCountForCategories:(CDVInvokedUrlCommand*)command {
+  int categoryMask = [self getCardCategoryMaskWithStringArray:command.arguments];
+  
+  if (categoryMask == 0) {
+    [self sendCordovaErrorPluginResultWithString:@"Category could not be set." andCommand:command];
+    return;
+  }
+  
+  NSInteger unreadCardCount = [[Appboy sharedInstance].feedController unreadCardCountForCategories:categoryMask];
+  [self sendCordovaSuccessPluginResultWithInt:unreadCardCount andCommand:command];
+}
+
+- (ABKCardCategory) getCardCategoryMaskWithStringArray:(NSArray*) categories {
+  ABKCardCategory categoryMask = 0;
+  if (categories != NULL) {
+    // Iterate over the categories and get the category mask
+    for (NSString *categoryString in categories) {
+      if ([categoryString.lowercaseString isEqualToString:@"advertising"]) {
+        categoryMask |= ABKCardCategoryAdvertising;
+      } else if ([categoryString.lowercaseString isEqualToString:@"announcements"]) {
+        categoryMask |= ABKCardCategoryAnnouncements;
+      } else if ([categoryString.lowercaseString isEqualToString:@"news"]) {
+        categoryMask |= ABKCardCategoryNews;
+      } else if ([categoryString.lowercaseString isEqualToString:@"social"]) {
+        categoryMask |= ABKCardCategorySocial;
+      } else if ([categoryString.lowercaseString isEqualToString:@"no_category"]) {
+        categoryMask |= ABKCardCategoryNoCategory;
+      } else if ([categoryString.lowercaseString isEqualToString:@"all"]) {
+        categoryMask |= ABKCardCategoryAll;
+      }
+    }
+  }
+  return categoryMask;
+}
+
+- (void) sendCordovaErrorPluginResultWithString:(NSString*)resultMessage andCommand:(CDVInvokedUrlCommand*)command {
+  // Send the result with a cordova plugin result
+  CDVPluginResult *pluginResult = nil;
+  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:resultMessage];
+  [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void) sendCordovaSuccessPluginResultWithInt:(NSUInteger)resultMessage andCommand:(CDVInvokedUrlCommand*)command {
+  // Send the result with a cordova plugin result
+  CDVPluginResult *pluginResult = nil;
+  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:resultMessage];
+  [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 @end

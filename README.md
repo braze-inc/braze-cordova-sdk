@@ -4,13 +4,11 @@
 
 Effective marketing automation is an essential part of successfully scaling and managing your business. Appboy empowers you to build better customer relationships through a seamless, multi-channel approach that addresses all aspects of the user life cycle Appboy helps you engage your users on an ongoing basis. Visit the following link for details and we'll have you up and running in no time!
 
-Thanks very much to [Luis R.](https://github.com/lurecas) for contributing!
+## Getting Started
 
-## Getting Started (Default setup)
+Download the SDK and run `cordova plugin add path_to_repo\plugin\` from the root your project.
 
-Download the SDK and run `cordova plugin add path_to_repo/plugin/` from the root your project.
-
-### iOS
+### iOS setup
 
 In your config.xml, add a `preference` element under the iOS `platform` element that contains your Appboy API key with the name `com.appboy.api_key`:
 
@@ -25,41 +23,56 @@ Set up your applications to have the appropriate certificates for push, via the 
 
 __Note:__ By default we instrument registering for push automatically in this SDK, so push is a 0-touch integration.
 
-### Android Manual Setup (Option 1)
+If you want to turn off iOS default push registration, add the preference `com.appboy.ios_disable_automatic_push_registration` with a value of `true`.
 
-The Android variant of this SDK requires 4 variables (in 2 files) to be set when adding the plugin.  
+### Android Automated Setup
 
-In `appboy.xml`:
-
-```
-$APPBOY_API_KEY // Your Appboy API key.
-$APPBOY_PUSH_REGISTRATION_ENABLED // Whether Appboy should register for push (default setup should set true).
-$APPBOY_GCM_SENDER_ID // Your GCM sender Id as described here:  https://documentation.appboy.com/Android/#push-notifications
-```
-
-In `AppboyBroadcastReciever.java`:
-```
-$PACKAGE_NAME // The package name of your Android application/Cordova project.
-```
-
-For users that don't save their platform directory in version control, consider setting these from a script as part of your initial setup.  An example exists in the sample-project directory `replace_android_tokens.sh`.
-
-### Android Automated Setup (Option 2)
-
-Alternatively, you can install the SDK so that the above variables are automatically inserted during plugin installation.  You can install pointing at our `feature/android-variable-integration` branch and pass variables using the standard cordova variable syntax, like:
+The Android variant of this SDK requires 3 variables to be set when adding the plugin.  
 
 ```
-cordova plugin add https://github.com/appboy/appboy-cordova-sdk#feature/android-variable-integration:/plugin/ --variable APPBOY_GCM_SENDER_ID=SENDER_ID --variable APPBOY_API_KEY=API_KEY --variable APPBOY_PUSH_REGISTRATION_ENABLED=true\false
+$APPBOY_ANDROID_API_KEY // Your Appboy API key.
+$APPBOY_ANDROID_PUSH_REGISTRATION_ENABLED // Whether Appboy should register for push (default setup should set true).
+$APPBOY_ANDROID_GCM_SENDER_ID // Your GCM sender Id as described here:  https://documentation.appboy.com/Android/#push-notifications
+```
+
+Using the standard cordova variable syntax, you can install the SDK so that the above variables are automatically inserted during plugin installation like:
+
+```
+cordova plugin add path_to_repo\plugin\ --variable APPBOY_ANDROID_GCM_SENDER_ID=SENDER_ID --variable APPBOY_ANDROID_API_KEY=API_KEY --variable APPBOY_ANDROID_PUSH_REGISTRATION_ENABLED=true\false
+```
+
+## Deep Linking (Android)
+
+The following is a deep linking example that allows for the URI `appboy://cordova/feed` to open the Appboy News Feed inside your Cordova app.
+
+```
+<platform name="android">
+  <config-file target="AndroidManifest.xml" parent="/manifest/application">
+      ...
+      <activity android:name="com.appboy.ui.activities.AppboyFeedActivity">
+        <intent-filter>
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <category android:name="android.intent.category.BROWSABLE" />
+          <!-- Accepts the URI "appboy://cordova/feed” -->
+          <data android:scheme="appboy"
+                android:host="cordova"
+                android:pathPrefix="/feed" />
+        </intent-filter>
+      </activity>
+      ...
+    </config-file>
+</platform>
 ```
 
 ## Customized Setup
 
-Note that this plugin can be forked and modified for custom implementations.  Find the platform-specific native source code in the `/plugin/src` directory, the javascript interface in the `/plugin/www` directory, and the main configuration file at `/plugin`.
+Note that this plugin can be forked and modified for custom implementations.  Find the platform-specific native source code in the `\plugin\src` directory, the javascript interface in the `\plugin\www` directory, and the main configuration file at `\plugin`.
 
 Users that check their platform directory into version control (enabling them to make permanent code edits there) will be able to further leverage Appboy's UI elements by calling them directly from their platform specific project.
 
-#### Removing automatic push setup (Android)
-To remove automatic push registration on Android, set `com_appboy_push_gcm_messaging_registration_enabled` to `false` and don't include a `com_appboy_push_gcm_sender_id` element in your `appboy.xml`.  To further remove all automatic push setup, remove `AppboyBroadcastRecevier.java` from the plugin and its declaration in `plugin.xml`.
+#### Disabling automatic push setup (Android)
+To remove automatic push registration on Android, set the `APPBOY_ANDROID_PUSH_REGISTRATION_ENABLED` value to false. If using the automatic setup, `false` can be passed as a variable here. Otherwise, modify the preference in the plugin.xml. 
 
-#### Removing automatic push setup (iOS)
-To remove automatic push registration on iOS, remove `didFinishLaunchingListener` from `AppboyPlugin.m`.  To further remove all automatic setup, remove `AppDelegate+Appboy.h` and `AppboyDelegate+Appboy.m` from the plugin and their references in `plugin.xml`.
+#### Disabling automatic push setup (iOS)
+To remove automatic push registration on iOS, set the preference `com.appboy.ios_disable_automatic_push_registration` to true as outlined in the iOS setup earlier.
