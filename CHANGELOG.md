@@ -4,8 +4,6 @@
 - Includes patch for iOS 10 push open bug.  See https://github.com/Appboy/appboy-ios-sdk/releases/tag/2.24.0 for more information.
 - Updates Appboy iOS version to 2.24.2.
 - Updates Appboy Android version to 1.15+.
-
-## 1.0.0
 - Updates plugin to configure Android via parameters (e.g. ported https://github.com/Appboy/appboy-cordova-sdk/tree/feature/android-variable-integration).
 - Updates the parameters in https://github.com/Appboy/appboy-cordova-sdk/tree/feature/android-variable-integration to be namespaced for their platform.
 - Adds ability to turn off default push registration on iOS.
