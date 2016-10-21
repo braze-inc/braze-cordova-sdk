@@ -2,13 +2,12 @@
 #import <objc/runtime.h>
 #import "AppboyKit.h" 
 
-
 @implementation AppDelegate (appboyNotifications)
-+ (void)load {
++ (void)swizzleHostAppDelegate {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        Class class = [self class];
-       id delegate = [UIApplication sharedApplication].delegate;
+      Class class = [self class];
+      id delegate = [UIApplication sharedApplication].delegate;
 
       if ([delegate respondsToSelector:@selector(application:didRegisterForRemoteNotificationsWithDeviceToken:)]) {
         SEL registerForNotificationSelector = @selector(application:didRegisterForRemoteNotificationsWithDeviceToken:);
@@ -23,7 +22,7 @@
       if ([delegate respondsToSelector:@selector(application:didReceiveRemoteNotification:fetchCompletionHandler:)]) {
         SEL receivedNotificationSelector = @selector(application:didReceiveRemoteNotification:fetchCompletionHandler:);
         SEL swizzledReceivedNotificationSelector = @selector(appboy_swizzled_application:didReceiveRemoteNotification:fetchCompletionHandler:);
-      [self swizzleMethodWithClass:class originalSelector:receivedNotificationSelector andSwizzledSelector:swizzledReceivedNotificationSelector];
+        [self swizzleMethodWithClass:class originalSelector:receivedNotificationSelector andSwizzledSelector:swizzledReceivedNotificationSelector];
       } else {
         SEL noReceivedNotificationSelector = @selector(application:didReceiveRemoteNotification:fetchCompletionHandler:);
         SEL swizzledNoReceivedNotificationSelector = @selector(appboy_swizzled_no_application:didReceiveRemoteNotification:fetchCompletionHandler:);
@@ -34,10 +33,20 @@
         SEL receivedNotificationSelector = @selector(application:didReceiveRemoteNotification:);
         SEL swizzledReceivedNotificationSelector = @selector(appboy_swizzled_application:didReceiveRemoteNotification:);
         [self swizzleMethodWithClass:class originalSelector:receivedNotificationSelector andSwizzledSelector:swizzledReceivedNotificationSelector];
-      }  else {
+      } else {
         SEL noReceivedNotificationSelector = @selector(application:didReceiveRemoteNotification:);
         SEL swizzledNoReceivedNotificationSelector = @selector(appboy_swizzled_no_application:didReceiveRemoteNotification:);
         [self swizzleMethodWithClass:class originalSelector:noReceivedNotificationSelector andSwizzledSelector:swizzledNoReceivedNotificationSelector];
+      }
+      
+      if ([delegate respondsToSelector:@selector(userNotificationCenter:didReceiveNotificationResponse:withCompletionHandler:)]) {
+        SEL receivedNotificationResponseSelector = @selector(userNotificationCenter:didReceiveNotificationResponse:withCompletionHandler:);
+        SEL swizzledReceivedNotificationResponseSelector = @selector(appboy_swizzled_userNotificationCenter:didReceiveNotificationResponse:withCompletionHandler:);
+        [self swizzleMethodWithClass:class originalSelector:receivedNotificationResponseSelector andSwizzledSelector:swizzledReceivedNotificationResponseSelector];
+      } else {
+        SEL noReceivedNotificationResponseSelector = @selector(userNotificationCenter:didReceiveNotificationResponse:withCompletionHandler:);
+        SEL swizzledNoReceivedNotificationResponseSelector = @selector(appboy_swizzled_no_userNotificationCenter:didReceiveNotificationResponse:withCompletionHandler:);
+        [self swizzleMethodWithClass:class originalSelector:noReceivedNotificationResponseSelector andSwizzledSelector:swizzledNoReceivedNotificationResponseSelector];
       }
     });
 }
@@ -75,15 +84,16 @@
 }
 
 - (void)appboy_swizzled_application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-    if ([[UIApplication sharedApplication].delegate respondsToSelector:@selector(application:didReceiveRemoteNotification:fetchCompletionHandler:)]) {
-      [self appboy_swizzled_application:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:completionHandler];
-    }
-    [[Appboy sharedInstance] registerApplication:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:nil];
+  if ([[UIApplication sharedApplication].delegate respondsToSelector:@selector(application:didReceiveRemoteNotification:fetchCompletionHandler:)]) {
+    [self appboy_swizzled_application:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:completionHandler];
+  }
+  // We pass a nil completion handler to the SDK since the host delegate might be calling the completion handler instead
+  [[Appboy sharedInstance] registerApplication:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:nil];
 }
 
 - (void)appboy_swizzled_no_application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
   // If neither delegate is implemented, swizzle the method but don't call the original (or we'd get in a loop)
-  [[Appboy sharedInstance] registerApplication:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:nil];
+  [[Appboy sharedInstance] registerApplication:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:completionHandler];
 }
 
 - (void)appboy_swizzled_application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
@@ -92,6 +102,16 @@
 }
 
 - (void)appboy_swizzled_no_application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
-    [[Appboy sharedInstance] registerApplication:application didReceiveRemoteNotification:userInfo];
+  [[Appboy sharedInstance] registerApplication:application didReceiveRemoteNotification:userInfo];
+}
+
+- (void)appboy_swizzled_userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)())completionHandler {
+  [self appboy_swizzled_userNotificationCenter:center didReceiveNotificationResponse:response withCompletionHandler:completionHandler];
+  // We pass a nil completion handler to the SDK since the host delegate might be calling the completion handler instead
+  [[Appboy sharedInstance] userNotificationCenter:center didReceiveNotificationResponse:response withCompletionHandler:nil];
+}
+
+- (void)appboy_swizzled_no_userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)())completionHandler {
+  [[Appboy sharedInstance] userNotificationCenter:center didReceiveNotificationResponse:response withCompletionHandler:completionHandler];
 }
 @end

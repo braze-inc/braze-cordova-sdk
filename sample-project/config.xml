@@ -21,7 +21,6 @@
         <allow-intent href="market:*" />
     </platform>
     <platform name="ios">
-        <preference name="com.appboy.api_key" value="06a4b5d1-099b-4910-9604-583ac8f2dc10" />
         <allow-intent href="itms:*" />
         <allow-intent href="itms-apps:*" />
     </platform>

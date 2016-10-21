@@ -1,87 +1,101 @@
 #import "AppboyPlugin.h"
 #import "AppboyKit.h"
 #import "ABKAttributionData.h"
+#import "AppDelegate+Appboy.h"
 
 @interface AppboyPlugin()
   @property NSString *APIKey;
   @property NSString *disableAutomaticPushRegistration;
+  @property NSString *disableAutomaticPushHandling;
 @end
 
 @implementation AppboyPlugin
-- (void)pluginInitialize
-{
+- (void)pluginInitialize {
   NSDictionary *settings = self.commandDelegate.settings;
   self.APIKey = settings[@"com.appboy.api_key"];
   self.disableAutomaticPushRegistration = settings[@"com.appboy.ios_disable_automatic_push_registration"];
+  self.disableAutomaticPushHandling = settings[@"com.appboy.ios_disable_automatic_push_handling"];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFinishLaunchingListener:) name:UIApplicationDidFinishLaunchingNotification object:nil];
+  if (![self.disableAutomaticPushHandling isEqualToString:@"YES"]) {
+    [AppDelegate swizzleHostAppDelegate];
+  }
 }
 
 - (void)didFinishLaunchingListener:(NSNotification *)notification {
-   [Appboy startWithApiKey:self.APIKey
+  [Appboy startWithApiKey:self.APIKey
             inApplication:notification.object
         withLaunchOptions:notification.userInfo
         withAppboyOptions:nil];
 
-   if  (![self.disableAutomaticPushRegistration isEqualToString:@"YES"]) {
-     if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_7_1) {
-      [[UIApplication sharedApplication] registerForRemoteNotificationTypes:
-       (UIRemoteNotificationTypeAlert |
-        UIRemoteNotificationTypeBadge |
-        UIRemoteNotificationTypeSound)];
-     } else {
-       UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeBadge|UIUserNotificationTypeAlert | UIUserNotificationTypeSound) categories:nil];
-       [[UIApplication sharedApplication] registerForRemoteNotifications];
-       [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
+  if (![self.disableAutomaticPushRegistration isEqualToString:@"YES"]) {
+    UIUserNotificationType notificationSettingTypes = (UIUserNotificationTypeBadge | UIUserNotificationTypeAlert | UIUserNotificationTypeSound);
+    if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max) {
+      UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+      // If the delegate hasn't been set yet, set it here in the plugin
+      if (center.delegate == nil) {
+        center.delegate = [UIApplication sharedApplication].delegate;
       }
+      [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge)
+                            completionHandler:^(BOOL granted, NSError * _Nullable error) {
+                              NSLog(@"Permission granted.");
+      }];
+      [[UIApplication sharedApplication] registerForRemoteNotifications];
+    } else if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1) {
+      UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:notificationSettingTypes categories:nil];
+      [[UIApplication sharedApplication] registerForRemoteNotifications];
+      [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
+    } else {
+      [[UIApplication sharedApplication] registerForRemoteNotificationTypes: notificationSettingTypes];
     }
+  }
 }
 
 /*-------Appboy.h-------*/
-- (void)changeUser:(CDVInvokedUrlCommand*)command
+- (void)changeUser:(CDVInvokedUrlCommand *)command
 {
-  NSString* userId = [command argumentAtIndex:0 withDefault:nil];
+  NSString *userId = [command argumentAtIndex:0 withDefault:nil];
   [[Appboy sharedInstance] changeUser:userId];
 }
 
-- (void)submitFeedback:(CDVInvokedUrlCommand*)command {
-  NSString* email = [command argumentAtIndex:0 withDefault:nil];
-  NSString* message = [command argumentAtIndex:1 withDefault:nil];
+- (void)submitFeedback:(CDVInvokedUrlCommand *)command {
+  NSString *email = [command argumentAtIndex:0 withDefault:nil];
+  NSString *message = [command argumentAtIndex:1 withDefault:nil];
   BOOL isReportingABug = [[command argumentAtIndex:2 withDefault:nil] boolValue];
   [[Appboy sharedInstance] submitFeedback:email message:message isReportingABug:isReportingABug];
 }
 
-- (void)logCustomEvent:(CDVInvokedUrlCommand*)command {
-  NSString* customEventName = [command argumentAtIndex:0 withDefault:nil];
-  NSDictionary* properties = [command argumentAtIndex:1 withDefault:nil];
+- (void)logCustomEvent:(CDVInvokedUrlCommand *)command {
+  NSString *customEventName = [command argumentAtIndex:0 withDefault:nil];
+  NSDictionary *properties = [command argumentAtIndex:1 withDefault:nil];
   [[Appboy sharedInstance] logCustomEvent:customEventName withProperties:properties];
 }
 
-- (void)logPurchase:(CDVInvokedUrlCommand*)command {
-  NSString* purchaseName = [command argumentAtIndex:0 withDefault:nil];
-  NSString* currency = [command argumentAtIndex:2 withDefault:@"USD"];
-  NSString* price = [[command argumentAtIndex:1 withDefault:nil] stringValue];
+- (void)logPurchase:(CDVInvokedUrlCommand *)command {
+  NSString *purchaseName = [command argumentAtIndex:0 withDefault:nil];
+  NSString *currency = [command argumentAtIndex:2 withDefault:@"USD"];
+  NSString *price = [[command argumentAtIndex:1 withDefault:nil] stringValue];
   NSUInteger quantity = [[command argumentAtIndex:3 withDefault:@1] integerValue];
-  NSDictionary* properties = [command argumentAtIndex:4 withDefault:nil];
+  NSDictionary *properties = [command argumentAtIndex:4 withDefault:nil];
   [[Appboy sharedInstance] logPurchase:purchaseName inCurrency:currency atPrice:[NSDecimalNumber decimalNumberWithString:price] withQuantity:quantity andProperties:properties];
 }
 
 /*-------ABKUser.h-------*/
-- (void) setFirstName:(CDVInvokedUrlCommand*)command {
-  NSString* firstName = [command argumentAtIndex:0 withDefault:nil];
+- (void) setFirstName:(CDVInvokedUrlCommand *)command {
+  NSString *firstName = [command argumentAtIndex:0 withDefault:nil];
   [Appboy sharedInstance].user.firstName = firstName;
 }
 
-- (void) setLastName:(CDVInvokedUrlCommand*)command{
-  NSString* lastName = [command argumentAtIndex:0 withDefault:nil];
+- (void) setLastName:(CDVInvokedUrlCommand *)command{
+  NSString *lastName = [command argumentAtIndex:0 withDefault:nil];
   [Appboy sharedInstance].user.lastName = lastName;
 }
 
-- (void) setEmail:(CDVInvokedUrlCommand*)command{
-  NSString* email = [command argumentAtIndex:0 withDefault:nil];
+- (void) setEmail:(CDVInvokedUrlCommand *)command{
+  NSString *email = [command argumentAtIndex:0 withDefault:nil];
   [Appboy sharedInstance].user.email = email;
 }
 
-- (void) setGender:(CDVInvokedUrlCommand*)command{
+- (void) setGender:(CDVInvokedUrlCommand *)command{
   NSString *gender = [command argumentAtIndex:0 withDefault:nil];
   if ([gender.lowercaseString isEqualToString:@"m"]) {
     [[Appboy sharedInstance].user setGender:ABKUserGenderMale];
@@ -90,7 +104,7 @@
   }
 }
 
-- (void) setDateOfBirth:(CDVInvokedUrlCommand*)command {
+- (void) setDateOfBirth:(CDVInvokedUrlCommand *)command {
   NSInteger year = [[command argumentAtIndex:0 withDefault:@0] integerValue];
   NSInteger month = [[command argumentAtIndex:1 withDefault:@0] integerValue];
   NSInteger day = [[command argumentAtIndex:2 withDefault:@0] integerValue];
@@ -106,37 +120,37 @@
   }
 }
 
-- (void) setCountry:(CDVInvokedUrlCommand*)command{
-  NSString* country = [command argumentAtIndex:0 withDefault:nil];
+- (void) setCountry:(CDVInvokedUrlCommand *)command{
+  NSString *country = [command argumentAtIndex:0 withDefault:nil];
   [Appboy sharedInstance].user.country = country;
 }
 
-- (void) setHomeCity:(CDVInvokedUrlCommand*)command{
-  NSString* homeCity = [command argumentAtIndex:0 withDefault:nil];
+- (void) setHomeCity:(CDVInvokedUrlCommand *)command{
+  NSString *homeCity = [command argumentAtIndex:0 withDefault:nil];
   [Appboy sharedInstance].user.homeCity = homeCity;
 }
 
-- (void) setPhoneNumber:(CDVInvokedUrlCommand*)command{
-  NSString* phone = [command argumentAtIndex:0 withDefault:nil];
+- (void) setPhoneNumber:(CDVInvokedUrlCommand *)command{
+  NSString *phone = [command argumentAtIndex:0 withDefault:nil];
   [Appboy sharedInstance].user.phone = phone;
 }
 
-- (void) setAvatarImageUrl:(CDVInvokedUrlCommand*)command{
-  NSString* avatarImageURL = [command argumentAtIndex:0 withDefault:nil];
+- (void) setAvatarImageUrl:(CDVInvokedUrlCommand *)command{
+  NSString *avatarImageURL = [command argumentAtIndex:0 withDefault:nil];
   [Appboy sharedInstance].user.avatarImageURL = avatarImageURL;
 }
 
-- (void) setPushNotificationSubscriptionType:(CDVInvokedUrlCommand*)command {
-  NSString* subscriptionType = [command argumentAtIndex:0 withDefault:nil];
+- (void) setPushNotificationSubscriptionType:(CDVInvokedUrlCommand *)command {
+  NSString *subscriptionType = [command argumentAtIndex:0 withDefault:nil];
   [[Appboy sharedInstance].user setPushNotificationSubscriptionType:[self getSubscriptionTypeFromString:subscriptionType]];
 }
 
-- (void) setEmailNotificationSubscriptionType:(CDVInvokedUrlCommand*)command {
-  NSString* subscriptionType = [command argumentAtIndex:0 withDefault:nil];
+- (void) setEmailNotificationSubscriptionType:(CDVInvokedUrlCommand *)command {
+  NSString *subscriptionType = [command argumentAtIndex:0 withDefault:nil];
   [[Appboy sharedInstance].user setEmailNotificationSubscriptionType:[self getSubscriptionTypeFromString:subscriptionType]];
 }
 
-- (void) setUserAttributionData:(CDVInvokedUrlCommand*)command {
+- (void) setUserAttributionData:(CDVInvokedUrlCommand *)command {
   ABKAttributionData *attributionData = [[ABKAttributionData alloc]
                                          initWithNetwork:[command argumentAtIndex:0 withDefault:nil]
                                          campaign:[command argumentAtIndex:1 withDefault:nil]
@@ -145,7 +159,7 @@
   [[Appboy sharedInstance].user setAttributionData:attributionData];
 }
 
-- (ABKNotificationSubscriptionType) getSubscriptionTypeFromString:(NSString *)typeString {
+- (ABKNotificationSubscriptionType) getSubscriptionTypeFromString:(NSString  *)typeString {
   if ([typeString.lowercaseString isEqualToString:@"opted_in"]) {
     return ABKOptedIn;
   } else if ([typeString.lowercaseString isEqualToString:@"unsubscribed"]) {
@@ -155,100 +169,100 @@
   }
 }
 
-- (void) setBoolCustomUserAttribute:(CDVInvokedUrlCommand*)command {
-  NSString* key = [command argumentAtIndex:0 withDefault:nil];
-  NSString* value = [command argumentAtIndex:1 withDefault:nil];
+- (void) setBoolCustomUserAttribute:(CDVInvokedUrlCommand *)command {
+  NSString *key = [command argumentAtIndex:0 withDefault:nil];
+  NSString *value = [command argumentAtIndex:1 withDefault:nil];
   if (key != nil && value != nil) {
     [[Appboy sharedInstance].user setCustomAttributeWithKey:key andBOOLValue:[value boolValue]];
   }
 }
 
-- (void) setStringCustomUserAttribute:(CDVInvokedUrlCommand*)command {
-  NSString* key = [command argumentAtIndex:0 withDefault:nil];
-  NSString* value = [command argumentAtIndex:1 withDefault:nil];
+- (void) setStringCustomUserAttribute:(CDVInvokedUrlCommand *)command {
+  NSString *key = [command argumentAtIndex:0 withDefault:nil];
+  NSString *value = [command argumentAtIndex:1 withDefault:nil];
   if (key != nil && value != nil) {
     [[Appboy sharedInstance].user setCustomAttributeWithKey:key andStringValue:value];
   }
 }
 
-- (void) setDoubleCustomUserAttribute:(CDVInvokedUrlCommand*)command {
-  NSString* key = [command argumentAtIndex:0 withDefault:nil];
-  NSString* value = [command argumentAtIndex:1 withDefault:nil];
+- (void) setDoubleCustomUserAttribute:(CDVInvokedUrlCommand *)command {
+  NSString *key = [command argumentAtIndex:0 withDefault:nil];
+  NSString *value = [command argumentAtIndex:1 withDefault:nil];
   if (key != nil && value != nil) {
     [[Appboy sharedInstance].user setCustomAttributeWithKey:key andDoubleValue:[value doubleValue]];
   }
 }
 
-- (void) setDateCustomUserAttribute:(CDVInvokedUrlCommand*)command {
-  NSString* key = [command argumentAtIndex:0 withDefault:nil];
-  NSString* value = [command argumentAtIndex:1 withDefault:nil];
+- (void) setDateCustomUserAttribute:(CDVInvokedUrlCommand *)command {
+  NSString *key = [command argumentAtIndex:0 withDefault:nil];
+  NSString *value = [command argumentAtIndex:1 withDefault:nil];
   if (key != nil && value != nil) {
-    NSDate* date = [NSDate dateWithTimeIntervalSince1970:[value longLongValue]];
+    NSDate *date = [NSDate dateWithTimeIntervalSince1970:[value longLongValue]];
     [[Appboy sharedInstance].user setCustomAttributeWithKey:key andDateValue:date];
   }
 }
 
-- (void) setIntCustomUserAttribute:(CDVInvokedUrlCommand*)command {
-  NSString* key = [command argumentAtIndex:0 withDefault:nil];
-  NSString* value = [command argumentAtIndex:1 withDefault:nil];
+- (void) setIntCustomUserAttribute:(CDVInvokedUrlCommand *)command {
+  NSString *key = [command argumentAtIndex:0 withDefault:nil];
+  NSString *value = [command argumentAtIndex:1 withDefault:nil];
   if (key != nil && value != nil) {
     [[Appboy sharedInstance].user setCustomAttributeWithKey:key andIntegerValue:[value integerValue]];
   }
 }
 
-- (void) setCustomUserAttributeArray:(CDVInvokedUrlCommand*)command {
-  NSString* key = [command argumentAtIndex:0 withDefault:nil];
+- (void) setCustomUserAttributeArray:(CDVInvokedUrlCommand *)command {
+  NSString *key = [command argumentAtIndex:0 withDefault:nil];
   id value = [command argumentAtIndex:1 withDefault:nil];
   if (key != nil && value != nil && [value isKindOfClass:[NSArray class]]) {
     [[Appboy sharedInstance].user setCustomAttributeArrayWithKey:key array:value];
   }
 }
 
-- (void) unsetCustomUserAttribute:(CDVInvokedUrlCommand*)command {
-  NSString* key = [command argumentAtIndex:0 withDefault:nil];
+- (void) unsetCustomUserAttribute:(CDVInvokedUrlCommand *)command {
+  NSString *key = [command argumentAtIndex:0 withDefault:nil];
   if (key != nil) {
     [[Appboy sharedInstance].user unsetCustomAttributeWithKey:key];
   }
 }
 
-- (void) incrementCustomUserAttribute:(CDVInvokedUrlCommand*)command {
-  NSString* key = [command argumentAtIndex:0 withDefault:nil];
-  NSString* incrementValue = [command argumentAtIndex:1 withDefault:@1];
+- (void) incrementCustomUserAttribute:(CDVInvokedUrlCommand *)command {
+  NSString *key = [command argumentAtIndex:0 withDefault:nil];
+  NSString *incrementValue = [command argumentAtIndex:1 withDefault:@1];
   if (key != nil) {
     [[Appboy sharedInstance].user incrementCustomUserAttribute:key by:[incrementValue integerValue]];
   }
 }
 
-- (void) addToCustomAttributeArray:(CDVInvokedUrlCommand*)command {
-  NSString* key = [command argumentAtIndex:0 withDefault:nil];
-  NSString* value = [command argumentAtIndex:1 withDefault:nil];
+- (void) addToCustomAttributeArray:(CDVInvokedUrlCommand *)command {
+  NSString *key = [command argumentAtIndex:0 withDefault:nil];
+  NSString *value = [command argumentAtIndex:1 withDefault:nil];
   if (key != nil && value != nil) {
     [[Appboy sharedInstance].user addToCustomAttributeArrayWithKey:key value:value];
   }
 }
 
-- (void) removeFromCustomAttributeArray:(CDVInvokedUrlCommand*)command {
-  NSString* key = [command argumentAtIndex:0 withDefault:nil];
-  NSString* value = [command argumentAtIndex:1 withDefault:nil];
+- (void) removeFromCustomAttributeArray:(CDVInvokedUrlCommand *)command {
+  NSString *key = [command argumentAtIndex:0 withDefault:nil];
+  NSString *value = [command argumentAtIndex:1 withDefault:nil];
   if (key != nil && value != nil) {
     [[Appboy sharedInstance].user removeFromCustomAttributeArrayWithKey:key value:value];
   }
 }
 
 /*-------Appboy UI-------*/
-- (void)launchNewsFeed:(CDVInvokedUrlCommand*)command {
+- (void)launchNewsFeed:(CDVInvokedUrlCommand *)command {
   ABKFeedViewControllerModalContext *feedModal = [[ABKFeedViewControllerModalContext alloc] init];
   feedModal.navigationItem.title = @"News";
   [self.viewController presentViewController:feedModal animated:YES completion:nil];
 }
 
-- (void) launchFeedback:(CDVInvokedUrlCommand*)command {
+- (void) launchFeedback:(CDVInvokedUrlCommand *)command {
   ABKFeedbackViewControllerModalContext *feedbackModal = [[ABKFeedbackViewControllerModalContext alloc] init];
   [self.viewController presentViewController:feedbackModal animated:YES completion:nil];
 }
 
 /*-------News Feed-------*/
-- (void) getCardCountForCategories:(CDVInvokedUrlCommand*)command {
+- (void) getCardCountForCategories:(CDVInvokedUrlCommand *)command {
   int categoryMask = [self getCardCategoryMaskWithStringArray:command.arguments];
   
   if (categoryMask == 0) {
@@ -260,7 +274,7 @@
   [self sendCordovaSuccessPluginResultWithInt:cardCount andCommand:command];
 }
 
-- (void) getUnreadCardCountForCategories:(CDVInvokedUrlCommand*)command {
+- (void) getUnreadCardCountForCategories:(CDVInvokedUrlCommand *)command {
   int categoryMask = [self getCardCategoryMaskWithStringArray:command.arguments];
   
   if (categoryMask == 0) {
@@ -272,7 +286,7 @@
   [self sendCordovaSuccessPluginResultWithInt:unreadCardCount andCommand:command];
 }
 
-- (ABKCardCategory) getCardCategoryMaskWithStringArray:(NSArray*) categories {
+- (ABKCardCategory) getCardCategoryMaskWithStringArray:(NSArray *) categories {
   ABKCardCategory categoryMask = 0;
   if (categories != NULL) {
     // Iterate over the categories and get the category mask
@@ -295,14 +309,14 @@
   return categoryMask;
 }
 
-- (void) sendCordovaErrorPluginResultWithString:(NSString*)resultMessage andCommand:(CDVInvokedUrlCommand*)command {
+- (void) sendCordovaErrorPluginResultWithString:(NSString *)resultMessage andCommand:(CDVInvokedUrlCommand *)command {
   // Send the result with a cordova plugin result
   CDVPluginResult *pluginResult = nil;
   pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:resultMessage];
   [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void) sendCordovaSuccessPluginResultWithInt:(NSUInteger)resultMessage andCommand:(CDVInvokedUrlCommand*)command {
+- (void) sendCordovaSuccessPluginResultWithInt:(NSUInteger)resultMessage andCommand:(CDVInvokedUrlCommand *)command {
   // Send the result with a cordova plugin result
   CDVPluginResult *pluginResult = nil;
   pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:resultMessage];

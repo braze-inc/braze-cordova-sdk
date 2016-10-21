@@ -33,7 +33,7 @@ public class AppboyPlugin extends CordovaPlugin {
   private static final String GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD = "getUnreadCardCountForCategories";
   private boolean mRefreshData;
   private Context mApplicationContext;
-  private Map<String, IEventSubscriber<FeedUpdatedEvent>> feedSubscriberMap = new ConcurrentHashMap<String, IEventSubscriber<FeedUpdatedEvent>>();
+  private Map<String, IEventSubscriber<FeedUpdatedEvent>> mFeedSubscriberMap = new ConcurrentHashMap<String, IEventSubscriber<FeedUpdatedEvent>>();
 
   protected void pluginInitialize() {
     mApplicationContext = this.cordova.getActivity().getApplicationContext();
@@ -210,8 +210,8 @@ public class AppboyPlugin extends CordovaPlugin {
           }
 
           // Remove this listener from the map and from Appboy
-          mAppboy.removeSingleSubscription(feedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
-          feedSubscriberMap.remove(callbackId);
+          mAppboy.removeSingleSubscription(mFeedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
+          mFeedSubscriberMap.remove(callbackId);
         }
       };
       requestingFeedUpdateFromCache = true;
@@ -226,8 +226,8 @@ public class AppboyPlugin extends CordovaPlugin {
           }
 
           // Remove this listener from the map and from Appboy
-          mAppboy.removeSingleSubscription(feedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
-          feedSubscriberMap.remove(callbackId);
+          mAppboy.removeSingleSubscription(mFeedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
+          mFeedSubscriberMap.remove(callbackId);
         }
       };
       requestingFeedUpdateFromCache = true;
@@ -235,7 +235,7 @@ public class AppboyPlugin extends CordovaPlugin {
 
     if (requestingFeedUpdateFromCache) {
       // Put the subscriber into a map so we can remove it later from future subscriptions
-      feedSubscriberMap.put(callbackId, feedUpdatedSubscriber);
+      mFeedSubscriberMap.put(callbackId, feedUpdatedSubscriber);
 
       mAppboy.subscribeToFeedUpdates(feedUpdatedSubscriber);
       mAppboy.requestFeedRefreshFromCache();

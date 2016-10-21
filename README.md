@@ -2,9 +2,7 @@
 
 # Cordova SDK
 
-Effective marketing automation is an essential part of successfully scaling and managing your business. Appboy empowers you to build better customer relationships through a seamless, multi-channel approach that addresses all aspects of the user life cycle Appboy helps you engage your users on an ongoing basis. Visit the following link for details and we'll have you up and running in no time!
-
-Official documentation for the Appboy Cordova SDK can be found for [here for iOS](https://www.appboy.com/documentation/Cordova/iOS/) and [here for Android](https://www.appboy.com/documentation/Cordova/Android_and_FireOS/).
+Effective marketing automation is an essential part of successfully scaling and managing your business. Appboy empowers you to build better customer relationships through a seamless, multi-channel approach that addresses all aspects of the user life cycle Appboy helps you engage your users on an ongoing basis. View the following resources for details and we'll have you up and running in no time!
 
 ## Getting Started
 
@@ -12,7 +10,7 @@ Download the SDK and run `cordova plugin add path_to_repo\plugin\` from the root
 
 ### iOS setup
 
-In your config.xml, add a `preference` element under the iOS `platform` element that contains your Appboy API key with the name `com.appboy.api_key`:
+In your app's config.xml, add a `preference` element under the iOS `platform` element that contains your Appboy API key with the name `com.appboy.api_key`:
 
 ```
     <platform name="ios">
@@ -25,8 +23,11 @@ Set up your applications to have the appropriate certificates for push, via the 
 
 __Note:__ By default we instrument registering for push automatically in this SDK, so push is a 0-touch integration.
 
-If you want to turn off iOS default push registration, add the preference `com.appboy.ios_disable_automatic_push_registration` with a value of `true`.
+If you want to turn off iOS default push registration, add the preference `com.appboy.ios_disable_automatic_push_registration` with a value of `YES`.
 
+If you want to turn off iOS default push handling, add the preference `com.appboy.ios_disable_automatic_push_handling` with a value of `YES`.
+
+As of SDK version 2.1.0, use of the iOS SDK requires XCode 8 or above.
 ### Android Automated Setup
 
 The Android variant of this SDK requires 3 variables to be set when adding the plugin.  
@@ -76,5 +77,8 @@ Users that check their platform directory into version control (enabling them to
 #### Disabling automatic push setup (Android)
 To remove automatic push registration on Android, set the `APPBOY_ANDROID_PUSH_REGISTRATION_ENABLED` value to false. If using the automatic setup, `false` can be passed as a variable here. Otherwise, modify the preference in the plugin.xml. 
 
-#### Disabling automatic push setup (iOS)
-To remove automatic push registration on iOS, set the preference `com.appboy.ios_disable_automatic_push_registration` to true as outlined in the iOS setup earlier.
+#### Disabling automatic push registration (iOS)
+To remove automatic push registration on iOS, set the preference `com.appboy.ios_disable_automatic_push_registration` to `YES` as outlined in the iOS setup earlier.
+
+#### Disabling automatic push handling (iOS)
+To remove automatic push handling on iOS, set the preference `com.appboy.ios_disable_automatic_push_handling` to `YES` in your config.xml file. Push handling disabled results in none of the methods in your AppDelegate being swizzled and is reccommended for when you want to call Appboy SDK methods manually.
