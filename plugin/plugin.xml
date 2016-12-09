@@ -49,6 +49,10 @@
       <bool name="com_appboy_handle_push_deep_links_automatically">true</bool>
     </config-file>
     <resource-file src="src/android/appboy.xml" target="res/values/appboy.xml" />
+
+    <!-- Cabify Stuff -->
+    <source-file src="src/android/res/appboy_styles.xml" target-dir="res/values" />
+
   </platform>
   
   <!-- ios -->
