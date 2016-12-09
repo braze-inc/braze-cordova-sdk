@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Appboy"/>
+    <!-- Feedback -->
+    <!-- Navigation Bar -->
+    <style name="Appboy.Feedback"/>
+    <style name="Appboy.Feedback.Layout"/>
+    <style name="Appboy.Feedback.NavigationBar">
+        <item name="android:padding">4dp</item>
+        <item name="android:background">@color/newsfeed_toolbar_background</item>
+    </style>
+
+    <style name="Appboy.Feedback.NavigationBarCancelButton">
+        <item name="android:layout_marginRight">2dp</item>
+        <item name="android:text">@string/com_appboy_feedback_form_cancel</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- News feed list -->
+    <style name="Appboy.Feed.List">
+        <item name="android:background">@color/newsfeed_list_background</item>
+        <item name="android:divider">@color/toolbar_background</item>
+        <item name="android:dividerHeight">16.0dp</item>
+        <item name="android:paddingLeft">12.5dp</item>
+        <item name="android:paddingRight">5.0dp</item>
+        <item name="android:scrollbarStyle">outsideInset</item>
+    </style>
+
+    <style name="Appboy.Feed.Empty">
+        <item name="android:lineSpacingExtra">1.5dp</item>
+        <item name="android:text">@string/newsfeed_list_empty</item>
+        <item name="android:textColor">@color/newsfeed_list_empty_title</item>
+        <item name="android:textSize">@dimen/text_size_extra_extra_large</item>
+    </style>
+
+    <style name="Appboy.Feed.NetworkErrorTitle">
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:text">@string/newsfeed_list_network_error_title</item>
+        <item name="android:textColor">@color/newsfeed_list_error_title</item>
+        <item name="android:textSize">@dimen/text_size_extra_extra_large</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Appboy.Feed.NetworkErrorBody">
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:text">@string/newsfeed_list_network_error_text</item>
+        <item name="android:textColor">@color/newsfeed_list_error_subtitle</item>
+        <item name="android:textSize">@dimen/text_size_large</item>
+    </style>
+
+
+    <!-- Captioned Image Card -->
+    <style name="Appboy.Cards.CaptionedImage.Image">
+        <item name="android:layout_alignParentTop">true</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+    <style name="Appboy.Cards.CaptionedImage.Title.Container">
+        <item name="android:background">@color/newsfeed_card_title</item>
+    </style>
+    <style name="Appboy.Cards.CaptionedImage.Title">
+        <item name="android:textColor">@color/newsfeed_card_title</item>
+        <item name="android:textSize">@dimen/text_size_large</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+    <style name="Appboy.Cards.CaptionedImage.Description">
+        <item name="android:textColor">@color/newsfeed_card_text</item>
+        <item name="android:textSize">@dimen/text_size_medium</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:paddingBottom">8.0dp</item>
+    </style>
+    <style name="Appboy.Cards.CaptionedImage.Domain">
+        <item name="android:textColor">@color/newsfeed_card_text</item>
+        <item name="android:textSize">@dimen/text_size_small</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:paddingBottom">10.0dp</item>
+    </style>
+
+
+    <!-- Text Announcement Card -->
+    <style name="Appboy.Cards.TextAnnouncement.Title">
+        <item name="android:lineSpacingExtra">1.5dp</item>
+        <item name="android:textColor">@color/newsfeed_card_title</item>
+        <item name="android:textSize">@dimen/text_size_large</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:paddingBottom">8.0dp</item>
+    </style>
+    <style name="Appboy.Cards.TextAnnouncement.Description">
+        <item name="android:lineSpacingExtra">1.5dp</item>
+        <item name="android:textColor">@color/newsfeed_card_text</item>
+        <item name="android:textSize">@dimen/text_size_medium</item>
+        <item name="android:includeFontPadding">false</item>§
+        <item name="android:paddingBottom">8.0dp</item>
+    </style>
+    <style name="Appboy.Cards.TextAnnouncement.Domain">
+        <item name="android:textColor">@color/newsfeed_card_text</item>
+        <item name="android:textSize">@dimen/text_size_small</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:paddingBottom">10.0dp</item>
+    </style>
+
+    <!-- Short News Card -->
+    <style name="Appboy.Cards.ShortNews.Image">
+        <item name="android:layout_width">120dp</item>
+        <item name="android:layout_height">60dp</item>
+        <item name="android:layout_alignParentTop">true</item>
+        <item name="android:layout_alignParentLeft">true</item>
+        <item name="android:layout_marginLeft">10.0dp</item>
+        <item name="android:layout_marginRight">10.0dp</item>
+        <item name="android:layout_marginTop">10.0dp</item>
+    </style>
+    <style name="Appboy.Cards.ShortNews.Title">
+        <item name="android:lineSpacingExtra">1.5dp</item>
+        <item name="android:textColor">@color/newsfeed_card_title</item>
+        <item name="android:textSize">@dimen/text_size_large</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+    <style name="Appboy.Cards.ShortNews.Description">
+        <item name="android:lineSpacingExtra">1.5dp</item>
+        <item name="android:textColor">@color/newsfeed_card_text</item>
+        <item name="android:textSize">@dimen/text_size_medium</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:paddingTop">8.0dp</item>
+        <item name="android:paddingBottom">8.0dp</item>
+    </style>
+    <style name="Appboy.Cards.ShortNews.Domain">
+        <item name="android:textColor">@color/newsfeed_card_text</item>
+        <item name="android:textSize">@dimen/text_size_small</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:paddingBottom">10.0dp</item>
+    </style>
+
+    <!-- Colors -->
+    <color name="black">#000000</color>
+    <color name="newsfeed_list_background">#F6F6F6</color>
+    <color name="newsfeed_toolbar_background">#F6F6F6</color>
+    <color name="newsfeed_list_empty_title">@color/black</color>
+    <color name="newsfeed_list_error_title">@color/black</color>
+    <color name="newsfeed_list_error_subtitle">#656565</color>
+    <color name="newsfeed_card_title">@color/black</color>
+    <color name="newsfeed_card_text">#656565</color>
+    <color name="toolbar_background">#F6F6F6</color>
+
+    <!-- Dimensions -->
+    <dimen name="text_size_small">12sp</dimen>
+    <dimen name="text_size_medium">14sp</dimen>
+    <dimen name="text_size_large">16sp</dimen>
+    <dimen name="text_size_button">18sp</dimen>
+    <dimen name="text_size_extra_large">20sp</dimen>
+    <dimen name="text_size_extra_extra_large">24sp</dimen>
+
+    <!-- Strings -->
+    <string name="newsfeed_activity_title">Notificaciones</string>
+    <string name="newsfeed_list_empty">No hay notificaciones pendientes</string>
+    <string name="newsfeed_list_network_error_title">Hubo un error al obtener sus notificaciones</string>
+    <string name="newsfeed_list_network_error_text">No se han podido obtener las últimas notificaciones. \n Vuelva a intentarlo más tarde</string>
+
+</resources>
