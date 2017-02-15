@@ -1,3 +1,19 @@
+## 2.2.0
+- Updates Appboy Android version to 1.18+
+- Updates Appboy iOS version to 2.25.0
+- Adds the ability to configure the Android Cordova SDK using the config.xml. See the Android sample-project's `/res/xml/config.xml` for an example.
+    - Supported keys below, see [the AppboyConfig.Builder javadoc](http://appboy.github.io/appboy-android-sdk/javadocs/com/appboy/configuration/AppboyConfig.Builder.html) for more details 
+    - "com.appboy.api_key" (String)
+    - "com.appboy.android_automatic_push_registration_enabled" ("true"/"false")
+    - "com.appboy.android_gcm_sender_id" (String)
+    - "com.appboy.android_small_notification_icon" (String)
+    - "com.appboy.android_large_notification_icon" (String)
+    - "com.appboy.android_notification_accent_color" (Integer)
+    - "com.appboy.android_default_session_timeout" (String)
+    - "com.appboy.android_handle_push_deep_links_automatically" ("true"/"false")
+    - "com.appboy.android_log_level" (Integer) can also be configured here, for obtaining debug logs from the Appboy Android SDK
+- Updates the Android Cordova SDK to use the [Appboy Lifecycle listener](http://appboy.github.io/appboy-android-sdk/javadocs/com/appboy/AppboyLifecycleCallbackListener.html) to handle session and in-app message registration
+
 ## 2.1.0
 - Adds support for iOS 10 push registration and handling using the UNUserNotificationCenter.
 - Adds functionality for turning off automatic push registration on iOS. To disable, add the preference `com.appboy.ios_disable_automatic_push_handling` with a value of `YES`.
