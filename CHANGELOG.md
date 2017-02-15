@@ -1,7 +1,7 @@
 ## 2.2.0
 - Updates Appboy Android version to 1.18+
 - Updates Appboy iOS version to 2.25.0
-- Adds the ability to configure the Android Cordova SDK using the config.xml. See the Android sample-project's `/res/xml/config.xml` for an example.
+- Adds the ability to configure the Android Cordova SDK using the config.xml.
     - Supported keys below, see [the AppboyConfig.Builder javadoc](http://appboy.github.io/appboy-android-sdk/javadocs/com/appboy/configuration/AppboyConfig.Builder.html) for more details 
     - "com.appboy.api_key" (String)
     - "com.appboy.android_automatic_push_registration_enabled" ("true"/"false")
