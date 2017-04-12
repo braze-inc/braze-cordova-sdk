@@ -25,7 +25,7 @@
   [Appboy startWithApiKey:self.APIKey
             inApplication:notification.object
         withLaunchOptions:notification.userInfo
-        withAppboyOptions:nil];
+        withAppboyOptions:@{ ABKSDKFlavorKey : @(CORDOVA) }];
 
   if (![self.disableAutomaticPushRegistration isEqualToString:@"YES"]) {
     UIUserNotificationType notificationSettingTypes = (UIUserNotificationTypeBadge | UIUserNotificationTypeAlert | UIUserNotificationTypeSound);

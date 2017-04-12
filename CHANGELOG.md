@@ -1,7 +1,13 @@
+## 2.3.0
+- Fixes in-app messages display issue on iOS.
+- Updates Appboy iOS version to 2.29.0
+- Updates Appboy Android version to 2.0+
+- Fixes original in-app messages not being requested on Android.
+
 ## 2.2.0
 - Updates Appboy Android version to 1.18+
 - Updates Appboy iOS version to 2.25.0
-- Adds the ability to configure the Android Cordova SDK using the config.xml. Each key below must be added as a preference element. Use of the config.xml replaces the old style of configuring the Android Cordova SDK entirely.
+- Adds the ability to configure the Android Cordova SDK using the config.xml. See the Android sample-project's `config.xml` for an example.
     - Supported keys below, see [the AppboyConfig.Builder javadoc](http://appboy.github.io/appboy-android-sdk/javadocs/com/appboy/configuration/AppboyConfig.Builder.html) for more details 
     - "com.appboy.api_key" (String)
     - "com.appboy.android_automatic_push_registration_enabled" ("true"/"false")

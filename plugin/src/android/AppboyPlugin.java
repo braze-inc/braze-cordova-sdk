@@ -1,17 +1,16 @@
 package com.appboy.cordova;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
 import com.appboy.Appboy;
-import com.appboy.AppboyLifecycleCallbackListener;
 import com.appboy.configuration.AppboyConfig;
 import com.appboy.enums.CardCategory;
 import com.appboy.enums.Gender;
 import com.appboy.enums.Month;
 import com.appboy.enums.NotificationSubscriptionType;
+import com.appboy.enums.SdkFlavor;
 import com.appboy.events.FeedUpdatedEvent;
 import com.appboy.events.IEventSubscriber;
 import com.appboy.models.outgoing.AppboyProperties;
@@ -52,6 +51,8 @@ public class AppboyPlugin extends CordovaPlugin {
   private Context mApplicationContext;
   private Map<String, IEventSubscriber<FeedUpdatedEvent>> mFeedSubscriberMap = new ConcurrentHashMap<String, IEventSubscriber<FeedUpdatedEvent>>();
 
+  // Original in-app message handling
+  private boolean mRefreshData;
 
   @Override
   protected void pluginInitialize() {
@@ -60,11 +61,13 @@ public class AppboyPlugin extends CordovaPlugin {
     // Configure Appboy using the preferences from the config.xml file passed to our plugin
     configureAppboyFromCordovaPreferences(this.preferences);
 
-    // Since we've likely passed the first Application.onCreate() (due to the plugin lifecycle), lets call the subscriber now
-    AppboyInAppMessageManager.getInstance().ensureSubscribedToInAppMessageEvents(mApplicationContext);
+    // Since we've likely passed the first Application.onCreate() (due to the plugin lifecycle), lets call the 
+    // in-app message manager and session handling now
+    AppboyInAppMessageManager.getInstance().registerInAppMessageManager(this.cordova.getActivity());
 
-    // Cast our context to an Application to do the one line integration.
-    ((Application) mApplicationContext).registerActivityLifecycleCallbacks(new AppboyLifecycleCallbackListener());
+    if (Appboy.getInstance(mApplicationContext).openSession(this.cordova.getActivity())) {
+      Appboy.getInstance(mApplicationContext).requestInAppMessageRefresh();
+    }
   }
 
   /**
@@ -80,6 +83,9 @@ public class AppboyPlugin extends CordovaPlugin {
 
     // Set the values used in the config builder
     AppboyConfig.Builder configBuilder = new AppboyConfig.Builder();
+
+    // Set the flavor
+    configBuilder.setSdkFlavor(SdkFlavor.CORDOVA);
 
     if (cordovaPreferences.contains(APPBOY_API_KEY_PREFERENCE)) {
       configBuilder.setApiKey(cordovaPreferences.getString(APPBOY_API_KEY_PREFERENCE, null));
@@ -369,5 +375,37 @@ public class AppboyPlugin extends CordovaPlugin {
       default:
         return null;
     }
+  }
+
+  @Override
+  public void onPause(boolean multitasking) {
+    super.onPause(multitasking);
+    AppboyInAppMessageManager.getInstance().unregisterInAppMessageManager(this.cordova.getActivity());
+  }
+
+  @Override
+  public void onResume(boolean multitasking) {
+    super.onResume(multitasking);
+    // Registers the AppboyInAppMessageManager for the current Activity. This Activity will now listen for
+    // in-app messages from Appboy.
+    AppboyInAppMessageManager.getInstance().registerInAppMessageManager(this.cordova.getActivity());
+    if (mRefreshData) {
+      Appboy.getInstance(mApplicationContext).requestInAppMessageRefresh();
+      mRefreshData = false;
+    }
+  }
+
+  @Override
+  public void onStart() {
+    super.onStart();
+    if (Appboy.getInstance(mApplicationContext).openSession(this.cordova.getActivity())) {
+      mRefreshData = true;
+    }
+  }
+
+  @Override
+  public void onStop() {
+    super.onStop();
+    Appboy.getInstance(mApplicationContext).closeSession(this.cordova.getActivity());
   }
 }
