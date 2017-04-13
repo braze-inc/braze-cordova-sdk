@@ -108,7 +108,7 @@
   NSInteger year = [[command argumentAtIndex:0 withDefault:@0] integerValue];
   NSInteger month = [[command argumentAtIndex:1 withDefault:@0] integerValue];
   NSInteger day = [[command argumentAtIndex:2 withDefault:@0] integerValue];
-  
+
   if (month <= 12 && month > 0 && day <= 31 && day > 0) {
     NSCalendar *calendar = [NSCalendar currentCalendar];
     NSDateComponents *components = [[NSDateComponents alloc] init];
@@ -256,6 +256,28 @@
   [self.viewController presentViewController:feedModal animated:YES completion:nil];
 }
 
+- (void)getNewsFeed:(CDVInvokedUrlCommand *)command {
+  [[Appboy sharedInstance] requestFeedRefresh];
+  int categoryMask = [self getCardCategoryMaskWithStringArray:command.arguments];
+
+  if (categoryMask == 0) {
+    [self sendCordovaErrorPluginResultWithString:@"Category could not be set." andCommand:command];
+    return;
+  }
+
+  NSArray *cards = [[Appboy sharedInstance].feedController getCardsInCategories:categoryMask];
+  NSError *e = nil;
+  NSMutableArray *result = [NSMutableArray array];
+
+  for (ABKCard *card_item in cards)
+  {
+    NSArray *jsonArray = [NSJSONSerialization JSONObjectWithData:[card_item serializeToData] options:kNilOptions error: &e];
+    [result addObject: jsonArray];
+  }
+
+  [self sendCordovaSuccessPluginResultWithArray:result andCommand:command];
+}
+
 - (void) launchFeedback:(CDVInvokedUrlCommand *)command {
   ABKFeedbackViewControllerModalContext *feedbackModal = [[ABKFeedbackViewControllerModalContext alloc] init];
   [self.viewController presentViewController:feedbackModal animated:YES completion:nil];
@@ -264,24 +286,24 @@
 /*-------News Feed-------*/
 - (void) getCardCountForCategories:(CDVInvokedUrlCommand *)command {
   int categoryMask = [self getCardCategoryMaskWithStringArray:command.arguments];
-  
+
   if (categoryMask == 0) {
     [self sendCordovaErrorPluginResultWithString:@"Category could not be set." andCommand:command];
     return;
   }
-  
+
   NSInteger cardCount = [[Appboy sharedInstance].feedController cardCountForCategories:categoryMask];
   [self sendCordovaSuccessPluginResultWithInt:cardCount andCommand:command];
 }
 
 - (void) getUnreadCardCountForCategories:(CDVInvokedUrlCommand *)command {
   int categoryMask = [self getCardCategoryMaskWithStringArray:command.arguments];
-  
+
   if (categoryMask == 0) {
     [self sendCordovaErrorPluginResultWithString:@"Category could not be set." andCommand:command];
     return;
   }
-  
+
   NSInteger unreadCardCount = [[Appboy sharedInstance].feedController unreadCardCountForCategories:categoryMask];
   [self sendCordovaSuccessPluginResultWithInt:unreadCardCount andCommand:command];
 }
@@ -320,6 +342,13 @@
   // Send the result with a cordova plugin result
   CDVPluginResult *pluginResult = nil;
   pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:resultMessage];
+  [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void) sendCordovaSuccessPluginResultWithArray:(NSArray *)resultMessage andCommand:(CDVInvokedUrlCommand *)command {
+  // Send the result with a cordova plugin result
+  CDVPluginResult *pluginResult = nil;
+  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:resultMessage];
   [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
