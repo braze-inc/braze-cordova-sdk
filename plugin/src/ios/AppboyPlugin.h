@@ -40,4 +40,5 @@
 /*-------News Feed-------*/
 - (void) getCardCountForCategories:(CDVInvokedUrlCommand *)command;
 - (void) getUnreadCardCountForCategories:(CDVInvokedUrlCommand *)command;
+- (void) getNewsFeed:(CDVInvokedUrlCommand *)command;
 @end
