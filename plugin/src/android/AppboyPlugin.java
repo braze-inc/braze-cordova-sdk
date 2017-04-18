@@ -1,7 +1,9 @@
 package com.appboy.cordova;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.util.Log;
 
 import com.appboy.Appboy;
@@ -16,6 +18,7 @@ import com.appboy.events.IEventSubscriber;
 import com.appboy.models.cards.Card;
 import com.appboy.models.outgoing.AppboyProperties;
 import com.appboy.models.outgoing.AttributionData;
+import com.appboy.services.AppboyLocationService;
 import com.appboy.support.AppboyLogger;
 import com.appboy.ui.activities.AppboyFeedActivity;
 import com.appboy.ui.inappmessage.AppboyInAppMessageManager;
@@ -36,6 +39,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AppboyPlugin extends CordovaPlugin {
   private static final String TAG = String.format("Appboy.%s", AppboyPlugin.class.getName());
 
+  // Runtime permissions
+  private static final String LOCATION_PERMISSION = Manifest.permission.ACCESS_FINE_LOCATION;
+  private static final int LOCATION_REQUEST_CODE = 2;
+
   // Preference keys found in the config.xml
   private static final String APPBOY_API_KEY_PREFERENCE = "com.appboy.api_key";
   private static final String AUTOMATIC_PUSH_REGISTRATION_ENABLED_PREFERENCE = "com.appboy.android_automatic_push_registration_enabled";
@@ -45,8 +52,8 @@ public class AppboyPlugin extends CordovaPlugin {
   private static final String LARGE_NOTIFICATION_ICON_PREFERENCE = "com.appboy.android_large_notification_icon";
   private static final String DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE = "com.appboy.android_notification_accent_color";
   private static final String DEFAULT_SESSION_TIMEOUT_PREFERENCE = "com.appboy.android_default_session_timeout";
-  private static final String SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE = "com.appboy.android_handle_push_deep_links_automatically";
 
+  private static final String SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE = "com.appboy.android_handle_push_deep_links_automatically";
   // Method names
   private static final String GET_NEWS_FEED_METHOD = "getNewsFeed";
   private static final String GET_CARD_COUNT_FOR_CATEGORIES_METHOD = "getCardCountForCategories";
@@ -70,6 +77,29 @@ public class AppboyPlugin extends CordovaPlugin {
 
     if (Appboy.getInstance(mApplicationContext).openSession(this.cordova.getActivity())) {
       Appboy.getInstance(mApplicationContext).requestInAppMessageRefresh();
+    }
+
+    // Get location permissions, if we need them
+    if (cordova.hasPermission(LOCATION_PERMISSION)) {
+      AppboyLocationService.requestInitialization(mApplicationContext);
+    } else {
+      // Request the permission
+      cordova.requestPermission(this, LOCATION_REQUEST_CODE, LOCATION_PERMISSION);
+    }
+  }
+
+  @Override
+  public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
+    switch (requestCode) {
+      case LOCATION_REQUEST_CODE:
+        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+          Log.i(TAG, "Fine location permission granted.");
+        } else {
+          Log.i(TAG, "Fine location permission NOT granted.");
+        }
+        break;
+      default:
+        break;
     }
   }
 

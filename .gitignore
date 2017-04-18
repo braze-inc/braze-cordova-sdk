@@ -5,3 +5,4 @@ sample-project/plugins/
 *#
 platforms
 sync_plugin.sh
+open_editors.sh
