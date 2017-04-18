@@ -52,6 +52,7 @@ onDeviceReady: function() {
     document.getElementById("getNewsFeedCardCountBtn").addEventListener("click", getNewsFeedCardCount);
     document.getElementById("getCardCountForCategoriesBtn").addEventListener("click", getCardCountForCategories);
     document.getElementById("getUnreadCardCountForCategoriesBtn").addEventListener("click", getUnreadCardCountForCategories);
+    document.getElementById("getAllNewsFeedCardsBtn").addEventListener("click", getAllNewsFeedCards);
 
     var success = function(message) {
         alert(message);
@@ -182,6 +183,10 @@ function getUnreadCardCountForCategories() {
         [AppboyPlugin.CardCategories.NEWS, AppboyPlugin.CardCategories.ANNOUNCEMENTS]);
 }
 
+function getAllNewsFeedCards() {
+    AppboyPlugin.getNewsFeed(customPluginSuccessArrayCallback("test"), customPluginErrorCallback);
+}
+
 // Other helper functions
 function showTextBubble(bubbleMessage) {
     // Get the snackbar DIV
@@ -202,6 +207,19 @@ function showTextBubble(bubbleMessage) {
 **/
 function customPluginSuccessCallback(bubbleMessage) {
     return function(callbackResult) { showTextBubble(bubbleMessage + " " + callbackResult) };
+}
+
+/**
+* Serves as the success callback for the Appboy Plugin. Displays a text bubble with a message when called.
+**/
+function customPluginSuccessArrayCallback(bubbleMessage) {
+    return function(callbackResult) {
+        var numElements = callbackResult.length;
+        showTextBubble("Logging all " + numElements + " objects")
+        for (var i = 0; i < numElements; i++) {
+            console.log(JSON.stringify(callbackResult[i]));
+        }
+ };
 }
 
 /**

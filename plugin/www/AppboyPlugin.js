@@ -41,7 +41,7 @@ AppboyPlugin.prototype.changeUser = function (userId) {
 
 /**
 * ** ANDROID ONLY**
-* 
+*
 * Registers the device as eligible to receive push notifications from Appboy.
 * Appboy will use the provided For GCM/ADM applications, this takes the GCM/ADM registration ID to send the device GCM/ADM messages.
 * For apps integrating Baidu Cloud Push, this method is used to register the Baidu user with Appboy.
@@ -288,6 +288,13 @@ AppboyPlugin.prototype.launchNewsFeed = function () {
 }
 
 /**
+ * Returns array of serialized card items
+ */
+AppboyPlugin.prototype.getNewsFeed = function (successCallback, errorCallback) {
+  cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getNewsFeed", ['all']);
+}
+
+/**
  * Launches the Feedback UI element.  Not currently supported on Android.
  */
 AppboyPlugin.prototype.launchFeedback = function () {
@@ -336,10 +343,10 @@ AppboyPlugin.prototype['Genders'] = {
 };
 
 AppboyPlugin.prototype['CardCategories'] = {
-  "ADVERTISING": 'advertising', 
-  "ANNOUNCEMENTS": 'announcements', 
-  "NEWS": 'news', 
-  "SOCIAL": 'social', 
+  "ADVERTISING": 'advertising',
+  "ANNOUNCEMENTS": 'announcements',
+  "NEWS": 'news',
+  "SOCIAL": 'social',
   "NO_CATEGORY": 'no_category',
   "ALL" : 'all'
 };

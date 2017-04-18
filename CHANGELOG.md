@@ -1,3 +1,7 @@
+## 2.3.1
+- Adds getter for all News Feed cards. Thanks to @cwelk for contributing.
+- Adds a git branch `geofence-branch` for registering geofences with Google Play Services and messaging on geofence events. Please reach out to success@appboy.com for more information about this feature. The branch has geofences integrated for both Android and iOS.
+
 ## 2.3.0
 - Fixes in-app messages display issue on iOS.
 - Updates Appboy iOS version to 2.29.0
