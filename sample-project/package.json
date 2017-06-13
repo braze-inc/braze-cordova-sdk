@@ -13,7 +13,6 @@
     },
     "dependencies": {
         "cordova-android": "^6.2.3",
-        "cordova-plugin-whitelist": "1",
-        "cordova-plugin-appboy": "../plugin"
+        "cordova-plugin-whitelist": "1"
     }
 }
