@@ -3,18 +3,26 @@
 #import "ABKAttributionData.h"
 #import "AppDelegate+Appboy.h"
 
-@interface AppboyPlugin()
+@interface AppboyPlugin() <ABKAppboyEndpointDelegate>
   @property NSString *APIKey;
   @property NSString *disableAutomaticPushRegistration;
   @property NSString *disableAutomaticPushHandling;
+  @property NSString *apiEndpoint;
 @end
 
 @implementation AppboyPlugin
+
+- (NSString *) getApiEndpoint:(NSString *)appboyApiEndpoint {
+  return [appboyApiEndpoint stringByReplacingOccurrencesOfString:@"dev.appboy.com" withString:self.apiEndpoint];
+}
+
 - (void)pluginInitialize {
   NSDictionary *settings = self.commandDelegate.settings;
   self.APIKey = settings[@"com.appboy.api_key"];
   self.disableAutomaticPushRegistration = settings[@"com.appboy.ios_disable_automatic_push_registration"];
   self.disableAutomaticPushHandling = settings[@"com.appboy.ios_disable_automatic_push_handling"];
+  self.apiEndpoint = settings[@"com.appboy.ios_api_endpoint"];
+
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFinishLaunchingListener:) name:UIApplicationDidFinishLaunchingNotification object:nil];
   if (![self.disableAutomaticPushHandling isEqualToString:@"YES"]) {
     [AppDelegate swizzleHostAppDelegate];
@@ -22,10 +30,17 @@
 }
 
 - (void)didFinishLaunchingListener:(NSNotification *)notification {
+  NSMutableDictionary *appboyLaunchOptions = [@{ABKSDKFlavorKey : @(CORDOVA)} mutableCopy];
+  
+  // Add the endpoint only if it's non nil
+  if (self.apiEndpoint != nil) {
+    [appboyLaunchOptions setValue:self forKey: ABKAppboyEndpointDelegateKey];
+  }
+
   [Appboy startWithApiKey:self.APIKey
             inApplication:notification.object
         withLaunchOptions:notification.userInfo
-        withAppboyOptions:@{ ABKSDKFlavorKey : @(CORDOVA) }];
+        withAppboyOptions:appboyLaunchOptions];
 
   if (![self.disableAutomaticPushRegistration isEqualToString:@"YES"]) {
     UIUserNotificationType notificationSettingTypes = (UIUserNotificationTypeBadge | UIUserNotificationTypeAlert | UIUserNotificationTypeSound);

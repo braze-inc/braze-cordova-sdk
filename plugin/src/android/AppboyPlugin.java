@@ -2,9 +2,11 @@ package com.appboy.cordova;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 
 import com.appboy.Appboy;
+import com.appboy.IAppboyEndpointProvider;
 import com.appboy.configuration.AppboyConfig;
 import com.appboy.enums.CardCategory;
 import com.appboy.enums.Gender;
@@ -46,6 +48,7 @@ public class AppboyPlugin extends CordovaPlugin {
   private static final String DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE = "com.appboy.android_notification_accent_color";
   private static final String DEFAULT_SESSION_TIMEOUT_PREFERENCE = "com.appboy.android_default_session_timeout";
   private static final String SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE = "com.appboy.android_handle_push_deep_links_automatically";
+  private static final String CUSTOM_API_ENDPOINT_PREFERENCE = "com.appboy.android_api_endpoint";
 
   // Method names
   private static final String GET_NEWS_FEED_METHOD = "getNewsFeed";
@@ -79,9 +82,25 @@ public class AppboyPlugin extends CordovaPlugin {
    * @param cordovaPreferences the preferences used to initialize this plugin
    */
   private void configureAppboyFromCordovaPreferences(CordovaPreferences cordovaPreferences) {
+    AppboyLogger.d(TAG, "Setting Cordova preferences: " + cordovaPreferences.getAll());
+
     // Set the log level
     if (cordovaPreferences.contains(APPBOY_LOG_LEVEL_PREFERENCE)) {
       AppboyLogger.setLogLevel(cordovaPreferences.getInteger(APPBOY_LOG_LEVEL_PREFERENCE, Log.INFO));
+    }
+
+    // Set the custom endpoint
+    if (cordovaPreferences.contains(CUSTOM_API_ENDPOINT_PREFERENCE)) {
+      final String customApiEndpoint = cordovaPreferences.getString(CUSTOM_API_ENDPOINT_PREFERENCE, "");
+      if (!customApiEndpoint.equals("")) {
+        Appboy.setAppboyEndpointProvider(new IAppboyEndpointProvider() {
+          @Override
+          public Uri getApiEndpoint(Uri appboyEndpoint) {
+            return appboyEndpoint.buildUpon()
+                .authority(customApiEndpoint).build();
+          }
+        });
+      }
     }
 
     // Set the values used in the config builder
@@ -156,7 +175,7 @@ public class AppboyPlugin extends CordovaPlugin {
     }
     // Appboy User methods
     if (action.equals("setUserAttributionData")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().setAttributionData(new AttributionData(args.getString(0),args.getString(1),args.getString(2),args.getString(3)));
+      Appboy.getInstance(mApplicationContext).getCurrentUser().setAttributionData(new AttributionData(args.getString(0), args.getString(1), args.getString(2), args.getString(3)));
       return true;
     } else if (action.equals("setStringCustomUserAttribute")) {
       Appboy.getInstance(mApplicationContext).getCurrentUser().setCustomUserAttribute(args.getString(0), args.getString(1));
@@ -313,7 +332,7 @@ public class AppboyPlugin extends CordovaPlugin {
             List<Card> cards = event.getFeedCards(categories);
             JSONArray result = new JSONArray();
 
-            for (int i = 0; i < cards.size(); i++){
+            for (int i = 0; i < cards.size(); i++) {
               result.put(cards.get(i).forJsonPut());
             }
 
@@ -341,10 +360,10 @@ public class AppboyPlugin extends CordovaPlugin {
     return true;
   }
 
-  private EnumSet<CardCategory> getCategoriesFromJSONArray(JSONArray jsonArray) throws JSONException  {
+  private EnumSet<CardCategory> getCategoriesFromJSONArray(JSONArray jsonArray) throws JSONException {
     EnumSet<CardCategory> categories = EnumSet.noneOf(CardCategory.class);
 
-    for (int i = 0; i < jsonArray.length(); i++){
+    for (int i = 0; i < jsonArray.length(); i++) {
       String category = jsonArray.getString(i);
 
       CardCategory categoryArgument;
@@ -352,7 +371,7 @@ public class AppboyPlugin extends CordovaPlugin {
         // "All categories" maps to a enumset and not a specific enum so we have to return that here
         return CardCategory.getAllCategories();
       } else {
-       categoryArgument = CardCategory.get(category);
+        categoryArgument = CardCategory.get(category);
       }
 
       if (categoryArgument != null) {
@@ -367,7 +386,7 @@ public class AppboyPlugin extends CordovaPlugin {
   private String[] parseJSONArrayToStringArray(JSONArray jsonArray) throws JSONException {
     int length = jsonArray.length();
     String[] array = new String[length];
-    for (int i = 0; i < length; i++){
+    for (int i = 0; i < length; i++) {
       array[i] = jsonArray.getString(i);
     }
     return array;
