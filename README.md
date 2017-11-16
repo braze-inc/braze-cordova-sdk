@@ -1,5 +1,4 @@
-<!--- ![Braze Logo](https://github.com/Appboy/appboy-cordova-sdk/blob/master/braze-logo.png) -->
-
+![Braze Logo](https://github.com/Appboy/appboy-cordova-sdk/blob/master/braze-logo.png)
 
 # Cordova SDK
 
