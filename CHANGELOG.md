@@ -1,3 +1,6 @@
+## 2.4.0
+- Fixes a subdirectory incompatibility issue with Cordova 7.1.0
+
 ## 2.3.2
 - Adds configuration for custom API endpoints on iOS and Android using the config.xml.
     - Android preference: "com.appboy.android_api_endpoint"

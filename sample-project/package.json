@@ -1,19 +1,20 @@
 {
-    "name": "com.appboy.hellocordova",
-    "version": "2.3.2",
-    "displayName": "HelloCordova",
-    "cordova": {
-        "platforms": [
-            "android"
-        ],
-        "plugins": {
-            "cordova-plugin-whitelist": {},
-            "cordova-plugin-appboy": {}
-        }
-    },
-    "dependencies": {
-        "cordova-android": "^6.2.3",
-        "cordova-plugin-whitelist": "1",
-        "cordova-plugin-appboy": "../plugin"
+  "name": "com.appboy.hellocordova",
+  "version": "2.3.2",
+  "displayName": "HelloCordova",
+  "cordova": {
+    "platforms": [
+      "android"
+    ],
+    "plugins": {
+      "cordova-plugin-whitelist": {},
+      "cordova-plugin-appboy": {}
     }
+  },
+  "dependencies": {
+    "appboy-cordova-sdk": "file:..",
+    "cordova-android": "^6.2.3",
+    "cordova-plugin-appboy": "../plugin",
+    "cordova-plugin-whitelist": "1"
+  }
 }
