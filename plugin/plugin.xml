@@ -26,6 +26,8 @@
       <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
       <permission android:name="$PACKAGE_NAME.permission.C2D_MESSAGE" android:protectionLevel="signature" />
       <uses-permission android:name="$PACKAGE_NAME.permission.C2D_MESSAGE" />
+      <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+      <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     </config-file>
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
       <activity android:name="com.appboy.ui.activities.AppboyFeedActivity" />
@@ -37,6 +39,12 @@
           <category android:name="$PACKAGE_NAME" />
         </intent-filter>
       </receiver>
+      <receiver android:name="com.appboy.AppboyBootReceiver">
+        <intent-filter>
+          <action android:name="android.intent.action.BOOT_COMPLETED" />
+        </intent-filter>
+      </receiver>
+      <service android:name="com.appboy.services.AppboyGeofenceService"/>
     </config-file>
   </platform>
 
@@ -126,5 +134,10 @@
     <source-file src="src/ios/AppboyPlugin.m" />
     <header-file src="src/ios/AppDelegate+Appboy.h" />
     <source-file src="src/ios/AppDelegate+Appboy.m" />
+
+    <!-- Editing the plist for the location permission prompt -->
+    <config-file target="*-Info.plist" parent="NSLocationAlwaysUsageDescription">
+    <string>This app is requesting your location to better serve you content.</string>
+    </config-file>    
   </platform>
 </plugin>
