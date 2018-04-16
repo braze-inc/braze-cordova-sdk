@@ -53,11 +53,14 @@ onDeviceReady: function() {
     document.getElementById("getCardCountForCategoriesBtn").addEventListener("click", getCardCountForCategories);
     document.getElementById("getUnreadCardCountForCategoriesBtn").addEventListener("click", getUnreadCardCountForCategories);
     document.getElementById("getAllNewsFeedCardsBtn").addEventListener("click", getAllNewsFeedCards);
+    document.getElementById("wipeData").addEventListener("click", wipeData);
+    document.getElementById("enableSdk").addEventListener("click", enableSdk);
+    document.getElementById("disableSdk").addEventListener("click", disableSdk);
 
     var success = function(message) {
         alert(message);
     }
-    
+
     var failure = function() {
         alert("Error calling Hello Plugin");
     }
@@ -67,10 +70,10 @@ receivedEvent: function(id) {
     var parentElement = document.getElementById(id);
     var listeningElement = parentElement.querySelector('.listening');
     var receivedElement = parentElement.querySelector('.received');
-    
+
     listeningElement.setAttribute('style', 'display:none;');
     receivedElement.setAttribute('style', 'display:block;');
-    
+
     console.log('Received Event: ' + id);
 }
 };
@@ -82,6 +85,7 @@ function changeUser() {
     AppboyPlugin.changeUser(document.getElementById("changeUserInputId").value);
     showTextBubble("Change user called");
 }
+
 function logCustomEvent() {
     var properties = {};
     properties["One"] = "That's the Way of the World";
@@ -91,6 +95,7 @@ function logCustomEvent() {
     AppboyPlugin.logCustomEvent("cordovaCustomEventWithoutProperties");
     showTextBubble("Logged custom event");
 }
+
 function logPurchase() {
     var properties = {};
     properties["One"] = "Apple";
@@ -102,36 +107,44 @@ function logPurchase() {
     AppboyPlugin.logPurchase("testPurchaseWithoutProperties", 1500, "JPY", 2);
     showTextBubble("Logged purchase");
 }
+
 function submitFeedback() {
     AppboyPlugin.submitFeedback("cordova@test.com", "nice app!", true);
     showTextBubble("Submitted feedback");
 }
+
 // Appboy User methods
 function setCustomUserAttribute() {
     AppboyPlugin.setCustomUserAttribute("cordovaCustomAttributeKey", "cordovaCustomAttributeValue");
     AppboyPlugin.incrementCustomUserAttribute("cordovaIncrementCustomAttributeKey", 1);
     showTextBubble("Set Custom User Attribute");
 }
+
 function setCustomUserAttributeArray() {
     AppboyPlugin.setCustomUserAttribute("cordovaAttributeArrayButton", ["a", "b"]);
     showTextBubble("Set Custom User Attribute Array");
 }
+
 function incrementCustomUserAttribute() {
     AppboyPlugin.incrementCustomUserAttribute("cordovaIncrementCustomAttributeKey", 2);
     showTextBubble("Incremented Custom User Attribute");
 }
+
 function addToCustomUserAttributeArray() {
     AppboyPlugin.addToCustomUserAttributeArray("cordovaAttributeArrayButton", "c");
     showTextBubble("Added To Custom User Attribute Array");
 }
+
 function removeFromCustomUserAttributeArray() {
     AppboyPlugin.removeFromCustomUserAttributeArray("cordovaAttributeArrayButton", "b");
     showTextBubble("Removed From Custom User Attribute Array");
 }
+
 function unsetCustomUserAttribute() {
     AppboyPlugin.unsetCustomUserAttribute("double");
     showTextBubble("Unset Custom User Attribute");
 }
+
 function setUserProperties() {
     AppboyPlugin.setFirstName("firstName");
     AppboyPlugin.setLastName("lastName");
@@ -148,18 +161,35 @@ function setUserProperties() {
     AppboyPlugin.setCustomUserAttribute("double", 1.2);
     AppboyPlugin.setCustomUserAttribute("int", 5);
     AppboyPlugin.setCustomUserAttribute("bool", true);
-    AppboyPlugin.setCustomUserAttribute("date", new Date());    
+    AppboyPlugin.setCustomUserAttribute("date", new Date());
     showTextBubble("Set User Properties");
 }
+
 function setAttributionData() {
     AppboyPlugin.setUserAttributionData("networkval", "campaignval", "adgroupval", "creativeval");
     showTextBubble("Set Attribution Data");
+}
+
+function wipeData() {
+    AppboyPlugin.wipeData();
+    showTextBubble("Wiped SDK Data");
+}
+
+function enableSdk() {
+    AppboyPlugin.enableSdk();
+    showTextBubble("Enabling the Braze SDK");
+}
+
+function disableSdk() {
+    AppboyPlugin.disableSdk();
+    showTextBubble("Disabling the Braze SDK");
 }
 
 // Launch functions
 function launchNewsFeed() {
     AppboyPlugin.launchNewsFeed();
 }
+
 function launchFeedback() {
     AppboyPlugin.launchFeedback();
 }
@@ -174,7 +204,7 @@ function getNewsFeedCardCount() {
 }
 
 function getCardCountForCategories() {
-    AppboyPlugin.getCardCountForCategories(customPluginSuccessCallback("get Card Count For Categories is : "), customPluginErrorCallback, 
+    AppboyPlugin.getCardCountForCategories(customPluginSuccessCallback("get Card Count For Categories is : "), customPluginErrorCallback,
         [AppboyPlugin.CardCategories.ADVERTISING, AppboyPlugin.CardCategories.SOCIAL]);
 }
 
@@ -198,7 +228,7 @@ function showTextBubble(bubbleMessage) {
     // Add the "show" class to DIV
     bubbleElement.className = "show";
 
-    // After 3 seconds, remove the show class from DIV 
+    // After 3 seconds, remove the show class from DIV
     setTimeout(function(){ bubbleElement.className = bubbleElement.className.replace("show", ""); }, 3000);
 }
 

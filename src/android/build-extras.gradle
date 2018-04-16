@@ -1,8 +1,9 @@
 repositories {
     jcenter()
+    maven { url "https://maven.google.com" }
     maven { url 'http://appboy.github.io/appboy-android-sdk/sdk' }
 }
 
 dependencies {
-    compile 'com.appboy:android-sdk-ui:2.0+'
+    compile 'com.appboy:android-sdk-ui:2.2.5+'
 }

@@ -1,6 +1,6 @@
 #import "AppboyPlugin.h"
-#import "AppboyKit.h"
-#import "ABKAttributionData.h"
+#import <Appboy_iOS_SDK/AppboyKit.h>
+#import <Appboy_iOS_SDK/ABKAttributionData.h>
 #import "AppDelegate+Appboy.h"
 
 @interface AppboyPlugin() <ABKAppboyEndpointDelegate>
@@ -66,8 +66,7 @@
 }
 
 /*-------Appboy.h-------*/
-- (void)changeUser:(CDVInvokedUrlCommand *)command
-{
+- (void)changeUser:(CDVInvokedUrlCommand *)command {
   NSString *userId = [command argumentAtIndex:0 withDefault:nil];
   [[Appboy sharedInstance] changeUser:userId];
 }
@@ -92,6 +91,18 @@
   NSUInteger quantity = [[command argumentAtIndex:3 withDefault:@1] integerValue];
   NSDictionary *properties = [command argumentAtIndex:4 withDefault:nil];
   [[Appboy sharedInstance] logPurchase:purchaseName inCurrency:currency atPrice:[NSDecimalNumber decimalNumberWithString:price] withQuantity:quantity andProperties:properties];
+}
+
+- (void)disableSdk:(CDVInvokedUrlCommand *)command {
+  [Appboy disableSDK];
+}
+
+- (void)enableSdk:(CDVInvokedUrlCommand *)command {
+  [Appboy requestEnableSDKOnNextAppRun];
+}
+
+- (void)wipeData:(CDVInvokedUrlCommand *)command {
+  [Appboy wipeDataAndDisableForAppRun];
 }
 
 /*-------ABKUser.h-------*/
@@ -293,8 +304,7 @@
 }
 
 - (void) launchFeedback:(CDVInvokedUrlCommand *)command {
-  ABKFeedbackViewControllerModalContext *feedbackModal = [[ABKFeedbackViewControllerModalContext alloc] init];
-  [self.viewController presentViewController:feedbackModal animated:YES completion:nil];
+  // Feedback is deprecated
 }
 
 /*-------News Feed-------*/

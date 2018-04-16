@@ -57,9 +57,6 @@ public class AppboyPlugin extends CordovaPlugin {
   private Context mApplicationContext;
   private Map<String, IEventSubscriber<FeedUpdatedEvent>> mFeedSubscriberMap = new ConcurrentHashMap<String, IEventSubscriber<FeedUpdatedEvent>>();
 
-  // Original in-app message handling
-  private boolean mRefreshData;
-
   @Override
   protected void pluginInitialize() {
     mApplicationContext = this.cordova.getActivity().getApplicationContext();
@@ -70,10 +67,6 @@ public class AppboyPlugin extends CordovaPlugin {
     // Since we've likely passed the first Application.onCreate() (due to the plugin lifecycle), lets call the
     // in-app message manager and session handling now
     AppboyInAppMessageManager.getInstance().registerInAppMessageManager(this.cordova.getActivity());
-
-    if (Appboy.getInstance(mApplicationContext).openSession(this.cordova.getActivity())) {
-      Appboy.getInstance(mApplicationContext).requestInAppMessageRefresh();
-    }
   }
 
   /**
@@ -261,6 +254,15 @@ public class AppboyPlugin extends CordovaPlugin {
         Appboy.getInstance(mApplicationContext).getCurrentUser().setEmailNotificationSubscriptionType(NotificationSubscriptionType.UNSUBSCRIBED);
       }
       return true;
+    } else if (action.equals("wipeData")) {
+      Appboy.wipeData(mApplicationContext);
+      return true;
+    } else if (action.equals("enableSdk")) {
+      Appboy.enableSdk(mApplicationContext);
+      return true;
+    } else if (action.equals("disableSdk")) {
+      Appboy.disableSdk(mApplicationContext);
+      return true;
     }
 
     // Launching activities
@@ -435,18 +437,12 @@ public class AppboyPlugin extends CordovaPlugin {
     // Registers the AppboyInAppMessageManager for the current Activity. This Activity will now listen for
     // in-app messages from Appboy.
     AppboyInAppMessageManager.getInstance().registerInAppMessageManager(this.cordova.getActivity());
-    if (mRefreshData) {
-      Appboy.getInstance(mApplicationContext).requestInAppMessageRefresh();
-      mRefreshData = false;
-    }
   }
 
   @Override
   public void onStart() {
     super.onStart();
-    if (Appboy.getInstance(mApplicationContext).openSession(this.cordova.getActivity())) {
-      mRefreshData = true;
-    }
+    Appboy.getInstance(mApplicationContext).openSession(this.cordova.getActivity());
   }
 
   @Override

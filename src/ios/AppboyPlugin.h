@@ -7,6 +7,9 @@
 - (void) submitFeedback:(CDVInvokedUrlCommand *)command;
 - (void) logCustomEvent:(CDVInvokedUrlCommand *)command;
 - (void) logPurchase:(CDVInvokedUrlCommand *)command;
+- (void) disableSdk:(CDVInvokedUrlCommand *)command;
+- (void) enableSdk:(CDVInvokedUrlCommand *)command;
+- (void) wipeData:(CDVInvokedUrlCommand *)command;
 
 /*-------ABKUser.h-------*/
 - (void) setFirstName:(CDVInvokedUrlCommand *)command;

@@ -331,6 +331,28 @@ AppboyPlugin.prototype.getUnreadCardCountForCategories = function (successCallba
   cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getUnreadCardCountForCategories", cardCategories);
 }
 
+/**
+* Wipes Data on the Braze SDK. On iOS, the SDK will be disabled for the rest of the app run.
+*/
+AppboyPlugin.prototype.wipeData = function () {
+  cordova.exec(null, null, "AppboyPlugin", "wipeData");
+}
+
+/**
+* Enables the Braze SDK after a previous call to disableSDK().
+* On iOS, the SDK will be enabled only after a subsequent call to startWithApiKey().
+*/
+AppboyPlugin.prototype.enableSdk = function () {
+  cordova.exec(null, null, "AppboyPlugin", "enableSdk");
+}
+
+/**
+* Disables the Braze SDK immediately.
+*/
+AppboyPlugin.prototype.disableSdk = function () {
+  cordova.exec(null, null, "AppboyPlugin", "disableSdk");
+}
+
 AppboyPlugin.prototype['NotificationSubscriptionTypes'] = {
   "OPTED_IN": 'opted_in',
   "SUBSCRIBED": 'subscribed',

@@ -1,3 +1,8 @@
+## 2.5.0
+- Updates Braze Android version to 2.2.5+.
+- Updates Braze iOS version to 3.3.4.
+- Adds `wipeData()`, `enableSdk()`, and `disableSdk()` methods to the plugin.
+
 ## 2.4.0
 - Fixes a subdirectory incompatibility issue with Cordova 7.1.0
 
