@@ -98,6 +98,29 @@ public class AppboyPlugin extends CordovaPlugin {
       default:
         break;
     }
+
+    // Get location permissions, if we need them
+    if (cordova.hasPermission(LOCATION_PERMISSION)) {
+      AppboyLocationService.requestInitialization(mApplicationContext);
+    } else {
+      // Request the permission
+      cordova.requestPermission(this, LOCATION_REQUEST_CODE, LOCATION_PERMISSION);
+    }
+  }
+
+  @Override
+  public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
+    switch (requestCode) {
+      case LOCATION_REQUEST_CODE:
+        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+          Log.i(TAG, "Fine location permission granted.");
+        } else {
+          Log.i(TAG, "Fine location permission NOT granted.");
+        }
+        break;
+      default:
+        break;
+    }
   }
 
   /**
