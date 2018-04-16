@@ -1,7 +1,9 @@
 package com.appboy.cordova;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.util.Log;
 
@@ -18,6 +20,7 @@ import com.appboy.events.IEventSubscriber;
 import com.appboy.models.cards.Card;
 import com.appboy.models.outgoing.AppboyProperties;
 import com.appboy.models.outgoing.AttributionData;
+import com.appboy.services.AppboyLocationService;
 import com.appboy.support.AppboyLogger;
 import com.appboy.ui.activities.AppboyFeedActivity;
 import com.appboy.ui.inappmessage.AppboyInAppMessageManager;
@@ -37,6 +40,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class AppboyPlugin extends CordovaPlugin {
   private static final String TAG = String.format("Appboy.%s", AppboyPlugin.class.getName());
+
+  // Runtime permissions
+  private static final String LOCATION_PERMISSION = Manifest.permission.ACCESS_FINE_LOCATION;
+  private static final int LOCATION_REQUEST_CODE = 2;
 
   // Preference keys found in the config.xml
   private static final String APPBOY_API_KEY_PREFERENCE = "com.appboy.api_key";
@@ -67,6 +74,30 @@ public class AppboyPlugin extends CordovaPlugin {
     // Since we've likely passed the first Application.onCreate() (due to the plugin lifecycle), lets call the
     // in-app message manager and session handling now
     AppboyInAppMessageManager.getInstance().registerInAppMessageManager(this.cordova.getActivity());
+
+    // Get location permissions, if we need them
+    if (cordova.hasPermission(LOCATION_PERMISSION)) {
+      AppboyLocationService.requestInitialization(mApplicationContext);
+    } else {
+      // Request the permission
+      cordova.requestPermission(this, LOCATION_REQUEST_CODE, LOCATION_PERMISSION);
+    }
+  }
+
+  @Override
+  public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) {
+    switch (requestCode) {
+      case LOCATION_REQUEST_CODE:
+        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+          Log.i(TAG, "Fine location permission granted.");
+          AppboyLocationService.requestInitialization(mApplicationContext);
+        } else {
+          Log.i(TAG, "Fine location permission NOT granted.");
+        }
+        break;
+      default:
+        break;
+    }
   }
 
   /**

@@ -6,4 +6,5 @@ repositories {
 
 dependencies {
     compile 'com.appboy:android-sdk-ui:2.2.5+'
+    compile "com.google.android.gms:play-services-location:12.0.1"
 }
