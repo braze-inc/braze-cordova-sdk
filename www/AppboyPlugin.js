@@ -353,6 +353,13 @@ AppboyPlugin.prototype.disableSdk = function () {
   cordova.exec(null, null, "AppboyPlugin", "disableSdk");
 }
 
+/**
+* Request iosShowPushPrompt manually.
+*/
+AppboyPlugin.prototype.iosShowPushPrompt = function () {
+	cordova.exec(null, null, "AppboyPlugin", "iosShowPushPrompt", []);
+}
+
 AppboyPlugin.prototype['NotificationSubscriptionTypes'] = {
   "OPTED_IN": 'opted_in',
   "SUBSCRIBED": 'subscribed',
