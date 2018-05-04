@@ -42,7 +42,7 @@
         withLaunchOptions:notification.userInfo
         withAppboyOptions:appboyLaunchOptions];
 
-  if (![self.disableAutomaticPushRegistration isEqualToString:@"YES"]) {
+  if (![self.disableAutomaticPushRegistration isEqualToString:@"true"]) {
     UIUserNotificationType notificationSettingTypes = (UIUserNotificationTypeBadge | UIUserNotificationTypeAlert | UIUserNotificationTypeSound);
     if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max) {
       UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
@@ -325,7 +325,7 @@
 
   [self sendCordovaSuccessPluginResultWithArray:result andCommand:command];
 }
-©
+
 - (void) launchFeedback:(CDVInvokedUrlCommand *)command {
   // Feedback is deprecated
 }
