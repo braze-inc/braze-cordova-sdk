@@ -10,6 +10,7 @@
 - (void) disableSdk:(CDVInvokedUrlCommand *)command;
 - (void) enableSdk:(CDVInvokedUrlCommand *)command;
 - (void) wipeData:(CDVInvokedUrlCommand *)command;
+- (void) iosShowPushPrompt:(CDVInvokedUrlCommand *)command;
 
 /*-------ABKUser.h-------*/
 - (void) setFirstName:(CDVInvokedUrlCommand *)command;

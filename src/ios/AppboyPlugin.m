@@ -31,7 +31,7 @@
 
 - (void)didFinishLaunchingListener:(NSNotification *)notification {
   NSMutableDictionary *appboyLaunchOptions = [@{ABKSDKFlavorKey : @(CORDOVA)} mutableCopy];
-  
+
   // Add the endpoint only if it's non nil
   if (self.apiEndpoint != nil) {
     [appboyLaunchOptions setValue:self forKey: ABKAppboyEndpointDelegateKey];
@@ -42,7 +42,7 @@
         withLaunchOptions:notification.userInfo
         withAppboyOptions:appboyLaunchOptions];
 
-  if (![self.disableAutomaticPushRegistration isEqualToString:@"YES"]) {
+  if (![self.disableAutomaticPushRegistration isEqualToString:@"true"]) {
     UIUserNotificationType notificationSettingTypes = (UIUserNotificationTypeBadge | UIUserNotificationTypeAlert | UIUserNotificationTypeSound);
     if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max) {
       UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
@@ -63,6 +63,29 @@
       [[UIApplication sharedApplication] registerForRemoteNotificationTypes: notificationSettingTypes];
     }
   }
+}
+
+// Request iosShowPushPrompt
+- (void)iosShowPushPrompt:(CDVInvokedUrlCommand *)command {
+    UIUserNotificationType notificationSettingTypes = (UIUserNotificationTypeBadge | UIUserNotificationTypeAlert | UIUserNotificationTypeSound);
+    if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_9_x_Max) {
+      UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+      // If the delegate hasn't been set yet, set it here in the plugin
+      if (center.delegate == nil) {
+        center.delegate = [UIApplication sharedApplication].delegate;
+      }
+      [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge)
+                            completionHandler:^(BOOL granted, NSError * _Nullable error) {
+                              NSLog(@"Permission granted.");
+      }];
+      [[UIApplication sharedApplication] registerForRemoteNotifications];
+    } else if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1) {
+      UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:notificationSettingTypes categories:nil];
+      [[UIApplication sharedApplication] registerForRemoteNotifications];
+      [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
+    } else {
+      [[UIApplication sharedApplication] registerForRemoteNotificationTypes: notificationSettingTypes];
+    }
 }
 
 /*-------Appboy.h-------*/
