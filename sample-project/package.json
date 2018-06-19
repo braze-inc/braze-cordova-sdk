@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "appboy-cordova-sdk": "file:..",
-    "cordova-android": "^6.2.3",
-    "cordova-plugin-appboy": "../plugin",
+    "cordova-android": "^6.3.0",
+    "cordova-plugin-appboy": "..",
     "cordova-plugin-whitelist": "1"
   }
 }

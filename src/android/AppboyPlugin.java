@@ -41,7 +41,9 @@ public class AppboyPlugin extends CordovaPlugin {
   // Preference keys found in the config.xml
   private static final String APPBOY_API_KEY_PREFERENCE = "com.appboy.api_key";
   private static final String AUTOMATIC_PUSH_REGISTRATION_ENABLED_PREFERENCE = "com.appboy.android_automatic_push_registration_enabled";
+  private static final String AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE = "com.appboy.firebase_cloud_messaging_registration_enabled";
   private static final String GCM_SENDER_ID_PREFERENCE = "com.appboy.android_gcm_sender_id";
+  private static final String FCM_SENDER_ID_PREFERENCE = "com.appboy.android_fcm_sender_id";
   private static final String APPBOY_LOG_LEVEL_PREFERENCE = "com.appboy.android_log_level";
   private static final String SMALL_NOTIFICATION_ICON_PREFERENCE = "com.appboy.android_small_notification_icon";
   private static final String LARGE_NOTIFICATION_ICON_PREFERENCE = "com.appboy.android_large_notification_icon";
@@ -125,6 +127,12 @@ public class AppboyPlugin extends CordovaPlugin {
     }
     if (cordovaPreferences.contains(SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE)) {
       configBuilder.setHandlePushDeepLinksAutomatically(cordovaPreferences.getBoolean(SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE, true));
+    }
+    if (cordovaPreferences.contains(AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE)) {
+      configBuilder.setIsFirebaseCloudMessagingRegistrationEnabled(cordovaPreferences.getBoolean(AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE, true));
+    }
+    if (cordovaPreferences.contains(FCM_SENDER_ID_PREFERENCE)) {
+      configBuilder.setFirebaseCloudMessagingSenderIdKey(cordovaPreferences.getString(FCM_SENDER_ID_PREFERENCE, null));
     }
 
     Appboy.configure(mApplicationContext, configBuilder.build());
