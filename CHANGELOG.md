@@ -1,3 +1,10 @@
+## 2.5.1
+- Updates Braze Android version to 2.4.0+.
+- Adds Firebase Cloud Messaging automatic registration support. GCM automatic registration should be disabled by setting the config value "com.appboy.android_automatic_push_registration_enabled" to "false". See the Android sample-project's `config.xml` for an example. FCM `config.xml` keys below.
+    - "com.appboy.firebase_cloud_messaging_registration_enabled" ("true"/"false")
+    - "com.appboy.android_fcm_sender_id" (String)
+    - The Firebase dependencies `firebase-messaging` and `firebase-core` are now included automatically as part of the plugin.
+
 ## 2.5.0
 - Updates Braze Android version to 2.2.5+.
 - Updates Braze iOS version to 3.3.4.
