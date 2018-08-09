@@ -12,9 +12,8 @@
     }
   },
   "dependencies": {
-    "appboy-cordova-sdk": "file:..",
-    "cordova-android": "^6.3.0",
-    "cordova-plugin-appboy": "..",
-    "cordova-plugin-whitelist": "1"
+    "appboy-cordova-sdk": "file:../local",
+    "cordova-android": "^7.0.0",
+    "cordova-plugin-whitelist": "^1.3.3"
   }
 }

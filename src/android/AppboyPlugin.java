@@ -52,6 +52,9 @@ public class AppboyPlugin extends CordovaPlugin {
   private static final String SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE = "com.appboy.android_handle_push_deep_links_automatically";
   private static final String CUSTOM_API_ENDPOINT_PREFERENCE = "com.appboy.android_api_endpoint";
 
+  // Numeric preference prefix
+  private static final String NUMERIC_PREFERENCE_PREFIX = "str_";
+
   // Method names
   private static final String GET_NEWS_FEED_METHOD = "getNewsFeed";
   private static final String GET_CARD_COUNT_FOR_CATEGORIES_METHOD = "getCardCountForCategories";
@@ -111,7 +114,7 @@ public class AppboyPlugin extends CordovaPlugin {
       configBuilder.setGcmMessagingRegistrationEnabled(cordovaPreferences.getBoolean(AUTOMATIC_PUSH_REGISTRATION_ENABLED_PREFERENCE, true));
     }
     if (cordovaPreferences.contains(GCM_SENDER_ID_PREFERENCE)) {
-      configBuilder.setGcmSenderId(cordovaPreferences.getString(GCM_SENDER_ID_PREFERENCE, null));
+      configBuilder.setGcmSenderId(parseNumericPreferenceAsString(cordovaPreferences.getString(GCM_SENDER_ID_PREFERENCE, null)));
     }
     if (cordovaPreferences.contains(SMALL_NOTIFICATION_ICON_PREFERENCE)) {
       configBuilder.setSmallNotificationIcon(cordovaPreferences.getString(SMALL_NOTIFICATION_ICON_PREFERENCE, null));
@@ -120,10 +123,10 @@ public class AppboyPlugin extends CordovaPlugin {
       configBuilder.setLargeNotificationIcon(cordovaPreferences.getString(LARGE_NOTIFICATION_ICON_PREFERENCE, null));
     }
     if (cordovaPreferences.contains(DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE)) {
-      configBuilder.setDefaultNotificationAccentColor(cordovaPreferences.getInteger(DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE, 0));
+      configBuilder.setDefaultNotificationAccentColor(parseNumericPreferenceAsInteger(cordovaPreferences.getString(DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE, "0")));
     }
     if (cordovaPreferences.contains(DEFAULT_SESSION_TIMEOUT_PREFERENCE)) {
-      configBuilder.setSessionTimeout(cordovaPreferences.getInteger(DEFAULT_SESSION_TIMEOUT_PREFERENCE, 10));
+      configBuilder.setSessionTimeout(parseNumericPreferenceAsInteger(cordovaPreferences.getString(DEFAULT_SESSION_TIMEOUT_PREFERENCE, "10")));
     }
     if (cordovaPreferences.contains(SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE)) {
       configBuilder.setHandlePushDeepLinksAutomatically(cordovaPreferences.getBoolean(SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE, true));
@@ -132,7 +135,7 @@ public class AppboyPlugin extends CordovaPlugin {
       configBuilder.setIsFirebaseCloudMessagingRegistrationEnabled(cordovaPreferences.getBoolean(AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE, true));
     }
     if (cordovaPreferences.contains(FCM_SENDER_ID_PREFERENCE)) {
-      configBuilder.setFirebaseCloudMessagingSenderIdKey(cordovaPreferences.getString(FCM_SENDER_ID_PREFERENCE, null));
+      configBuilder.setFirebaseCloudMessagingSenderIdKey(parseNumericPreferenceAsString(cordovaPreferences.getString(FCM_SENDER_ID_PREFERENCE, null)));
     }
 
     Appboy.configure(mApplicationContext, configBuilder.build());
@@ -290,6 +293,32 @@ public class AppboyPlugin extends CordovaPlugin {
     return false;
   }
 
+  @Override
+  public void onPause(boolean multitasking) {
+    super.onPause(multitasking);
+    AppboyInAppMessageManager.getInstance().unregisterInAppMessageManager(this.cordova.getActivity());
+  }
+
+  @Override
+  public void onResume(boolean multitasking) {
+    super.onResume(multitasking);
+    // Registers the AppboyInAppMessageManager for the current Activity. This Activity will now listen for
+    // in-app messages from Appboy.
+    AppboyInAppMessageManager.getInstance().registerInAppMessageManager(this.cordova.getActivity());
+  }
+
+  @Override
+  public void onStart() {
+    super.onStart();
+    Appboy.getInstance(mApplicationContext).openSession(this.cordova.getActivity());
+  }
+
+  @Override
+  public void onStop() {
+    super.onStop();
+    Appboy.getInstance(mApplicationContext).closeSession(this.cordova.getActivity());
+  }
+
   private boolean handleNewsFeedGetters(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
     IEventSubscriber<FeedUpdatedEvent> feedUpdatedSubscriber = null;
     boolean requestingFeedUpdateFromCache = false;
@@ -370,7 +399,7 @@ public class AppboyPlugin extends CordovaPlugin {
     return true;
   }
 
-  private EnumSet<CardCategory> getCategoriesFromJSONArray(JSONArray jsonArray) throws JSONException {
+  private static EnumSet<CardCategory> getCategoriesFromJSONArray(JSONArray jsonArray) throws JSONException {
     EnumSet<CardCategory> categories = EnumSet.noneOf(CardCategory.class);
 
     for (int i = 0; i < jsonArray.length(); i++) {
@@ -393,7 +422,7 @@ public class AppboyPlugin extends CordovaPlugin {
     return categories;
   }
 
-  private String[] parseJSONArrayToStringArray(JSONArray jsonArray) throws JSONException {
+  private static String[] parseJSONArrayToStringArray(JSONArray jsonArray) throws JSONException {
     int length = jsonArray.length();
     String[] array = new String[length];
     for (int i = 0; i < length; i++) {
@@ -402,7 +431,7 @@ public class AppboyPlugin extends CordovaPlugin {
     return array;
   }
 
-  private Month parseMonth(int monthInt) {
+  private static Month parseMonth(int monthInt) {
     switch (monthInt) {
       case 1:
         return Month.JANUARY;
@@ -433,29 +462,34 @@ public class AppboyPlugin extends CordovaPlugin {
     }
   }
 
-  @Override
-  public void onPause(boolean multitasking) {
-    super.onPause(multitasking);
-    AppboyInAppMessageManager.getInstance().unregisterInAppMessageManager(this.cordova.getActivity());
+  /**
+   * Parses the preference that is optionally prefixed with a constant.
+   *
+   * I.e. {"PREFIX-value", "value"} -> {"value"}
+   */
+  private static String parseNumericPreferenceAsString(String preference) {
+    if (preference != null && preference.startsWith(NUMERIC_PREFERENCE_PREFIX)) {
+      String preferenceValue = preference.substring(NUMERIC_PREFERENCE_PREFIX.length(), preference.length());
+      AppboyLogger.d(TAG, "Parsed numeric preference " + preference + " into value: " + preferenceValue);
+      return preferenceValue;
+    }
+    return preference;
   }
 
-  @Override
-  public void onResume(boolean multitasking) {
-    super.onResume(multitasking);
-    // Registers the AppboyInAppMessageManager for the current Activity. This Activity will now listen for
-    // in-app messages from Appboy.
-    AppboyInAppMessageManager.getInstance().registerInAppMessageManager(this.cordova.getActivity());
-  }
+  /**
+   * Parses the preference that is optionally prefixed with a constant.
+   *
+   * I.e. {"PREFIX-value", "value"} -> {"value"}
+   */
+  private static int parseNumericPreferenceAsInteger(String preference) {
+    String preferenceValue = preference;
 
-  @Override
-  public void onStart() {
-    super.onStart();
-    Appboy.getInstance(mApplicationContext).openSession(this.cordova.getActivity());
-  }
+    if (preference != null && preference.startsWith(NUMERIC_PREFERENCE_PREFIX)) {
+      preferenceValue = preference.substring(NUMERIC_PREFERENCE_PREFIX.length(), preference.length());
+      AppboyLogger.d(TAG, "Parsed numeric preference " + preference + " into value: " + preferenceValue);
+    }
 
-  @Override
-  public void onStop() {
-    super.onStop();
-    Appboy.getInstance(mApplicationContext).closeSession(this.cordova.getActivity());
+    // Parse the string as an integer. Note that this is the same decoding used in CordovaPreferences
+    return (int)(long)Long.decode(preferenceValue);
   }
 }

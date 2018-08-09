@@ -1,3 +1,8 @@
+## 2.6.0
+- Fixes an issue where the Cordova 8.0.0+ build system would convert numeric preferences in the `config.xml` to be floating point numbers.
+  - Numeric preferences, such as sender ids, now should be prefixed with `str_` for correct parsing. I.e. `<preference name="com.appboy.android_fcm_sender_id" value="str_64422926741" />`.
+- Updates Braze Android version to 2.6.0+
+
 ## 2.5.1
 - Updates Braze Android version to 2.4.0+.
 - Adds Firebase Cloud Messaging automatic registration support. GCM automatic registration should be disabled by setting the config value "com.appboy.android_automatic_push_registration_enabled" to "false". See the Android sample-project's `config.xml` for an example. FCM `config.xml` keys below.
