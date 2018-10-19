@@ -13,7 +13,7 @@
 #import <UserNotifications/UserNotifications.h>
 
 #ifndef APPBOY_SDK_VERSION
-#define APPBOY_SDK_VERSION @"3.3.4"
+#define APPBOY_SDK_VERSION @"3.9.0"
 #endif
 
 #if !TARGET_OS_TV
@@ -24,12 +24,12 @@
 
 @class ABKUser;
 @class ABKFeedController;
+@class ABKContentCardsController;
 @class ABKLocationManager;
 @class ABKFeedback;
 @protocol ABKInAppMessageControllerDelegate;
 @protocol ABKIDFADelegate;
 @protocol ABKAppboyEndpointDelegate;
-@protocol ABKPushURIDelegate;
 @protocol ABKURLDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -91,12 +91,6 @@ extern NSString *const ABKIDFADelegateKey;
  * (e.g. image) URIs used by the Braze SDK.
  */
 extern NSString *const ABKAppboyEndpointDelegateKey;
-
-/*!
- * This key can be set to an instance of a class that conforms to the ABKPushURIDelegate protocol, which can be used to handle deep linking
- * in push in a custom way.
- */
-extern NSString *const ABKPushURIDelegateKey __deprecated_msg("ABKPushURIDelegate is deprecated, please use the ABKURLDelegate protocol instead.");
 
 /*!
  * This key can be set to an instance of a class that conforms to the ABKURLDelegate protocol, allowing it to handle URLs in a custom way.
@@ -259,6 +253,8 @@ typedef NS_ENUM(NSInteger, ABKFeedbackSentResult) {
 
 @property (readonly) ABKFeedController *feedController;
 
+@property (readonly) ABKContentCardsController *contentCardsController;
+
 /*!
 * The policy regarding processing of network requests by the SDK. See the enumeration values for more information on
 * possible options. This value can be set at runtime, or can be injected in at startup via the appboyOptions dictionary.
@@ -297,31 +293,6 @@ typedef NS_ENUM(NSInteger, ABKFeedbackSentResult) {
  * See ABKLocationManager.h.
  */
 @property (nonatomic, readonly) ABKLocationManager *locationManager;
-
-/*!
- * Appboy UI elements can be themed using the NUI framework. See https://github.com/tombenner/nui and the Appboy docs.
- * To enable NUI, take the following steps:
- *
- * - If your app uses ARC: Get NUI from https://github.com/tombenner/nui
- *
- * - If your app does not use ARC: Get NUI from https://github.com/Appboy/nui which is our fork of NUI that manages its
- *   own memory
- *
- * - Follow the instructions in either repo above to integrate NUI
- *
- * - Create a style sheet called NUIStyle.nss
- *
- * - Set the property below to YES
- *
- * If useNUITheming is NO, NUI is ignored completely whether or not it's integrated into your app.  Note that
- * you can theme your app and Appboy differently -- Appboy uses NUI independently of your app's use of NUI.
- */
-@property (nonatomic) BOOL useNUITheming;
-
-/*!
- * A class conforming to the ABKPushURIDelegate protocol can be set to handle deep linking in push in a custom way.
- */
-@property (nonatomic, weak, nullable) id<ABKPushURIDelegate> appboyPushURIDelegate __deprecated_msg("Use appboyURLDelegate instead.");
 
 /*!
  * A class conforming to the ABKURLDelegate protocol can be set to handle URLs in a custom way.
@@ -529,6 +500,13 @@ typedef NS_ENUM(NSInteger, ABKFeedbackSentResult) {
 - (void)logFeedbackDisplayed;
 
 /*!
+ * If you're displaying content cards on your own instead of using ABKContentCardsViewController, you should still report
+ * impressions of the content cards back to Braze with this method so that your campaign reporting features still work
+ * in the dashboard.
+ */
+- (void)logContentCardsDisplayed;
+
+/*!
  * Enqueues a news feed request for the current user. Note that if the queue already contains another request for the
  * current user, that the new feed request will be merged into the already existing request and only one will execute
  * for that user.
@@ -538,6 +516,11 @@ typedef NS_ENUM(NSInteger, ABKFeedbackSentResult) {
  * or not. For more detail about the ABKFeedUpdatedNotification and the ABKFeedUpdatedIsSuccessfulKey, please check ABKFeedController.
  */
 - (void)requestFeedRefresh;
+
+/*!
+ * Enqueues a content cards request for the current user.
+ */
+- (void)requestContentCardsRefresh;
 
 /*!
  * Get the device ID - the IDFV - which will reset if all apps for a given vendor are removed from the device.

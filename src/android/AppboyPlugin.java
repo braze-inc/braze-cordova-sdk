@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.appboy.Appboy;
+import com.appboy.AppboyUser;
 import com.appboy.IAppboyEndpointProvider;
 import com.appboy.configuration.AppboyConfig;
 import com.appboy.enums.CardCategory;
@@ -40,9 +41,7 @@ public class AppboyPlugin extends CordovaPlugin {
 
   // Preference keys found in the config.xml
   private static final String APPBOY_API_KEY_PREFERENCE = "com.appboy.api_key";
-  private static final String AUTOMATIC_PUSH_REGISTRATION_ENABLED_PREFERENCE = "com.appboy.android_automatic_push_registration_enabled";
   private static final String AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE = "com.appboy.firebase_cloud_messaging_registration_enabled";
-  private static final String GCM_SENDER_ID_PREFERENCE = "com.appboy.android_gcm_sender_id";
   private static final String FCM_SENDER_ID_PREFERENCE = "com.appboy.android_fcm_sender_id";
   private static final String APPBOY_LOG_LEVEL_PREFERENCE = "com.appboy.android_log_level";
   private static final String SMALL_NOTIFICATION_ICON_PREFERENCE = "com.appboy.android_small_notification_icon";
@@ -110,12 +109,6 @@ public class AppboyPlugin extends CordovaPlugin {
     if (cordovaPreferences.contains(APPBOY_API_KEY_PREFERENCE)) {
       configBuilder.setApiKey(cordovaPreferences.getString(APPBOY_API_KEY_PREFERENCE, null));
     }
-    if (cordovaPreferences.contains(AUTOMATIC_PUSH_REGISTRATION_ENABLED_PREFERENCE)) {
-      configBuilder.setGcmMessagingRegistrationEnabled(cordovaPreferences.getBoolean(AUTOMATIC_PUSH_REGISTRATION_ENABLED_PREFERENCE, true));
-    }
-    if (cordovaPreferences.contains(GCM_SENDER_ID_PREFERENCE)) {
-      configBuilder.setGcmSenderId(parseNumericPreferenceAsString(cordovaPreferences.getString(GCM_SENDER_ID_PREFERENCE, null)));
-    }
     if (cordovaPreferences.contains(SMALL_NOTIFICATION_ICON_PREFERENCE)) {
       configBuilder.setSmallNotificationIcon(cordovaPreferences.getString(SMALL_NOTIFICATION_ICON_PREFERENCE, null));
     }
@@ -142,147 +135,167 @@ public class AppboyPlugin extends CordovaPlugin {
   }
 
   @Override
-  public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
+  public boolean execute(final String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
     Log.i(TAG, "Received " + action + " with the following arguments: " + args);
+
     // Appboy methods
-    if (action.equals("registerAppboyPushMessages")) {
-      Appboy.getInstance(mApplicationContext).registerAppboyPushMessages(args.getString(0));
-      return true;
-    } else if (action.equals("changeUser")) {
-      Appboy.getInstance(mApplicationContext).changeUser(args.getString(0));
-      return true;
-    } else if (action.equals("logCustomEvent")) {
-      AppboyProperties properties = null;
-      if (args.get(1) != JSONObject.NULL) {
-        properties = new AppboyProperties(args.getJSONObject(1));
+    switch (action) {
+      case "registerAppboyPushMessages":
+        Appboy.getInstance(mApplicationContext).registerAppboyPushMessages(args.getString(0));
+        return true;
+      case "changeUser":
+        Appboy.getInstance(mApplicationContext).changeUser(args.getString(0));
+        return true;
+      case "logCustomEvent": {
+        AppboyProperties properties = null;
+        if (args.get(1) != JSONObject.NULL) {
+          properties = new AppboyProperties(args.getJSONObject(1));
+        }
+        Appboy.getInstance(mApplicationContext).logCustomEvent(args.getString(0), properties);
+        return true;
       }
-      Appboy.getInstance(mApplicationContext).logCustomEvent(args.getString(0), properties);
-      return true;
-    } else if (action.equals("logPurchase")) {
-      String currencyCode = "USD";
-      if (args.get(2) != JSONObject.NULL) {
-        currencyCode = args.getString(2);
+      case "logPurchase": {
+        String currencyCode = "USD";
+        if (args.get(2) != JSONObject.NULL) {
+          currencyCode = args.getString(2);
+        }
+        int quantity = 1;
+        if (args.get(3) != JSONObject.NULL) {
+          quantity = args.getInt(3);
+        }
+        AppboyProperties properties = null;
+        if (args.get(4) != JSONObject.NULL) {
+          properties = new AppboyProperties(args.getJSONObject(4));
+        }
+        Appboy.getInstance(mApplicationContext).logPurchase(args.getString(0), currencyCode, new BigDecimal(args.getLong(1)), quantity, properties);
+        return true;
       }
-      int quantity = 1;
-      if (args.get(3) != JSONObject.NULL) {
-        quantity = args.getInt(3);
-      }
-      AppboyProperties properties = null;
-      if (args.get(4) != JSONObject.NULL) {
-        properties = new AppboyProperties(args.getJSONObject(4));
-      }
-      Appboy.getInstance(mApplicationContext).logPurchase(args.getString(0), currencyCode, new BigDecimal(args.getLong(1)), quantity, properties);
-      return true;
-    } else if (action.equals("submitFeedback")) {
-      Appboy.getInstance(mApplicationContext).submitFeedback(args.getString(0), args.getString(1), args.getBoolean(2));
-      return true;
+      case "submitFeedback":
+        Appboy.getInstance(mApplicationContext).submitFeedback(args.getString(0), args.getString(1), args.getBoolean(2));
+        return true;
+      case "wipeData":
+        Appboy.wipeData(mApplicationContext);
+        return true;
+      case "enableSdk":
+        Appboy.enableSdk(mApplicationContext);
+        return true;
+      case "disableSdk":
+        Appboy.disableSdk(mApplicationContext);
+        return true;
     }
+
     // Appboy User methods
-    if (action.equals("setUserAttributionData")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().setAttributionData(new AttributionData(args.getString(0), args.getString(1), args.getString(2), args.getString(3)));
-      return true;
-    } else if (action.equals("setStringCustomUserAttribute")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().setCustomUserAttribute(args.getString(0), args.getString(1));
-      return true;
-    } else if (action.equals("unsetCustomUserAttribute")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().unsetCustomUserAttribute(args.getString(0));
-      return true;
-    } else if (action.equals("setBoolCustomUserAttribute")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().setCustomUserAttribute(args.getString(0), args.getBoolean(1));
-      return true;
-    } else if (action.equals("setIntCustomUserAttribute")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().setCustomUserAttribute(args.getString(0), args.getInt(1));
-      return true;
-    } else if (action.equals("setDoubleCustomUserAttribute")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().setCustomUserAttribute(args.getString(0), (float) args.getDouble(1));
-      return true;
-    } else if (action.equals("setDateCustomUserAttribute")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().setCustomUserAttributeToSecondsFromEpoch(args.getString(0), args.getLong(1));
-      return true;
-    } else if (action.equals("incrementCustomUserAttribute")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().incrementCustomUserAttribute(args.getString(0), args.getInt(1));
-      return true;
-    } else if (action.equals("setCustomUserAttributeArray")) {
-      String[] attributes = parseJSONArrayToStringArray(args.getJSONArray(1));
-      Appboy.getInstance(mApplicationContext).getCurrentUser().setCustomAttributeArray(args.getString(0), attributes);
-      return true;
-    } else if (action.equals("addToCustomAttributeArray")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().addToCustomAttributeArray(args.getString(0), args.getString(1));
-      return true;
-    } else if (action.equals("removeFromCustomAttributeArray")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().removeFromCustomAttributeArray(args.getString(0), args.getString(1));
-      return true;
-    } else if (action.equals("setFirstName")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().setFirstName(args.getString(0));
-      return true;
-    } else if (action.equals("setLastName")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().setLastName(args.getString(0));
-      return true;
-    } else if (action.equals("setEmail")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().setEmail(args.getString(0));
-      return true;
-    } else if (action.equals("setGender")) {
-      String gender = args.getString(0).toLowerCase();
-      if (gender.equals("m")) {
-        Appboy.getInstance(mApplicationContext).getCurrentUser().setGender(Gender.MALE);
-      } else if (gender.equals("f")) {
-        Appboy.getInstance(mApplicationContext).getCurrentUser().setGender(Gender.FEMALE);
+    AppboyUser currentUser = Appboy.getInstance(mApplicationContext).getCurrentUser();
+    if (currentUser != null) {
+      switch (action) {
+        case "setUserAttributionData":
+          currentUser.setAttributionData(new AttributionData(args.getString(0), args.getString(1), args.getString(2), args.getString(3)));
+          return true;
+        case "setStringCustomUserAttribute":
+          currentUser.setCustomUserAttribute(args.getString(0), args.getString(1));
+          return true;
+        case "unsetCustomUserAttribute":
+          currentUser.unsetCustomUserAttribute(args.getString(0));
+          return true;
+        case "setBoolCustomUserAttribute":
+          currentUser.setCustomUserAttribute(args.getString(0), args.getBoolean(1));
+          return true;
+        case "setIntCustomUserAttribute":
+          currentUser.setCustomUserAttribute(args.getString(0), args.getInt(1));
+          return true;
+        case "setDoubleCustomUserAttribute":
+          currentUser.setCustomUserAttribute(args.getString(0), (float) args.getDouble(1));
+          return true;
+        case "setDateCustomUserAttribute":
+          currentUser.setCustomUserAttributeToSecondsFromEpoch(args.getString(0), args.getLong(1));
+          return true;
+        case "incrementCustomUserAttribute":
+          currentUser.incrementCustomUserAttribute(args.getString(0), args.getInt(1));
+          return true;
+        case "setCustomUserAttributeArray":
+          String[] attributes = parseJSONArrayToStringArray(args.getJSONArray(1));
+          currentUser.setCustomAttributeArray(args.getString(0), attributes);
+          return true;
+        case "addToCustomAttributeArray":
+          currentUser.addToCustomAttributeArray(args.getString(0), args.getString(1));
+          return true;
+        case "removeFromCustomAttributeArray":
+          currentUser.removeFromCustomAttributeArray(args.getString(0), args.getString(1));
+          return true;
+        case "setFirstName":
+          currentUser.setFirstName(args.getString(0));
+          return true;
+        case "setLastName":
+          currentUser.setLastName(args.getString(0));
+          return true;
+        case "setEmail":
+          currentUser.setEmail(args.getString(0));
+          return true;
+        case "setGender":
+          String gender = args.getString(0).toLowerCase();
+          if (gender.equals("m")) {
+            currentUser.setGender(Gender.MALE);
+          } else if (gender.equals("f")) {
+            currentUser.setGender(Gender.FEMALE);
+          }
+          return true;
+        case "setDateOfBirth":
+          Month month = parseMonth(args.getInt(1));
+          currentUser.setDateOfBirth(args.getInt(0), month, args.getInt(2));
+          return true;
+        case "setCountry":
+          currentUser.setCountry(args.getString(0));
+          return true;
+        case "setHomeCity":
+          currentUser.setHomeCity(args.getString(0));
+          return true;
+        case "setPhoneNumber":
+          currentUser.setPhoneNumber(args.getString(0));
+          return true;
+        case "setAvatarImageUrl":
+          currentUser.setAvatarImageUrl(args.getString(0));
+          return true;
+        case "setPushNotificationSubscriptionType": {
+          String subscriptionType = args.getString(0);
+          switch (subscriptionType) {
+            case "opted_in":
+              currentUser.setPushNotificationSubscriptionType(NotificationSubscriptionType.OPTED_IN);
+              break;
+            case "subscribed":
+              currentUser.setPushNotificationSubscriptionType(NotificationSubscriptionType.SUBSCRIBED);
+              break;
+            case "unsubscribed":
+              currentUser.setPushNotificationSubscriptionType(NotificationSubscriptionType.UNSUBSCRIBED);
+              break;
+          }
+          return true;
+        }
+        case "setEmailNotificationSubscriptionType": {
+          String subscriptionType = args.getString(0);
+          switch (subscriptionType) {
+            case "opted_in":
+              currentUser.setEmailNotificationSubscriptionType(NotificationSubscriptionType.OPTED_IN);
+              break;
+            case "subscribed":
+              currentUser.setEmailNotificationSubscriptionType(NotificationSubscriptionType.SUBSCRIBED);
+              break;
+            case "unsubscribed":
+              currentUser.setEmailNotificationSubscriptionType(NotificationSubscriptionType.UNSUBSCRIBED);
+              break;
+          }
+          return true;
+        }
       }
-      return true;
-    } else if (action.equals("setDateOfBirth")) {
-      Month month = parseMonth(args.getInt(1));
-      Appboy.getInstance(mApplicationContext).getCurrentUser().setDateOfBirth(args.getInt(0), month, args.getInt(2));
-      return true;
-    } else if (action.equals("setCountry")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().setCountry(args.getString(0));
-      return true;
-    } else if (action.equals("setHomeCity")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().setHomeCity(args.getString(0));
-      return true;
-    } else if (action.equals("setPhoneNumber")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().setPhoneNumber(args.getString(0));
-      return true;
-    } else if (action.equals("setAvatarImageUrl")) {
-      Appboy.getInstance(mApplicationContext).getCurrentUser().setAvatarImageUrl(args.getString(0));
-      return true;
-    } else if (action.equals("setPushNotificationSubscriptionType")) {
-      String subscriptionType = args.getString(0);
-      if (subscriptionType.equals("opted_in")) {
-        Appboy.getInstance(mApplicationContext).getCurrentUser().setPushNotificationSubscriptionType(NotificationSubscriptionType.OPTED_IN);
-      } else if (subscriptionType.equals("subscribed")) {
-        Appboy.getInstance(mApplicationContext).getCurrentUser().setPushNotificationSubscriptionType(NotificationSubscriptionType.SUBSCRIBED);
-      } else if (subscriptionType.equals("unsubscribed")) {
-        Appboy.getInstance(mApplicationContext).getCurrentUser().setPushNotificationSubscriptionType(NotificationSubscriptionType.UNSUBSCRIBED);
-      }
-      return true;
-    } else if (action.equals("setEmailNotificationSubscriptionType")) {
-      String subscriptionType = args.getString(0);
-      if (subscriptionType.equals("opted_in")) {
-        Appboy.getInstance(mApplicationContext).getCurrentUser().setEmailNotificationSubscriptionType(NotificationSubscriptionType.OPTED_IN);
-      } else if (subscriptionType.equals("subscribed")) {
-        Appboy.getInstance(mApplicationContext).getCurrentUser().setEmailNotificationSubscriptionType(NotificationSubscriptionType.SUBSCRIBED);
-      } else if (subscriptionType.equals("unsubscribed")) {
-        Appboy.getInstance(mApplicationContext).getCurrentUser().setEmailNotificationSubscriptionType(NotificationSubscriptionType.UNSUBSCRIBED);
-      }
-      return true;
-    } else if (action.equals("wipeData")) {
-      Appboy.wipeData(mApplicationContext);
-      return true;
-    } else if (action.equals("enableSdk")) {
-      Appboy.enableSdk(mApplicationContext);
-      return true;
-    } else if (action.equals("disableSdk")) {
-      Appboy.disableSdk(mApplicationContext);
-      return true;
     }
 
     // Launching activities
-    if (action.equals("launchNewsFeed")) {
-      Intent intent = new Intent(mApplicationContext, AppboyFeedActivity.class);
-      this.cordova.getActivity().startActivity(intent);
-      return true;
-    } else if (action.equals("launchFeedback")) {
-      Log.i(TAG, "Launch feedback actions are not currently supported on Android. Doing nothing.");
+    switch (action) {
+      case "launchNewsFeed":
+        Intent intent = new Intent(mApplicationContext, AppboyFeedActivity.class);
+        this.cordova.getActivity().startActivity(intent);
+        return true;
+      case "launchFeedback":
+        Log.i(TAG, "Launch feedback actions are not currently supported on Android. Doing nothing.");
     }
 
     // News Feed data
@@ -329,59 +342,50 @@ public class AppboyPlugin extends CordovaPlugin {
     if (action.equals(GET_CARD_COUNT_FOR_CATEGORIES_METHOD)) {
       final EnumSet<CardCategory> categories = getCategoriesFromJSONArray(args);
 
-      feedUpdatedSubscriber = new IEventSubscriber<FeedUpdatedEvent>() {
-        @Override
-        public void trigger(final FeedUpdatedEvent event) {
-          // Each callback context is by default made to only be called once and is afterwards "finished". We want to ensure
-          // that we never try to call the same callback twice. This could happen since we don't know the ordering of the feed
-          // subscription callbacks from the cache.
-          if (!callbackContext.isFinished()) {
-            callbackContext.success(event.getCardCount(categories));
-          }
-
-          // Remove this listener from the map and from Appboy
-          mAppboy.removeSingleSubscription(mFeedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
-          mFeedSubscriberMap.remove(callbackId);
+      feedUpdatedSubscriber = event -> {
+        // Each callback context is by default made to only be called once and is afterwards "finished". We want to ensure
+        // that we never try to call the same callback twice. This could happen since we don't know the ordering of the feed
+        // subscription callbacks from the cache.
+        if (!callbackContext.isFinished()) {
+          callbackContext.success(event.getCardCount(categories));
         }
+
+        // Remove this listener from the map and from Appboy
+        mAppboy.removeSingleSubscription(mFeedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
+        mFeedSubscriberMap.remove(callbackId);
       };
       requestingFeedUpdateFromCache = true;
     } else if (action.equals(GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD)) {
       final EnumSet<CardCategory> categories = getCategoriesFromJSONArray(args);
 
-      feedUpdatedSubscriber = new IEventSubscriber<FeedUpdatedEvent>() {
-        @Override
-        public void trigger(final FeedUpdatedEvent event) {
-          if (!callbackContext.isFinished()) {
-            callbackContext.success(event.getUnreadCardCount(categories));
-          }
-
-          // Remove this listener from the map and from Appboy
-          mAppboy.removeSingleSubscription(mFeedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
-          mFeedSubscriberMap.remove(callbackId);
+      feedUpdatedSubscriber = event -> {
+        if (!callbackContext.isFinished()) {
+          callbackContext.success(event.getUnreadCardCount(categories));
         }
+
+        // Remove this listener from the map and from Appboy
+        mAppboy.removeSingleSubscription(mFeedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
+        mFeedSubscriberMap.remove(callbackId);
       };
       requestingFeedUpdateFromCache = true;
     } else if (action.equals(GET_NEWS_FEED_METHOD)) {
       final EnumSet<CardCategory> categories = getCategoriesFromJSONArray(args);
 
-      feedUpdatedSubscriber = new IEventSubscriber<FeedUpdatedEvent>() {
-        @Override
-        public void trigger(final FeedUpdatedEvent event) {
-          if (!callbackContext.isFinished()) {
-            List<Card> cards = event.getFeedCards(categories);
-            JSONArray result = new JSONArray();
+      feedUpdatedSubscriber = event -> {
+        if (!callbackContext.isFinished()) {
+          List<Card> cards = event.getFeedCards(categories);
+          JSONArray result = new JSONArray();
 
-            for (int i = 0; i < cards.size(); i++) {
-              result.put(cards.get(i).forJsonPut());
-            }
-
-            callbackContext.success(result);
+          for (int i = 0; i < cards.size(); i++) {
+            result.put(cards.get(i).forJsonPut());
           }
 
-          // Remove this listener from the map and from Appboy
-          mAppboy.removeSingleSubscription(mFeedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
-          mFeedSubscriberMap.remove(callbackId);
+          callbackContext.success(result);
         }
+
+        // Remove this listener from the map and from Appboy
+        mAppboy.removeSingleSubscription(mFeedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
+        mFeedSubscriberMap.remove(callbackId);
       };
       requestingFeedUpdateFromCache = false;
     }

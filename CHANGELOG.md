@@ -1,3 +1,8 @@
+## 2.7.0
+- Updates Braze Android version to 3.0.0+
+  - Removes GCM push registration methods. In your config.xml `com.appboy.android_automatic_push_registration_enabled` and `com.appboy.android_gcm_sender_id` , now have no effect on push registration.
+- Updates Braze iOS version to 3.9.0.
+
 ## 2.6.0
 - Fixes an issue where the Cordova 8.0.0+ build system would convert numeric preferences in the `config.xml` to be floating point numbers.
   - Numeric preferences, such as sender ids, now should be prefixed with `str_` for correct parsing. I.e. `<preference name="com.appboy.android_fcm_sender_id" value="str_64422926741" />`.

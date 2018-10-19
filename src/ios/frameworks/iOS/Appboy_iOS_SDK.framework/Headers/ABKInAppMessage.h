@@ -95,7 +95,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * This property can be a HTTP URI or a protocol URI.
  */
-@property (readonly, nullable) NSURL *uri;
+@property (readonly, copy, nullable) NSURL *uri;
 
 /*!
  * When the in-app message's inAppMessageClickActionType is ABKInAppMessageRedirectToURI, if the property is set to YES, 
@@ -185,6 +185,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property BOOL animateIn;
 @property BOOL animateOut;
+
+/*!
+ * isControl defines whether this in-app message is a control. Control in-app messages should not be displayed to users.
+ */
+@property BOOL isControl;
 
 /*!
  * If you're handling in-app messages completely on your own, you should still report

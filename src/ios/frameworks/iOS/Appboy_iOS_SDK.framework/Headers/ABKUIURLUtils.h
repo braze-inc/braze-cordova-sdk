@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #import "ABKURLDelegate.h"
 
 @interface ABKUIURLUtils : NSObject
@@ -12,5 +13,5 @@
 + (UIViewController *)topmostViewControllerWithRootViewController:(UIViewController *)viewController;
 + (void)displayModalWebViewWithURL:(NSURL *)url
              topmostViewController:(UIViewController *)topmostViewController;
-
++ (NSURL *)getEncodedURIFromString:(NSString *)uriString;
 @end

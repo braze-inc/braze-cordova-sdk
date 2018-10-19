@@ -2,6 +2,7 @@
 #import <Appboy_iOS_SDK/AppboyKit.h>
 #import <Appboy_iOS_SDK/ABKAttributionData.h>
 #import "AppDelegate+Appboy.h"
+#import <Appboy_iOS_SDK/AppboyNewsFeed.h>
 
 @interface AppboyPlugin() <ABKAppboyEndpointDelegate>
   @property NSString *APIKey;
@@ -31,7 +32,7 @@
 
 - (void)didFinishLaunchingListener:(NSNotification *)notification {
   NSMutableDictionary *appboyLaunchOptions = [@{ABKSDKFlavorKey : @(CORDOVA)} mutableCopy];
-  
+
   // Add the endpoint only if it's non nil
   if (self.apiEndpoint != nil) {
     [appboyLaunchOptions setValue:self forKey: ABKAppboyEndpointDelegateKey];
@@ -50,10 +51,15 @@
       if (center.delegate == nil) {
         center.delegate = [UIApplication sharedApplication].delegate;
       }
-      [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge)
+      UNAuthorizationOptions options = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
+      if (@available(iOS 12.0, *)) {
+        options = options | UNAuthorizationOptionProvisional;
+      }
+      [center requestAuthorizationWithOptions:options
                             completionHandler:^(BOOL granted, NSError * _Nullable error) {
                               NSLog(@"Permission granted.");
-      }];
+                              [[Appboy sharedInstance] pushAuthorizationFromUserNotificationCenter:granted];
+                            }];
       [[UIApplication sharedApplication] registerForRemoteNotifications];
     } else if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1) {
       UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:notificationSettingTypes categories:nil];
@@ -277,9 +283,8 @@
 
 /*-------Appboy UI-------*/
 - (void) launchNewsFeed:(CDVInvokedUrlCommand *)command {
-  ABKFeedViewControllerModalContext *feedModal = [[ABKFeedViewControllerModalContext alloc] init];
-  feedModal.navigationItem.title = @"News";
-  [self.viewController presentViewController:feedModal animated:YES completion:nil];
+  ABKNewsFeedViewController *newsFeed = [[ABKNewsFeedViewController alloc] init];
+  [self.viewController presentViewController:newsFeed animated:YES completion:nil];
 }
 
 - (void) getNewsFeed:(CDVInvokedUrlCommand *)command {

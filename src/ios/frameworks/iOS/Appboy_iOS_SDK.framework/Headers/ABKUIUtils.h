@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 @interface ABKUIUtils : NSObject
 
@@ -8,5 +9,8 @@
 + (Class)getSDWebImageProxyClass;
 + (Class)getModalFeedViewControllerClass;
 + (BOOL)isiPhoneX;
++ (UIImage *)getImageWithName:(NSString *)name
+                         type:(NSString *)type
+               inAppboyBundle:(NSBundle *)appboyBundle;
 
 @end
