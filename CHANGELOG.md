@@ -1,3 +1,6 @@
+## 2.7.1
+- Fixes an issue sending push on Android resulted in a crash.
+
 ## 2.7.0
 - Updates Braze Android version to 3.0.0+
   - Removes GCM push registration methods. In your config.xml `com.appboy.android_automatic_push_registration_enabled` and `com.appboy.android_gcm_sender_id` , now have no effect on push registration.
