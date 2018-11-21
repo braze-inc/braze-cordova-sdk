@@ -1,5 +1,5 @@
 ## 2.7.1
-- Fixes an issue sending push on Android resulted in a crash.
+- Fixes an issue where sending push on Android results in a crash.
 
 ## 2.7.0
 - Updates Braze Android version to 3.0.0+
