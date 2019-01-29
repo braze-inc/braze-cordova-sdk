@@ -111,6 +111,10 @@
   [Appboy wipeDataAndDisableForAppRun];
 }
 
+- (void)requestImmediateDataFlush:(CDVInvokedUrlCommand *)command {
+  [[Appboy sharedInstance] flushDataAndProcessRequestQueue];
+}
+
 /*-------ABKUser.h-------*/
 - (void) setFirstName:(CDVInvokedUrlCommand *)command {
   NSString *firstName = [command argumentAtIndex:0 withDefault:nil];

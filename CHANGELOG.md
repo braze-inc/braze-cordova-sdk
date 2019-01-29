@@ -1,5 +1,10 @@
+## 2.8.0
+- Changed the iOS frameworks to be automatically embedded in the `plugin.xml`.
+  - This fixes the "dyld: Library not loaded" issue raised in XCode if the frameworks were not manually embedded.
+- Adds method to immediately flush any pending data via `requestImmediateDataFlush()`.
+
 ## 2.7.1
-- Fixes an issue where sending push on Android results in a crash.
+- Fixes an issue where sending push on Android resulted in a crash in version 2.7.0. Past versions (before 2.7.0) are unaffected.
 
 ## 2.7.0
 - Updates Braze Android version to 3.0.0+

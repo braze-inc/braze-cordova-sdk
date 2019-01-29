@@ -56,6 +56,7 @@ onDeviceReady: function() {
     document.getElementById("wipeData").addEventListener("click", wipeData);
     document.getElementById("enableSdk").addEventListener("click", enableSdk);
     document.getElementById("disableSdk").addEventListener("click", disableSdk);
+    document.getElementById("requestFlushBtn").addEventListener("click", requestDataFlush);
 
     var success = function(message) {
         alert(message);
@@ -183,6 +184,11 @@ function enableSdk() {
 function disableSdk() {
     AppboyPlugin.disableSdk();
     showTextBubble("Disabling the Braze SDK");
+}
+
+function requestDataFlush() {
+    AppboyPlugin.requestImmediateDataFlush();
+    showTextBubble("Requesting data flush");
 }
 
 // Launch functions

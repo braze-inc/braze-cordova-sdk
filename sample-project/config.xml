@@ -31,7 +31,7 @@
         <preference name="com.appboy.ios_disable_automatic_push_registration" value="false" />
     </platform>
     <plugin name="cordova-plugin-whitelist" spec="1" />
-    <plugin name="cordova-plugin-appboy" spec="../local" />
     <engine name="android" spec="^7.0.0" />
     <engine name="ios" spec="^4.5.5" />
+    <plugin name="cordova-plugin-appboy" spec="../local" />
 </widget>

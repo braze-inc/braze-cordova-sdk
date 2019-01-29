@@ -182,6 +182,9 @@ public class AppboyPlugin extends CordovaPlugin {
       case "disableSdk":
         Appboy.disableSdk(mApplicationContext);
         return true;
+      case "requestImmediateDataFlush":
+        Appboy.getInstance(mApplicationContext).requestImmediateDataFlush();
+        return true;
     }
 
     // Appboy User methods
