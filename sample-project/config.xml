@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.appboy.hellocordova" version="0.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.appboy.hellocordova" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>HelloCordova</name>
     <description>
         A sample Apache Cordova application for the Braze SDK.
@@ -19,7 +19,7 @@
         <allow-intent href="market:*" />
         <preference name="com.appboy.api_key" value="7ef72382-b92f-4258-9be9-9e19e92f3bf1" />
         <preference name="com.appboy.firebase_cloud_messaging_registration_enabled" value="true" />
-        <preference name="com.appboy.android_fcm_sender_id" value="str_64422926741" />
+        <preference name="com.appboy.android_fcm_sender_id" value="str_900857597716" />
         <preference name="com.appboy.android_default_session_timeout" value="str_5" />
         <preference name="com.appboy.android_handle_push_deep_links_automatically" value="true" />
         <preference name="com.appboy.android_log_level" value="0" />
@@ -29,9 +29,10 @@
         <allow-intent href="itms-apps:*" />
         <preference name="com.appboy.api_key" value="06a4b5d1-099b-4910-9604-583ac8f2dc10" />
         <preference name="com.appboy.ios_disable_automatic_push_registration" value="false" />
+        <preference name="deployment-target" value="9.0" />
     </platform>
     <plugin name="cordova-plugin-whitelist" spec="1" />
-    <engine name="android" spec="^7.0.0" />
-    <engine name="ios" spec="^4.5.5" />
     <plugin name="cordova-plugin-appboy" spec="../local" />
+    <engine name="android" spec="^8.0.0" />
+    <engine name="ios" spec="^5.0.1" />
 </widget>

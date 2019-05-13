@@ -103,6 +103,7 @@ function logPurchase() {
     properties["Two"] = "Orange";
     properties["Three"] = "Peach";
     AppboyPlugin.logPurchase("testPurchase", 10, "USD", 5, properties);
+    AppboyPlugin.logPurchase("testPurchaseWithDecimal", 13.37, "USD", 5, properties);
     AppboyPlugin.logPurchase("testPurchaseWithNullCurrency", 10, null, 5, properties);
     AppboyPlugin.logPurchase("testPurchaseWithNullQuantity", 10, "USD");
     AppboyPlugin.logPurchase("testPurchaseWithoutProperties", 1500, "JPY", 2);

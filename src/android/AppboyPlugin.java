@@ -167,7 +167,7 @@ public class AppboyPlugin extends CordovaPlugin {
         if (args.get(4) != JSONObject.NULL) {
           properties = new AppboyProperties(args.getJSONObject(4));
         }
-        Appboy.getInstance(mApplicationContext).logPurchase(args.getString(0), currencyCode, new BigDecimal(args.getLong(1)), quantity, properties);
+        Appboy.getInstance(mApplicationContext).logPurchase(args.getString(0), currencyCode, new BigDecimal(args.getDouble(1)), quantity, properties);
         return true;
       }
       case "submitFeedback":
