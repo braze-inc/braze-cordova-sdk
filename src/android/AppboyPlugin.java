@@ -58,6 +58,8 @@ public class AppboyPlugin extends CordovaPlugin {
   private static final String GET_NEWS_FEED_METHOD = "getNewsFeed";
   private static final String GET_CARD_COUNT_FOR_CATEGORIES_METHOD = "getCardCountForCategories";
   private static final String GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD = "getUnreadCardCountForCategories";
+
+  private boolean mPluginInitializationFinished = false;
   private Context mApplicationContext;
   private Map<String, IEventSubscriber<FeedUpdatedEvent>> mFeedSubscriberMap = new ConcurrentHashMap<String, IEventSubscriber<FeedUpdatedEvent>>();
 
@@ -71,71 +73,12 @@ public class AppboyPlugin extends CordovaPlugin {
     // Since we've likely passed the first Application.onCreate() (due to the plugin lifecycle), lets call the
     // in-app message manager and session handling now
     AppboyInAppMessageManager.getInstance().registerInAppMessageManager(this.cordova.getActivity());
-  }
-
-  /**
-   * Calls {@link Appboy#configure(Context, AppboyConfig)} using the values found from the {@link CordovaPreferences}.
-   *
-   * @param cordovaPreferences the preferences used to initialize this plugin
-   */
-  private void configureAppboyFromCordovaPreferences(CordovaPreferences cordovaPreferences) {
-    AppboyLogger.d(TAG, "Setting Cordova preferences: " + cordovaPreferences.getAll());
-
-    // Set the log level
-    if (cordovaPreferences.contains(APPBOY_LOG_LEVEL_PREFERENCE)) {
-      AppboyLogger.setLogLevel(cordovaPreferences.getInteger(APPBOY_LOG_LEVEL_PREFERENCE, Log.INFO));
-    }
-
-    // Set the custom endpoint
-    if (cordovaPreferences.contains(CUSTOM_API_ENDPOINT_PREFERENCE)) {
-      final String customApiEndpoint = cordovaPreferences.getString(CUSTOM_API_ENDPOINT_PREFERENCE, "");
-      if (!customApiEndpoint.equals("")) {
-        Appboy.setAppboyEndpointProvider(new IAppboyEndpointProvider() {
-          @Override
-          public Uri getApiEndpoint(Uri appboyEndpoint) {
-            return appboyEndpoint.buildUpon()
-                .authority(customApiEndpoint).build();
-          }
-        });
-      }
-    }
-
-    // Set the values used in the config builder
-    AppboyConfig.Builder configBuilder = new AppboyConfig.Builder();
-
-    // Set the flavor
-    configBuilder.setSdkFlavor(SdkFlavor.CORDOVA);
-
-    if (cordovaPreferences.contains(APPBOY_API_KEY_PREFERENCE)) {
-      configBuilder.setApiKey(cordovaPreferences.getString(APPBOY_API_KEY_PREFERENCE, null));
-    }
-    if (cordovaPreferences.contains(SMALL_NOTIFICATION_ICON_PREFERENCE)) {
-      configBuilder.setSmallNotificationIcon(cordovaPreferences.getString(SMALL_NOTIFICATION_ICON_PREFERENCE, null));
-    }
-    if (cordovaPreferences.contains(LARGE_NOTIFICATION_ICON_PREFERENCE)) {
-      configBuilder.setLargeNotificationIcon(cordovaPreferences.getString(LARGE_NOTIFICATION_ICON_PREFERENCE, null));
-    }
-    if (cordovaPreferences.contains(DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE)) {
-      configBuilder.setDefaultNotificationAccentColor(parseNumericPreferenceAsInteger(cordovaPreferences.getString(DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE, "0")));
-    }
-    if (cordovaPreferences.contains(DEFAULT_SESSION_TIMEOUT_PREFERENCE)) {
-      configBuilder.setSessionTimeout(parseNumericPreferenceAsInteger(cordovaPreferences.getString(DEFAULT_SESSION_TIMEOUT_PREFERENCE, "10")));
-    }
-    if (cordovaPreferences.contains(SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE)) {
-      configBuilder.setHandlePushDeepLinksAutomatically(cordovaPreferences.getBoolean(SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE, true));
-    }
-    if (cordovaPreferences.contains(AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE)) {
-      configBuilder.setIsFirebaseCloudMessagingRegistrationEnabled(cordovaPreferences.getBoolean(AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE, true));
-    }
-    if (cordovaPreferences.contains(FCM_SENDER_ID_PREFERENCE)) {
-      configBuilder.setFirebaseCloudMessagingSenderIdKey(parseNumericPreferenceAsString(cordovaPreferences.getString(FCM_SENDER_ID_PREFERENCE, null)));
-    }
-
-    Appboy.configure(mApplicationContext, configBuilder.build());
+    mPluginInitializationFinished = true;
   }
 
   @Override
   public boolean execute(final String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
+    initializePluginIfAppropriate();
     Log.i(TAG, "Received " + action + " with the following arguments: " + args);
 
     // Appboy methods
@@ -312,12 +255,14 @@ public class AppboyPlugin extends CordovaPlugin {
   @Override
   public void onPause(boolean multitasking) {
     super.onPause(multitasking);
+    initializePluginIfAppropriate();
     AppboyInAppMessageManager.getInstance().unregisterInAppMessageManager(this.cordova.getActivity());
   }
 
   @Override
   public void onResume(boolean multitasking) {
     super.onResume(multitasking);
+    initializePluginIfAppropriate();
     // Registers the AppboyInAppMessageManager for the current Activity. This Activity will now listen for
     // in-app messages from Appboy.
     AppboyInAppMessageManager.getInstance().registerInAppMessageManager(this.cordova.getActivity());
@@ -326,13 +271,85 @@ public class AppboyPlugin extends CordovaPlugin {
   @Override
   public void onStart() {
     super.onStart();
+    initializePluginIfAppropriate();
     Appboy.getInstance(mApplicationContext).openSession(this.cordova.getActivity());
   }
 
   @Override
   public void onStop() {
     super.onStop();
+    initializePluginIfAppropriate();
     Appboy.getInstance(mApplicationContext).closeSession(this.cordova.getActivity());
+  }
+
+  /**
+   * Calls {@link AppboyPlugin#pluginInitialize()} if {@link AppboyPlugin#mPluginInitializationFinished} is false.
+   */
+  private void initializePluginIfAppropriate() {
+    if (!mPluginInitializationFinished) {
+      pluginInitialize();
+    }
+  }
+
+  /**
+   * Calls {@link Appboy#configure(Context, AppboyConfig)} using the values found from the {@link CordovaPreferences}.
+   *
+   * @param cordovaPreferences the preferences used to initialize this plugin
+   */
+  private void configureAppboyFromCordovaPreferences(CordovaPreferences cordovaPreferences) {
+    AppboyLogger.d(TAG, "Setting Cordova preferences: " + cordovaPreferences.getAll());
+
+    // Set the log level
+    if (cordovaPreferences.contains(APPBOY_LOG_LEVEL_PREFERENCE)) {
+      AppboyLogger.setLogLevel(cordovaPreferences.getInteger(APPBOY_LOG_LEVEL_PREFERENCE, Log.INFO));
+    }
+
+    // Set the custom endpoint
+    if (cordovaPreferences.contains(CUSTOM_API_ENDPOINT_PREFERENCE)) {
+      final String customApiEndpoint = cordovaPreferences.getString(CUSTOM_API_ENDPOINT_PREFERENCE, "");
+      if (!customApiEndpoint.equals("")) {
+        Appboy.setAppboyEndpointProvider(new IAppboyEndpointProvider() {
+          @Override
+          public Uri getApiEndpoint(Uri appboyEndpoint) {
+            return appboyEndpoint.buildUpon()
+                .authority(customApiEndpoint).build();
+          }
+        });
+      }
+    }
+
+    // Set the values used in the config builder
+    AppboyConfig.Builder configBuilder = new AppboyConfig.Builder();
+
+    // Set the flavor
+    configBuilder.setSdkFlavor(SdkFlavor.CORDOVA);
+
+    if (cordovaPreferences.contains(APPBOY_API_KEY_PREFERENCE)) {
+      configBuilder.setApiKey(cordovaPreferences.getString(APPBOY_API_KEY_PREFERENCE, null));
+    }
+    if (cordovaPreferences.contains(SMALL_NOTIFICATION_ICON_PREFERENCE)) {
+      configBuilder.setSmallNotificationIcon(cordovaPreferences.getString(SMALL_NOTIFICATION_ICON_PREFERENCE, null));
+    }
+    if (cordovaPreferences.contains(LARGE_NOTIFICATION_ICON_PREFERENCE)) {
+      configBuilder.setLargeNotificationIcon(cordovaPreferences.getString(LARGE_NOTIFICATION_ICON_PREFERENCE, null));
+    }
+    if (cordovaPreferences.contains(DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE)) {
+      configBuilder.setDefaultNotificationAccentColor(parseNumericPreferenceAsInteger(cordovaPreferences.getString(DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE, "0")));
+    }
+    if (cordovaPreferences.contains(DEFAULT_SESSION_TIMEOUT_PREFERENCE)) {
+      configBuilder.setSessionTimeout(parseNumericPreferenceAsInteger(cordovaPreferences.getString(DEFAULT_SESSION_TIMEOUT_PREFERENCE, "10")));
+    }
+    if (cordovaPreferences.contains(SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE)) {
+      configBuilder.setHandlePushDeepLinksAutomatically(cordovaPreferences.getBoolean(SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE, true));
+    }
+    if (cordovaPreferences.contains(AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE)) {
+      configBuilder.setIsFirebaseCloudMessagingRegistrationEnabled(cordovaPreferences.getBoolean(AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE, true));
+    }
+    if (cordovaPreferences.contains(FCM_SENDER_ID_PREFERENCE)) {
+      configBuilder.setFirebaseCloudMessagingSenderIdKey(parseNumericPreferenceAsString(cordovaPreferences.getString(FCM_SENDER_ID_PREFERENCE, null)));
+    }
+
+    Appboy.configure(mApplicationContext, configBuilder.build());
   }
 
   private boolean handleNewsFeedGetters(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {

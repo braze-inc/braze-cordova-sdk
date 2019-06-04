@@ -2,6 +2,7 @@
 #import <AppboyKit.h>
 #import <ABKAttributionData.h>
 #import "AppDelegate+Appboy.h"
+#import "IDFADelegate.h"
 #import <AppboyNewsFeed.h>
 
 @interface AppboyPlugin() <ABKAppboyEndpointDelegate>
@@ -9,6 +10,7 @@
   @property NSString *disableAutomaticPushRegistration;
   @property NSString *disableAutomaticPushHandling;
   @property NSString *apiEndpoint;
+  @property NSString *enableIDFACollection;
 @end
 
 @implementation AppboyPlugin
@@ -23,6 +25,7 @@
   self.disableAutomaticPushRegistration = settings[@"com.appboy.ios_disable_automatic_push_registration"];
   self.disableAutomaticPushHandling = settings[@"com.appboy.ios_disable_automatic_push_handling"];
   self.apiEndpoint = settings[@"com.appboy.ios_api_endpoint"];
+  self.enableIDFACollection = settings[@"com.appboy.ios_enable_idfa_automatic_collection"];
 
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFinishLaunchingListener:) name:UIApplicationDidFinishLaunchingNotification object:nil];
   if (![self.disableAutomaticPushHandling isEqualToString:@"YES"]) {
@@ -36,6 +39,13 @@
   // Add the endpoint only if it's non nil
   if (self.apiEndpoint != nil) {
     [appboyLaunchOptions setValue:self forKey: ABKAppboyEndpointDelegateKey];
+  }
+
+  // Set the IDFA delegate for the plugin
+  if ([self.enableIDFACollection isEqualToString:@"YES"]) {
+    NSLog(@"IDFA collection enabled. Using plugin IDFA delegate.");
+    IDFADelegate *idfaDelegate = [[IDFADelegate alloc] init];
+    appboyLaunchOptions[ABKIDFADelegateKey] = idfaDelegate;
   }
 
   [Appboy startWithApiKey:self.APIKey

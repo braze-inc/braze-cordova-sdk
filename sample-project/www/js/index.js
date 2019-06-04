@@ -94,6 +94,10 @@ function logCustomEvent() {
     properties["Three"] = "Can't Hide Love";
     AppboyPlugin.logCustomEvent("cordovaCustomEventWithProperties", properties);
     AppboyPlugin.logCustomEvent("cordovaCustomEventWithoutProperties");
+    AppboyPlugin.logCustomEvent("cordovaCustomEventWithFloatProperties", {
+        "Cart Value": 4.95,
+        "Cart Item Name": "Spicy Chicken Bites 5 pack"
+    });
     showTextBubble("Logged custom event");
 }
 

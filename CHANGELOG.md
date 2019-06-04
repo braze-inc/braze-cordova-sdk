@@ -1,3 +1,20 @@
+## 2.10.0
+
+#### Changed
+- Updated Braze iOS version to 3.14.1.
+
+##### Added
+- Added ability for plugin to automatically collect the IDFA information on iOS. To enable, set `com.appboy.ios_enable_idfa_automatic_collection` to `YES` in your `config.xml` project file.
+  - ```
+    <platform name="ios">
+        <preference name="com.appboy.ios_enable_idfa_automatic_collection" value="YES" />
+    </platform>
+    ```
+
+#### Fixed
+- Fixed an issue in the Android plugin where the Braze SDK could be invoked before `pluginInitialize` was called by Cordova. The plugin now explicitly initializes the SDK before any SDK or Android lifecycle methods are called.
+  - Fixes https://github.com/Appboy/appboy-cordova-sdk/issues/38
+
 ## 2.9.0
 
 #### Changed
