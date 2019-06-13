@@ -16,7 +16,7 @@
 @implementation AppboyPlugin
 
 - (NSString *) getApiEndpoint:(NSString *)appboyApiEndpoint {
-  return [appboyApiEndpoint stringByReplacingOccurrencesOfString:@"dev.appboy.com" withString:self.apiEndpoint];
+  return [appboyApiEndpoint stringByReplacingOccurrencesOfString:@"sdk.iad-01.braze.com" withString:self.apiEndpoint];
 }
 
 - (void)pluginInitialize {

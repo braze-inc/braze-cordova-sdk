@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-  id="cordova-plugin-appboy" version="2.10.0">
+  id="cordova-plugin-appboy" version="2.10.1">
   <name>Device</name>
   <description>Appboy Cordova SDK</description>
   <license>MIT</license>

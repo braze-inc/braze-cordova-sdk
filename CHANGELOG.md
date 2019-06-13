@@ -1,3 +1,8 @@
+## 2.10.1
+
+#### Fixed
+- Fixed an issue in the iOS plugin where custom endpoints were not correctly getting substituted for the actual server endpoints. 
+
 ## 2.10.0
 
 #### Changed
