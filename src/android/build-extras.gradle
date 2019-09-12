@@ -5,7 +5,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.appboy:android-sdk-ui:3.2.2'
+    compile 'com.appboy:android-sdk-ui:3.7.0'
     compile 'com.google.firebase:firebase-core:16.0.8'
     compile 'com.google.firebase:firebase-messaging:17.6.0'
 }

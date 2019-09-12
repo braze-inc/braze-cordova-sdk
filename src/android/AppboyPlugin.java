@@ -2,12 +2,10 @@ package com.appboy.cordova;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.util.Log;
 
 import com.appboy.Appboy;
 import com.appboy.AppboyUser;
-import com.appboy.IAppboyEndpointProvider;
 import com.appboy.configuration.AppboyConfig;
 import com.appboy.enums.CardCategory;
 import com.appboy.enums.Gender;
@@ -50,6 +48,8 @@ public class AppboyPlugin extends CordovaPlugin {
   private static final String DEFAULT_SESSION_TIMEOUT_PREFERENCE = "com.appboy.android_default_session_timeout";
   private static final String SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE = "com.appboy.android_handle_push_deep_links_automatically";
   private static final String CUSTOM_API_ENDPOINT_PREFERENCE = "com.appboy.android_api_endpoint";
+  private static final String ENABLE_LOCATION_PREFERENCE = "com.appboy.enable_location_collection";
+  private static final String ENABLE_GEOFENCES_PREFERENCE = "com.appboy.geofences_enabled";
 
   // Numeric preference prefix
   private static final String NUMERIC_PREFERENCE_PREFIX = "str_";
@@ -113,9 +113,6 @@ public class AppboyPlugin extends CordovaPlugin {
         Appboy.getInstance(mApplicationContext).logPurchase(args.getString(0), currencyCode, new BigDecimal(args.getDouble(1)), quantity, properties);
         return true;
       }
-      case "submitFeedback":
-        Appboy.getInstance(mApplicationContext).submitFeedback(args.getString(0), args.getString(1), args.getBoolean(2));
-        return true;
       case "wipeData":
         Appboy.wipeData(mApplicationContext);
         return true;
@@ -240,8 +237,6 @@ public class AppboyPlugin extends CordovaPlugin {
         Intent intent = new Intent(mApplicationContext, AppboyFeedActivity.class);
         this.cordova.getActivity().startActivity(intent);
         return true;
-      case "launchFeedback":
-        Log.i(TAG, "Launch feedback actions are not currently supported on Android. Doing nothing.");
     }
 
     // News Feed data
@@ -308,13 +303,10 @@ public class AppboyPlugin extends CordovaPlugin {
     if (cordovaPreferences.contains(CUSTOM_API_ENDPOINT_PREFERENCE)) {
       final String customApiEndpoint = cordovaPreferences.getString(CUSTOM_API_ENDPOINT_PREFERENCE, "");
       if (!customApiEndpoint.equals("")) {
-        Appboy.setAppboyEndpointProvider(new IAppboyEndpointProvider() {
-          @Override
-          public Uri getApiEndpoint(Uri appboyEndpoint) {
-            return appboyEndpoint.buildUpon()
-                .authority(customApiEndpoint).build();
-          }
-        });
+        Appboy.setAppboyEndpointProvider(appboyEndpoint ->
+            appboyEndpoint.buildUpon()
+            .authority(customApiEndpoint).build()
+        );
       }
     }
 
@@ -347,6 +339,12 @@ public class AppboyPlugin extends CordovaPlugin {
     }
     if (cordovaPreferences.contains(FCM_SENDER_ID_PREFERENCE)) {
       configBuilder.setFirebaseCloudMessagingSenderIdKey(parseNumericPreferenceAsString(cordovaPreferences.getString(FCM_SENDER_ID_PREFERENCE, null)));
+    }
+    if (cordovaPreferences.contains(ENABLE_LOCATION_PREFERENCE)) {
+      configBuilder.setIsLocationCollectionEnabled(cordovaPreferences.getBoolean(ENABLE_LOCATION_PREFERENCE, false));
+    }
+    if (cordovaPreferences.contains(ENABLE_GEOFENCES_PREFERENCE)) {
+      configBuilder.setGeofencesEnabled(cordovaPreferences.getBoolean(ENABLE_GEOFENCES_PREFERENCE, false));
     }
 
     Appboy.configure(mApplicationContext, configBuilder.build());

@@ -23,6 +23,8 @@
         <preference name="com.appboy.android_default_session_timeout" value="str_5" />
         <preference name="com.appboy.android_handle_push_deep_links_automatically" value="true" />
         <preference name="com.appboy.android_log_level" value="0" />
+        <preference name="com.appboy.enable_location_collection" value="false" />
+        <preference name="com.appboy.geofences_enabled" value="false" />
     </platform>
     <platform name="ios">
         <allow-intent href="itms:*" />
@@ -30,6 +32,8 @@
         <preference name="com.appboy.api_key" value="06a4b5d1-099b-4910-9604-583ac8f2dc10" />
         <preference name="com.appboy.ios_disable_automatic_push_registration" value="NO" />
         <preference name="com.appboy.ios_enable_idfa_automatic_collection" value="YES" />
+        <preference name="com.appboy.enable_location_collection" value="NO" />
+        <preference name="com.appboy.geofences_enabled" value="NO" />
         <preference name="deployment-target" value="9.0" />
     </platform>
     <plugin name="cordova-plugin-whitelist" spec="1" />

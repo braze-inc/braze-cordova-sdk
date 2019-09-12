@@ -95,16 +95,6 @@ AppboyPlugin.prototype.logPurchase = function (productId, price, currencyCode, q
 	cordova.exec(null, null, "AppboyPlugin", "logPurchase", [productId, price, currencyCode, quantity, purchaseProperties]);
 }
 
-/**
- * Submits feedback to Appboy.
- * @param {string} email - The email of the user submitting feedback.
- * @param {string} feedback - The content of the user feedback.
- * @param {boolean} isBug - If the feedback is reporting a bug or not.
- */
-AppboyPlugin.prototype.submitFeedback = function (email, feedback, isBug) {
-	cordova.exec(null, null, "AppboyPlugin", "submitFeedback", [email, feedback, isBug]);
-}
-
 // Appboy user methods
 /**
  * Sets the attribution information for the user. For in apps that have an install tracking integration.
@@ -292,13 +282,6 @@ AppboyPlugin.prototype.launchNewsFeed = function () {
  */
 AppboyPlugin.prototype.getNewsFeed = function (successCallback, errorCallback) {
   cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getNewsFeed", ['all']);
-}
-
-/**
- * Launches the Feedback UI element.  Not currently supported on Android.
- */
-AppboyPlugin.prototype.launchFeedback = function () {
-	cordova.exec(null, null, "AppboyPlugin", "launchFeedback", []);
 }
 
 // News Feed methods

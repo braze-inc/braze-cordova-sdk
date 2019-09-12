@@ -5,19 +5,17 @@
 #import "IDFADelegate.h"
 #import <AppboyNewsFeed.h>
 
-@interface AppboyPlugin() <ABKAppboyEndpointDelegate>
+@interface AppboyPlugin()
   @property NSString *APIKey;
   @property NSString *disableAutomaticPushRegistration;
   @property NSString *disableAutomaticPushHandling;
   @property NSString *apiEndpoint;
   @property NSString *enableIDFACollection;
+  @property NSString *enableLocationCollection;
+  @property NSString *enableGeofences;
 @end
 
 @implementation AppboyPlugin
-
-- (NSString *) getApiEndpoint:(NSString *)appboyApiEndpoint {
-  return [appboyApiEndpoint stringByReplacingOccurrencesOfString:@"sdk.iad-01.braze.com" withString:self.apiEndpoint];
-}
 
 - (void)pluginInitialize {
   NSDictionary *settings = self.commandDelegate.settings;
@@ -26,6 +24,8 @@
   self.disableAutomaticPushHandling = settings[@"com.appboy.ios_disable_automatic_push_handling"];
   self.apiEndpoint = settings[@"com.appboy.ios_api_endpoint"];
   self.enableIDFACollection = settings[@"com.appboy.ios_enable_idfa_automatic_collection"];
+  self.enableLocationCollection = settings[@"com.appboy.enable_location_collection"];
+  self.enableGeofences = settings[@"com.appboy.geofences_enabled"];
 
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFinishLaunchingListener:) name:UIApplicationDidFinishLaunchingNotification object:nil];
   if (![self.disableAutomaticPushHandling isEqualToString:@"YES"]) {
@@ -36,9 +36,13 @@
 - (void)didFinishLaunchingListener:(NSNotification *)notification {
   NSMutableDictionary *appboyLaunchOptions = [@{ABKSDKFlavorKey : @(CORDOVA)} mutableCopy];
 
+  // Set location collection and geofences from preferences
+  appboyLaunchOptions[ABKEnableAutomaticLocationCollectionKey] = self.enableLocationCollection;
+  appboyLaunchOptions[ABKEnableGeofencesKey] = self.enableGeofences;
+
   // Add the endpoint only if it's non nil
   if (self.apiEndpoint != nil) {
-    [appboyLaunchOptions setValue:self forKey: ABKAppboyEndpointDelegateKey];
+    appboyLaunchOptions[ABKEndpointKey] = self.apiEndpoint;
   }
 
   // Set the IDFA delegate for the plugin
@@ -85,13 +89,6 @@
 - (void)changeUser:(CDVInvokedUrlCommand *)command {
   NSString *userId = [command argumentAtIndex:0 withDefault:nil];
   [[Appboy sharedInstance] changeUser:userId];
-}
-
-- (void)submitFeedback:(CDVInvokedUrlCommand *)command {
-  NSString *email = [command argumentAtIndex:0 withDefault:nil];
-  NSString *message = [command argumentAtIndex:1 withDefault:nil];
-  BOOL isReportingABug = [[command argumentAtIndex:2 withDefault:nil] boolValue];
-  [[Appboy sharedInstance] submitFeedback:email message:message isReportingABug:isReportingABug];
 }
 
 - (void)logCustomEvent:(CDVInvokedUrlCommand *)command {
@@ -320,10 +317,6 @@
   }
 
   [self sendCordovaSuccessPluginResultWithArray:result andCommand:command];
-}
-
-- (void) launchFeedback:(CDVInvokedUrlCommand *)command {
-  // Feedback is deprecated
 }
 
 /*-------News Feed-------*/

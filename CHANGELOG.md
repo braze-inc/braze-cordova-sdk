@@ -1,3 +1,20 @@
+## 2.11.0
+
+#### Breaking
+- Updated to [Braze iOS SDK 3.20.0](https://github.com/Appboy/appboy-ios-sdk/releases/tag/3.20.0).
+- **Important:** Braze iOS SDK 3.20.0 contains updated push token registration methods. We recommend upgrading to this version as soon as possible to ensure a smooth transition as devices upgrade to iOS 13.
+- Removes the Feedback feature.
+  - `submitFeedback()` and `launchFeedback()` have been removed from the `AppboyPlugin` interface.
+- Updated to [Braze Android SDK 3.7.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v3.7.0).
+
+#### Added
+- Added ability to configure location collection in preferences. Braze location collection is now disabled by default.
+  - Set `com.appboy.enable_location_collection` to `true/false` on Android.
+  - Set `com.appboy.enable_location_collection` to `YES/NO` on iOS.
+- Added ability to configure geofences in preferences. Note that the geofences branch is still required to use Braze Geofences out of the box.
+  - Set `com.appboy.geofences_enabled` to `true/false` on Android.
+  - Set `com.appboy.geofences_enabled` to `YES/NO` on iOS.
+  
 ## 2.10.1
 
 #### Fixed
@@ -5,8 +22,8 @@
 
 ## 2.10.0
 
-#### Changed
-- Updated Braze iOS version to 3.14.1.
+#### Breaking
+- Updated to [Braze iOS SDK 3.14.1](https://github.com/Appboy/appboy-ios-sdk/releases/tag/3.14.1).
 
 ##### Added
 - Added ability for plugin to automatically collect the IDFA information on iOS. To enable, set `com.appboy.ios_enable_idfa_automatic_collection` to `YES` in your `config.xml` project file.
@@ -22,9 +39,11 @@
 
 ## 2.9.0
 
+#### Breaking
+- Updated to [Braze iOS SDK 3.14.0](https://github.com/Appboy/appboy-ios-sdk/releases/tag/3.14.0).
+- Updated to [Braze Android SDK 3.2.2](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#322).
+
 #### Changed
-- Updated Braze iOS version to 3.14.0.
-- Updated Braze Android version to 3.2.2.
 - Changed the iOS plugin to use Cocoapods instead of a framework integration.
 - Improved the look and feel of in-app messages to adhere to the latest UX and UI best practices. Changes affect font sizes, padding, and responsiveness across all message types. Now supports button border styling.
 

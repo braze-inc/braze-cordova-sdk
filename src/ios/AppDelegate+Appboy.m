@@ -73,14 +73,12 @@
 
 - (void)appboy_swizzled_application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
     [self appboy_swizzled_application:application didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
-    [[Appboy sharedInstance] registerPushToken:
-               [NSString stringWithFormat:@"%@", deviceToken]];
+    [[Appboy sharedInstance] registerDeviceToken:deviceToken];
 }
 
 - (void)appboy_swizzled_no_application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
   // If the delegate is not implemented, swizzle the method but don't call the original (or we'd get in a loop)
-  [[Appboy sharedInstance] registerPushToken:
-   [NSString stringWithFormat:@"%@", deviceToken]];
+  [[Appboy sharedInstance] registerDeviceToken:deviceToken];
 }
 
 - (void)appboy_swizzled_application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
