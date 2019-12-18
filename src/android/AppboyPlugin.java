@@ -12,18 +12,21 @@ import com.appboy.enums.Gender;
 import com.appboy.enums.Month;
 import com.appboy.enums.NotificationSubscriptionType;
 import com.appboy.enums.SdkFlavor;
+import com.appboy.events.ContentCardsUpdatedEvent;
 import com.appboy.events.FeedUpdatedEvent;
 import com.appboy.events.IEventSubscriber;
 import com.appboy.models.cards.Card;
 import com.appboy.models.outgoing.AppboyProperties;
 import com.appboy.models.outgoing.AttributionData;
 import com.appboy.support.AppboyLogger;
+import com.appboy.ui.activities.AppboyContentCardsActivity;
 import com.appboy.ui.activities.AppboyFeedActivity;
 import com.appboy.ui.inappmessage.AppboyInAppMessageManager;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaPreferences;
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -54,14 +57,22 @@ public class AppboyPlugin extends CordovaPlugin {
   // Numeric preference prefix
   private static final String NUMERIC_PREFERENCE_PREFIX = "str_";
 
-  // Method names
+  // News Feed method names
   private static final String GET_NEWS_FEED_METHOD = "getNewsFeed";
   private static final String GET_CARD_COUNT_FOR_CATEGORIES_METHOD = "getCardCountForCategories";
   private static final String GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD = "getUnreadCardCountForCategories";
 
+  // Content Card method names
+  private static final String GET_CONTENT_CARDS_FROM_SERVER_METHOD = "getContentCardsFromServer";
+  private static final String GET_CONTENT_CARDS_FROM_CACHE_METHOD = "getContentCardsFromCache";
+  private static final String LOG_CONTENT_CARDS_DISPLAYED_METHOD = "logContentCardsDisplayed";
+  private static final String LOG_CONTENT_CARDS_CLICKED_METHOD = "logContentCardClicked";
+  private static final String LOG_CONTENT_CARDS_IMPRESSION_METHOD = "logContentCardImpression";
+  private static final String LOG_CONTENT_CARDS_DISMISSED_METHOD = "logContentCardDismissed";
+
   private boolean mPluginInitializationFinished = false;
   private Context mApplicationContext;
-  private Map<String, IEventSubscriber<FeedUpdatedEvent>> mFeedSubscriberMap = new ConcurrentHashMap<String, IEventSubscriber<FeedUpdatedEvent>>();
+  private Map<String, IEventSubscriber<FeedUpdatedEvent>> mFeedSubscriberMap = new ConcurrentHashMap<>();
 
   @Override
   protected void pluginInitialize() {
@@ -124,6 +135,9 @@ public class AppboyPlugin extends CordovaPlugin {
         return true;
       case "requestImmediateDataFlush":
         Appboy.getInstance(mApplicationContext).requestImmediateDataFlush();
+        return true;
+      case "requestContentCardsRefresh":
+        Appboy.getInstance(mApplicationContext).requestContentCardsRefresh(false);
         return true;
     }
 
@@ -232,18 +246,41 @@ public class AppboyPlugin extends CordovaPlugin {
     }
 
     // Launching activities
+    Intent intent;
     switch (action) {
       case "launchNewsFeed":
-        Intent intent = new Intent(mApplicationContext, AppboyFeedActivity.class);
+        intent = new Intent(mApplicationContext, AppboyFeedActivity.class);
+        this.cordova.getActivity().startActivity(intent);
+        return true;
+      case "launchContentCards":
+        intent = new Intent(mApplicationContext, AppboyContentCardsActivity.class);
         this.cordova.getActivity().startActivity(intent);
         return true;
     }
 
     // News Feed data
-    if (action.equals(GET_CARD_COUNT_FOR_CATEGORIES_METHOD) || action.equals(GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD) || action.equals(GET_NEWS_FEED_METHOD)) {
-      return handleNewsFeedGetters(action, args, callbackContext);
+    switch (action) {
+      case GET_NEWS_FEED_METHOD:
+      case GET_CARD_COUNT_FOR_CATEGORIES_METHOD:
+      case GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD:
+        return handleNewsFeedGetters(action, args, callbackContext);
     }
 
+    // Content Cards data
+    switch (action) {
+      case GET_CONTENT_CARDS_FROM_SERVER_METHOD:
+      case GET_CONTENT_CARDS_FROM_CACHE_METHOD:
+        return handleContentCardsUpdateGetters(action, callbackContext);
+      case LOG_CONTENT_CARDS_DISPLAYED_METHOD:
+        Appboy.getInstance(mApplicationContext).logContentCardsDisplayed();
+        return true;
+      case LOG_CONTENT_CARDS_CLICKED_METHOD:
+      case LOG_CONTENT_CARDS_DISMISSED_METHOD:
+      case LOG_CONTENT_CARDS_IMPRESSION_METHOD:
+        return handleContentCardsLogMethods(action, args, callbackContext);
+    }
+
+    Log.d(TAG, "Failed to execute for action: " + action);
     return false;
   }
 
@@ -357,67 +394,143 @@ public class AppboyPlugin extends CordovaPlugin {
     final Appboy mAppboy = Appboy.getInstance(mApplicationContext);
     final String callbackId = callbackContext.getCallbackId();
 
-    if (action.equals(GET_CARD_COUNT_FOR_CATEGORIES_METHOD)) {
-      final EnumSet<CardCategory> categories = getCategoriesFromJSONArray(args);
+    switch (action) {
+      case GET_CARD_COUNT_FOR_CATEGORIES_METHOD: {
+        final EnumSet<CardCategory> categories = getCategoriesFromJSONArray(args);
 
-      feedUpdatedSubscriber = event -> {
-        // Each callback context is by default made to only be called once and is afterwards "finished". We want to ensure
-        // that we never try to call the same callback twice. This could happen since we don't know the ordering of the feed
-        // subscription callbacks from the cache.
-        if (!callbackContext.isFinished()) {
-          callbackContext.success(event.getCardCount(categories));
-        }
-
-        // Remove this listener from the map and from Appboy
-        mAppboy.removeSingleSubscription(mFeedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
-        mFeedSubscriberMap.remove(callbackId);
-      };
-      requestingFeedUpdateFromCache = true;
-    } else if (action.equals(GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD)) {
-      final EnumSet<CardCategory> categories = getCategoriesFromJSONArray(args);
-
-      feedUpdatedSubscriber = event -> {
-        if (!callbackContext.isFinished()) {
-          callbackContext.success(event.getUnreadCardCount(categories));
-        }
-
-        // Remove this listener from the map and from Appboy
-        mAppboy.removeSingleSubscription(mFeedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
-        mFeedSubscriberMap.remove(callbackId);
-      };
-      requestingFeedUpdateFromCache = true;
-    } else if (action.equals(GET_NEWS_FEED_METHOD)) {
-      final EnumSet<CardCategory> categories = getCategoriesFromJSONArray(args);
-
-      feedUpdatedSubscriber = event -> {
-        if (!callbackContext.isFinished()) {
-          List<Card> cards = event.getFeedCards(categories);
-          JSONArray result = new JSONArray();
-
-          for (int i = 0; i < cards.size(); i++) {
-            result.put(cards.get(i).forJsonPut());
+        feedUpdatedSubscriber = event -> {
+          // Each callback context is by default made to only be called once and is afterwards "finished". We want to ensure
+          // that we never try to call the same callback twice. This could happen since we don't know the ordering of the feed
+          // subscription callbacks from the cache.
+          if (!callbackContext.isFinished()) {
+            callbackContext.success(event.getCardCount(categories));
           }
 
-          callbackContext.success(result);
-        }
+          // Remove this listener from the map and from Appboy
+          mAppboy.removeSingleSubscription(mFeedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
+          mFeedSubscriberMap.remove(callbackId);
+        };
+        requestingFeedUpdateFromCache = true;
+        break;
+      }
+      case GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD: {
+        final EnumSet<CardCategory> categories = getCategoriesFromJSONArray(args);
 
-        // Remove this listener from the map and from Appboy
-        mAppboy.removeSingleSubscription(mFeedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
-        mFeedSubscriberMap.remove(callbackId);
-      };
-      requestingFeedUpdateFromCache = false;
+        feedUpdatedSubscriber = event -> {
+          if (!callbackContext.isFinished()) {
+            callbackContext.success(event.getUnreadCardCount(categories));
+          }
+
+          // Remove this listener from the map and from Appboy
+          mAppboy.removeSingleSubscription(mFeedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
+          mFeedSubscriberMap.remove(callbackId);
+        };
+        requestingFeedUpdateFromCache = true;
+        break;
+      }
+      case GET_NEWS_FEED_METHOD: {
+        final EnumSet<CardCategory> categories = getCategoriesFromJSONArray(args);
+
+        feedUpdatedSubscriber = event -> {
+          if (!callbackContext.isFinished()) {
+            List<Card> cards = event.getFeedCards(categories);
+            JSONArray result = new JSONArray();
+
+            for (int i = 0; i < cards.size(); i++) {
+              result.put(cards.get(i).forJsonPut());
+            }
+
+            callbackContext.success(result);
+          }
+
+          // Remove this listener from the map and from Appboy
+          mAppboy.removeSingleSubscription(mFeedSubscriberMap.get(callbackId), FeedUpdatedEvent.class);
+          mFeedSubscriberMap.remove(callbackId);
+        };
+        requestingFeedUpdateFromCache = false;
+        break;
+      }
     }
 
-    // Put the subscriber into a map so we can remove it later from future subscriptions
-    mFeedSubscriberMap.put(callbackId, feedUpdatedSubscriber);
-    mAppboy.subscribeToFeedUpdates(feedUpdatedSubscriber);
+    if (feedUpdatedSubscriber != null) {
+      // Put the subscriber into a map so we can remove it later from future subscriptions
+      mFeedSubscriberMap.put(callbackId, feedUpdatedSubscriber);
+      mAppboy.subscribeToFeedUpdates(feedUpdatedSubscriber);
 
-    if (requestingFeedUpdateFromCache) {
-      mAppboy.requestFeedRefreshFromCache();
-    } else {
-      mAppboy.requestFeedRefresh();
+      if (requestingFeedUpdateFromCache) {
+        mAppboy.requestFeedRefreshFromCache();
+      } else {
+        mAppboy.requestFeedRefresh();
+      }
     }
 
+    return true;
+  }
+
+  private boolean handleContentCardsUpdateGetters(String action, final CallbackContext callbackContext) {
+    // Setup a one-time subscriber for the update event
+    final IEventSubscriber<ContentCardsUpdatedEvent> subscriber = new IEventSubscriber<ContentCardsUpdatedEvent>() {
+      @Override
+      public void trigger(ContentCardsUpdatedEvent event) {
+        Appboy.getInstance(mApplicationContext).removeSingleSubscription(this, ContentCardsUpdatedEvent.class);
+
+        // Map the content cards to JSON and return to the client
+        callbackContext.success(ContentCardUtils.mapContentCards(event.getAllCards()));
+      }
+    };
+    Appboy.getInstance(mApplicationContext).subscribeToContentCardsUpdates(subscriber);
+    final boolean updateFromCache = action.equals(GET_CONTENT_CARDS_FROM_CACHE_METHOD);
+    Appboy.getInstance(mApplicationContext).requestContentCardsRefresh(updateFromCache);
+    return true;
+  }
+
+  private boolean handleContentCardsLogMethods(String action, JSONArray args, final CallbackContext callbackContext) {
+    final Appboy appboy = Appboy.getInstance(mApplicationContext);
+    final String cardId;
+
+    if (args.length() != 1) {
+      Log.d(TAG, "Cannot handle logging method for " + action + " due to improper number of arguments. Args: " + args);
+      callbackContext.error("Failed for action " + action);
+      return false;
+    }
+
+    try {
+      cardId = args.getString(0);
+    } catch (JSONException e) {
+      Log.e(TAG, "Failed to parse card id from args: " + args, e);
+      callbackContext.error("Failed for action " + action);
+      return false;
+    }
+
+    // Get the list of cards
+    // Only obtaining the current list of cached cards is ok since
+    // no id passed in could refer to a card on the server that isn't
+    // contained in the list of cached cards
+    final List<Card> cachedContentCards = appboy.getCachedContentCards();
+
+    // Get the desired card by its id
+    final Card desiredCard = ContentCardUtils.getCardById(cachedContentCards, cardId);
+    if (desiredCard == null) {
+      Log.w(TAG, "Couldn't find card in list of cached cards");
+      callbackContext.error("Failed for action " + action);
+      return false;
+    }
+
+    // Perform the appropriate action to the card
+    switch (action) {
+      case LOG_CONTENT_CARDS_CLICKED_METHOD:
+        desiredCard.logClick();
+        break;
+      case LOG_CONTENT_CARDS_DISMISSED_METHOD:
+        desiredCard.setIsDismissed(true);
+        break;
+      case LOG_CONTENT_CARDS_IMPRESSION_METHOD:
+        desiredCard.logImpression();
+        break;
+    }
+
+    // Return success to the callback
+    callbackContext.success();
     return true;
   }
 

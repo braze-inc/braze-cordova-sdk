@@ -38,9 +38,20 @@
 
 /*-------Appboy UI-------*/
 - (void) launchNewsFeed:(CDVInvokedUrlCommand *)command;
+- (void) launchContentCards:(CDVInvokedUrlCommand *)command;
 
 /*-------News Feed-------*/
 - (void) getCardCountForCategories:(CDVInvokedUrlCommand *)command;
 - (void) getUnreadCardCountForCategories:(CDVInvokedUrlCommand *)command;
 - (void) getNewsFeed:(CDVInvokedUrlCommand *)command;
+
+/*-------Content Cards-------*/
+- (void) requestContentCardsRefresh:(CDVInvokedUrlCommand *)command;
+- (void) getContentCardsFromServer:(CDVInvokedUrlCommand *)command;
+- (void) getContentCardsFromCache:(CDVInvokedUrlCommand *)command;
+- (void) logContentCardsDisplayed:(CDVInvokedUrlCommand *)command;
+- (void) logContentCardClicked:(CDVInvokedUrlCommand *)command;
+- (void) logContentCardImpression:(CDVInvokedUrlCommand *)command;
+- (void) logContentCardDismissed:(CDVInvokedUrlCommand *)command;
+
 @end

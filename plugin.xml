@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-  id="cordova-plugin-appboy" version="2.12.0">
+  id="cordova-plugin-appboy" version="2.13.0">
   <name>Device</name>
   <description>Appboy Cordova SDK</description>
   <license>MIT</license>
@@ -18,6 +18,7 @@
       </feature>
     </config-file>
     <source-file src="src/android/AppboyPlugin.java" target-dir="src/com/appboy/cordova" />
+    <source-file src="src/android/ContentCardUtils.java" target-dir="src/com/appboy/cordova" />
     <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference" />
     <config-file target="AndroidManifest.xml" parent="/manifest">
       <uses-permission android:name="android.permission.INTERNET" />
@@ -36,7 +37,14 @@
 
   <!-- ios -->
   <platform name="ios">
-    <framework src="Appboy-iOS-SDK" type="podspec" spec="~> 3.20.2" />
+    <podspec>
+      <config>
+        <source url="https://github.com/CocoaPods/Specs.git"/>
+      </config>
+      <pods use-frameworks="true">
+        <pod name="Appboy-iOS-SDK" spec="~> 3.20.2" />
+      </pods>
+    </podspec>
 
     <!-- frameworks -->
     <framework src="libz.dylib" />

@@ -1,3 +1,12 @@
+## 2.13.0
+
+#### Added
+- Added the Content Cards methods `requestContentCardsRefresh(), getContentCardsFromServer(), getContentCardsFromCache(), launchContentCards(), logContentCardsDisplayed(), logContentCardClicked(), logContentCardImpression(), logContentCardDismissed()` to the javascript plugin.
+  - `getContentCardsFromServer(), getContentCardsFromCache()` both take a success and error callback to handle return values.
+
+#### Changed
+- Updated to [Braze Android SDK 4.0.2](https://github.com/Appboy/appboy-android-sdk/releases/tag/v4.0.2).
+
 ## 2.12.0
 
 #### Changed
