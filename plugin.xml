@@ -20,6 +20,9 @@
     <source-file src="src/android/AppboyPlugin.java" target-dir="src/com/appboy/cordova" />
     <source-file src="src/android/ContentCardUtils.java" target-dir="src/com/appboy/cordova" />
     <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference" />
+    <framework src="com.appboy:android-sdk-ui:6.0.0"/>
+    <framework src="com.google.firebase:firebase-core:17.0.0"/>
+    <framework src="com.google.firebase:firebase-messaging:19.0.0"/>
     <config-file target="AndroidManifest.xml" parent="/manifest">
       <uses-permission android:name="android.permission.INTERNET" />
       <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
