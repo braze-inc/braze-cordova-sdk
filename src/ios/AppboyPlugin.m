@@ -1,10 +1,10 @@
 #import "AppboyPlugin.h"
-#import "AppboyKit.h"
-#import "ABKAttributionData.h"
+#import <Appboy_iOS_SDK/AppboyKit.h>
+#import <Appboy_iOS_SDK/ABKAttributionData.h>
 #import "AppDelegate+Appboy.h"
 #import "IDFADelegate.h"
-#import "AppboyNewsFeed.h"
-#import "AppboyContentCards.h"
+#import <Appboy_iOS_SDK/AppboyNewsFeed.h>
+#import <Appboy_iOS_SDK/AppboyContentCards.h>
 
 @interface AppboyPlugin()
   @property NSString *APIKey;

@@ -1,6 +1,6 @@
 #import "AppDelegate+Appboy.h"
 #import <objc/runtime.h>
-#import "AppboyKit.h"
+#import <Appboy_iOS_SDK/AppboyKit.h>
 
 @implementation AppDelegate (appboyNotifications)
 + (void)swizzleHostAppDelegate {

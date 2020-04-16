@@ -1,3 +1,8 @@
+## Unreleased
+
+#### Changed
+- Fix missing headers for iOS build with Cordova CLI [Issue #48](https://github.com/Appboy/appboy-cordova-sdk/issues/48) 
+
 ## 2.13.0
 
 #### Added

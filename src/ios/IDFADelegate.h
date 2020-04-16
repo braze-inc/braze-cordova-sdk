@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
-#import "ABKIDFADelegate.h"
+#import <Appboy_iOS_SDK/ABKIDFADelegate.h>
 
 @interface IDFADelegate : NSObject <ABKIDFADelegate>
 
