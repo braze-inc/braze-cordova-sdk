@@ -1,3 +1,9 @@
+## 2.14.0
+
+#### Changed
+- Reverted iOS plugin to use framework tag in `plugin.xml`.
+- Updated to [Braze Android SDK 7.0.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v7.0.0).
+
 ## 2.13.0
 
 #### Added
