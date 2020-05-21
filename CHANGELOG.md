@@ -1,3 +1,9 @@
+## 2.15.0
+
+#### Changed
+- Updated to [Braze iOS SDK 3.23.0](https://github.com/Appboy/appboy-ios-sdk/releases/tag/3.23.0).
+- Updated to [Braze Android SDK 8.0.1](https://github.com/Appboy/appboy-android-sdk/releases/tag/v8.0.1).
+
 ## 2.14.0
 
 #### Changed

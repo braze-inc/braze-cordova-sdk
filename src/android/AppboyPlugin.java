@@ -126,12 +126,14 @@ public class AppboyPlugin extends CordovaPlugin {
       }
       case "wipeData":
         Appboy.wipeData(mApplicationContext);
+        mPluginInitializationFinished = false;
         return true;
       case "enableSdk":
         Appboy.enableSdk(mApplicationContext);
         return true;
       case "disableSdk":
         Appboy.disableSdk(mApplicationContext);
+        mPluginInitializationFinished = false;
         return true;
       case "requestImmediateDataFlush":
         Appboy.getInstance(mApplicationContext).requestImmediateDataFlush();

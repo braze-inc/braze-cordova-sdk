@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-  id="cordova-plugin-appboy" version="2.14.0">
+  id="cordova-plugin-appboy" version="2.15.0">
   <name>Device</name>
   <description>Appboy Cordova SDK</description>
   <license>MIT</license>
@@ -37,7 +37,7 @@
 
   <!-- ios -->
   <platform name="ios">
-    <framework src="Appboy-iOS-SDK" type="podspec" spec="~> 3.20.2" />
+    <framework src="Appboy-iOS-SDK" type="podspec" spec="~> 3.23.0" />
 
     <!-- frameworks -->
     <framework src="libz.dylib" />
