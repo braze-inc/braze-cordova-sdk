@@ -1,3 +1,12 @@
+## 2.16.0
+
+#### Changed
+- Updated to [Braze Android SDK 8.1.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v8.1.0).
+- Updated to [Braze iOS SDK 3.26.1](https://github.com/Appboy/appboy-ios-sdk/releases/tag/3.26.1).
+
+#### Added
+- Added the ability to display notifications while app is in the foreground in iOS. Within `config.xml` set `com.appboy.display_foreground_push_notifications` to `"YES"` to enable this.
+
 ## 2.15.0
 
 #### Changed

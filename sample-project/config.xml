@@ -34,6 +34,7 @@
         <preference name="com.appboy.ios_enable_idfa_automatic_collection" value="YES" />
         <preference name="com.appboy.enable_location_collection" value="NO" />
         <preference name="com.appboy.geofences_enabled" value="NO" />
+        <preference name="com.appboy.display_foreground_push_notifications" value="YES" />
         <preference name="deployment-target" value="9.0" />
     </platform>
     <plugin name="cordova-plugin-whitelist" spec="1" />

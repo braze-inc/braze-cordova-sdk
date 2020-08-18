@@ -1,6 +1,7 @@
 #import "AppDelegate+Appboy.h"
 #import <objc/runtime.h>
 #import "AppboyKit.h"
+#import "AppboyPlugin.h"
 
 @implementation AppDelegate (appboyNotifications)
 + (void)swizzleHostAppDelegate {
@@ -111,5 +112,15 @@
 
 - (void)appboy_swizzled_no_userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)())completionHandler {
   [[Appboy sharedInstance] userNotificationCenter:center didReceiveNotificationResponse:response withCompletionHandler:completionHandler];
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+       willPresentNotification:(UNNotification *)notification
+         withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler {
+    AppboyPlugin *pluginInstance = [self.viewController getCommandInstance:@"AppboyPlugin"];
+    NSString *enableForegroundNotifications = pluginInstance.commandDelegate.settings[@"com.appboy.display_foreground_push_notifications"];
+    if ([enableForegroundNotifications isEqualToString:@"YES"]) {
+        completionHandler(UNNotificationPresentationOptionAlert);
+    }
 }
 @end
