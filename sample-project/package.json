@@ -8,8 +8,7 @@
       "android"
     ],
     "plugins": {
-      "cordova-plugin-whitelist": {},
-      "cordova-plugin-appboy": {}
+      "cordova-plugin-whitelist": {}
     }
   },
   "dependencies": {
