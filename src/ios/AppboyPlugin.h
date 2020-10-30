@@ -21,6 +21,7 @@
 - (void) setHomeCity:(CDVInvokedUrlCommand *)command;
 - (void) setPhoneNumber:(CDVInvokedUrlCommand *)command;
 - (void) setAvatarImageUrl:(CDVInvokedUrlCommand *)command;
+- (void) setLanguage:(CDVInvokedUrlCommand *)command;
 
 - (void) setPushNotificationSubscriptionType:(CDVInvokedUrlCommand *)command;
 - (void) setEmailNotificationSubscriptionType:(CDVInvokedUrlCommand *)command;
@@ -35,6 +36,7 @@
 - (void) incrementCustomUserAttribute:(CDVInvokedUrlCommand *)command;
 - (void) addToCustomAttributeArray:(CDVInvokedUrlCommand *)command;
 - (void) removeFromCustomAttributeArray:(CDVInvokedUrlCommand *)command;
+- (void) addAlias:(CDVInvokedUrlCommand *)command;
 
 /*-------Appboy UI-------*/
 - (void) launchNewsFeed:(CDVInvokedUrlCommand *)command;

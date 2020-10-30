@@ -198,6 +198,9 @@ public class AppboyPlugin extends CordovaPlugin {
             currentUser.setGender(Gender.FEMALE);
           }
           return true;
+        case "addAlias":
+          currentUser.addAlias(args.getString(0), args.getString(1));
+          return true;
         case "setDateOfBirth":
           Month month = parseMonth(args.getInt(1));
           currentUser.setDateOfBirth(args.getInt(0), month, args.getInt(2));
@@ -244,6 +247,9 @@ public class AppboyPlugin extends CordovaPlugin {
           }
           return true;
         }
+        case "setLanguage":
+          currentUser.setLanguage(args.getString(0));
+          return true;
       }
     }
 

@@ -1,6 +1,18 @@
+## 2.19.0
+
+##### Breaking
+- Updated to [Braze iOS SDK 3.29.1](https://github.com/Appboy/appboy-ios-sdk/releases/tag/3.29.1).
+- Updated to [Braze Android SDK 11.0.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v11.0.0).
+
+##### Fixed
+- Fixed an issue where the plugin would automatically add the In-app Purchase capability to XCode projects.
+
+##### Added
+- Added the methods `addAlias()` and `setLanguage()` to the javascript plugin.
+
 ## 2.18.0
 
-#### Breaking
+##### Breaking
 - Updated to [Braze Android SDK 10.0.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v10.0.0).
 
 ## 2.17.0
@@ -10,37 +22,37 @@
 
 ## 2.16.0
 
-#### Changed
+##### Changed
 - Updated to [Braze Android SDK 8.1.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v8.1.0).
 - Updated to [Braze iOS SDK 3.26.1](https://github.com/Appboy/appboy-ios-sdk/releases/tag/3.26.1).
 
-#### Added
+##### Added
 - Added the ability to display notifications while app is in the foreground in iOS. Within `config.xml` set `com.appboy.display_foreground_push_notifications` to `"YES"` to enable this.
 
 ## 2.15.0
 
-#### Changed
+##### Changed
 - Updated to [Braze iOS SDK 3.23.0](https://github.com/Appboy/appboy-ios-sdk/releases/tag/3.23.0).
 - Updated to [Braze Android SDK 8.0.1](https://github.com/Appboy/appboy-android-sdk/releases/tag/v8.0.1).
 
 ## 2.14.0
 
-#### Changed
+##### Changed
 - Reverted iOS plugin to use framework tag in `plugin.xml`.
 - Updated to [Braze Android SDK 7.0.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v7.0.0).
 
 ## 2.13.0
 
-#### Added
+##### Added
 - Added the Content Cards methods `requestContentCardsRefresh(), getContentCardsFromServer(), getContentCardsFromCache(), launchContentCards(), logContentCardsDisplayed(), logContentCardClicked(), logContentCardImpression(), logContentCardDismissed()` to the javascript plugin.
   - `getContentCardsFromServer(), getContentCardsFromCache()` both take a success and error callback to handle return values.
 
-#### Changed
+##### Changed
 - Updated to [Braze Android SDK 4.0.2](https://github.com/Appboy/appboy-android-sdk/releases/tag/v4.0.2).
 
 ## 2.12.0
 
-#### Changed
+##### Changed
 - Updated to [Braze Android SDK 3.8.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v3.8.0).
 - Pinned Android Gradle plugin version to 3.5.1 in `build-extras.gradle`.
   - Addresses https://github.com/Appboy/appboy-cordova-sdk/issues/46.
@@ -49,28 +61,28 @@
 
 **Important:** This patch updates the Braze iOS SDK Dependency from 3.20.1 to 3.20.2, which contains important bugfixes. Integrators should upgrade to this patch version. Please see the [Braze iOS SDK Changelog](https://github.com/Appboy/appboy-ios-sdk/blob/master/CHANGELOG.md) for more information.
 
-#### Changed
+##### Changed
 - Updated to [Braze iOS SDK 3.20.2](https://github.com/Appboy/appboy-ios-sdk/releases/tag/3.20.2).
 
 ## 2.11.1
 
 **Important:** This release has known issues displaying HTML in-app messages. Do not upgrade to this version and upgrade to 2.11.2 and above instead. If you are using this version, you are strongly encouraged to upgrade to 2.11.2 or above if you make use of HTML in-app messages.
 
-#### Changed
+##### Changed
 - Updated to [Braze iOS SDK 3.20.1](https://github.com/Appboy/appboy-ios-sdk/releases/tag/3.20.1).
 
 ## 2.11.0
 
 **Important:** This release has known issues displaying HTML in-app messages. Do not upgrade to this version and upgrade to 2.11.2 and above instead. If you are using this version, you are strongly encouraged to upgrade to 2.11.2 or above if you make use of HTML in-app messages.
 
-#### Breaking
+##### Breaking
 - Updated to [Braze iOS SDK 3.20.0](https://github.com/Appboy/appboy-ios-sdk/releases/tag/3.20.0).
 - **Important:** Braze iOS SDK 3.20.0 contains updated push token registration methods. We recommend upgrading to this version as soon as possible to ensure a smooth transition as devices upgrade to iOS 13.
 - Removes the Feedback feature.
   - `submitFeedback()` and `launchFeedback()` have been removed from the `AppboyPlugin` interface.
 - Updated to [Braze Android SDK 3.7.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v3.7.0).
 
-#### Added
+##### Added
 - Added ability to configure location collection in preferences. Braze location collection is now disabled by default.
   - Set `com.appboy.enable_location_collection` to `true/false` on Android.
   - Set `com.appboy.enable_location_collection` to `YES/NO` on iOS.
@@ -80,12 +92,12 @@
   
 ## 2.10.1
 
-#### Fixed
+##### Fixed
 - Fixed an issue in the iOS plugin where custom endpoints were not correctly getting substituted for the actual server endpoints. 
 
 ## 2.10.0
 
-#### Breaking
+##### Breaking
 - Updated to [Braze iOS SDK 3.14.1](https://github.com/Appboy/appboy-ios-sdk/releases/tag/3.14.1).
 
 ##### Added
@@ -96,21 +108,21 @@
     </platform>
     ```
 
-#### Fixed
+##### Fixed
 - Fixed an issue in the Android plugin where the Braze SDK could be invoked before `pluginInitialize` was called by Cordova. The plugin now explicitly initializes the SDK before any SDK or Android lifecycle methods are called.
   - Fixes https://github.com/Appboy/appboy-cordova-sdk/issues/38
 
 ## 2.9.0
 
-#### Breaking
+##### Breaking
 - Updated to [Braze iOS SDK 3.14.0](https://github.com/Appboy/appboy-ios-sdk/releases/tag/3.14.0).
 - Updated to [Braze Android SDK 3.2.2](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#322).
 
-#### Changed
+##### Changed
 - Changed the iOS plugin to use Cocoapods instead of a framework integration.
 - Improved the look and feel of in-app messages to adhere to the latest UX and UI best practices. Changes affect font sizes, padding, and responsiveness across all message types. Now supports button border styling.
 
-#### Fixed
+##### Fixed
 - Fixed the Android plugin not respecting decimal purchase prices.
   - Fixes https://github.com/Appboy/appboy-cordova-sdk/issues/36.
 

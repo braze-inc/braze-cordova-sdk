@@ -72,7 +72,6 @@
       }
       [center requestAuthorizationWithOptions:options
                             completionHandler:^(BOOL granted, NSError *_Nullable error) {
-                              NSLog(@"Permission granted.");
                               [[Appboy sharedInstance] pushAuthorizationFromUserNotificationCenter:granted];
                             }];
       [[UIApplication sharedApplication] registerForRemoteNotifications];
@@ -290,6 +289,21 @@
   NSString *value = [command argumentAtIndex:1 withDefault:nil];
   if (key != nil && value != nil) {
     [[Appboy sharedInstance].user removeFromCustomAttributeArrayWithKey:key value:value];
+  }
+}
+
+- (void) addAlias:(CDVInvokedUrlCommand *)command {
+  NSString *aliasName = [command argumentAtIndex:0 withDefault:nil];
+  NSString *aliasLabel = [command argumentAtIndex:1 withDefault:nil];
+  if (aliasName != nil && aliasLabel != nil) {
+    [[Appboy sharedInstance].user addAlias:aliasName withLabel:aliasLabel];
+  }
+}
+
+- (void) setLanguage:(CDVInvokedUrlCommand *)command {
+  NSString *language = [command argumentAtIndex:0 withDefault:nil];
+  if (language != nil) {
+    [Appboy sharedInstance].user.language = language;
   }
 }
 
