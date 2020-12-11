@@ -1,3 +1,8 @@
+## 2.20.0
+
+##### Added
+- Added the method `getDeviceId()` to the javascript plugin.
+
 ## 2.19.0
 
 ##### Breaking

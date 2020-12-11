@@ -61,6 +61,7 @@ onDeviceReady: function() {
     document.getElementById("disableSdk").addEventListener("click", disableSdk);
     document.getElementById("requestFlushBtn").addEventListener("click", requestDataFlush);
     document.getElementById("setLanguageBtn").addEventListener("click", setLanguage);
+    document.getElementById("getDeviceId").addEventListener("click", getDeviceId);
 
     var success = function(message) {
         alert(message);
@@ -257,6 +258,10 @@ function addAlias() {
 function setLanguage() {
     AppboyPlugin.setLanguage("fr");
     showTextBubble("Set Language called");
+}
+
+function getDeviceId() {
+    AppboyPlugin.getDeviceId(customPluginSuccessCallback("DeviceID: "), customPluginErrorCallback);
 }
 
 // Other helper functions

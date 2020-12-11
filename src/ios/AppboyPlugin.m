@@ -307,6 +307,11 @@
   }
 }
 
+- (void) getDeviceId:(CDVInvokedUrlCommand *)command {
+  NSString *deviceId = [[Appboy sharedInstance] getDeviceId];
+  [self sendCordovaSuccessPluginResultWithString:deviceId andCommand:command];
+}
+
 /*-------Appboy UI-------*/
 - (void) launchNewsFeed:(CDVInvokedUrlCommand *)command {
   ABKNewsFeedViewController *newsFeed = [[ABKNewsFeedViewController alloc] init];
@@ -522,6 +527,12 @@
 - (void) sendCordovaErrorPluginResultWithString:(NSString *)resultMessage andCommand:(CDVInvokedUrlCommand *)command {
   CDVPluginResult *pluginResult = nil;
   pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:resultMessage];
+  [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void) sendCordovaSuccessPluginResultWithString:(NSString *)resultMessage andCommand:(CDVInvokedUrlCommand *)command {
+  CDVPluginResult *pluginResult = nil;
+  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:resultMessage];
   [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 

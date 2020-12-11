@@ -415,6 +415,17 @@ AppboyPlugin.prototype.setLanguage = function (language) {
 	cordova.exec(null, null, "AppboyPlugin", "setLanguage", [language]);
 }
 
+/**
+ * Get the device ID - a randomly generated, app specific ID that is stored on the device. A
+ * new ID will be generated if the user clears the data for the app or removes/re-installs the app.
+ * The ID will persist across {@link Appboy#changeUser(String)} calls.
+ *
+ * @return The device ID.
+ */
+AppboyPlugin.prototype.getDeviceId = function (successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getDeviceId");
+}
+
 AppboyPlugin.prototype['NotificationSubscriptionTypes'] = {
   "OPTED_IN": 'opted_in',
   "SUBSCRIBED": 'subscribed',

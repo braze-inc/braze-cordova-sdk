@@ -141,6 +141,9 @@ public class AppboyPlugin extends CordovaPlugin {
       case "requestContentCardsRefresh":
         Appboy.getInstance(mApplicationContext).requestContentCardsRefresh(false);
         return true;
+      case "getDeviceId":
+        callbackContext.success(Appboy.getInstance(mApplicationContext).getDeviceId());
+        return true;
     }
 
     // Appboy User methods
