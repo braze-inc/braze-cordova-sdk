@@ -1,3 +1,14 @@
+## 2.21.0
+
+##### Breaking
+- Updated to [Braze iOS SDK 3.31.1](https://github.com/Appboy/appboy-ios-sdk/releases/tag/3.31.1).
+
+##### Fixed
+- Fixed an issue on iOS where the plugin was incompatible with other Cordova plugins that have the `use_frameworks` Cocoapods setting in their `Podfile`.
+
+##### Added
+- Added the ability to disable `UNAuthorizationOptionProvisional` on iOS. Within `config.xml`, set `com.appboy.ios_disable_un_authorization_option_provisional` to `YES` to disable `UNAuthorizationOptionProvisional`.
+
 ## 2.20.0
 
 ##### Added

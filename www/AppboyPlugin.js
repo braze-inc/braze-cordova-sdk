@@ -356,7 +356,7 @@ AppboyPlugin.prototype.requestImmediateDataFlush = function () {
 * Requests the latest Content Cards from the Braze SDK server.
 */
 AppboyPlugin.prototype.requestContentCardsRefresh = function () {
-	cordova.exec(successCallback, errorCallback, "AppboyPlugin", "requestContentCardsRefresh");
+	cordova.exec(null, null, "AppboyPlugin", "requestContentCardsRefresh");
 }
 
 /**
@@ -416,11 +416,7 @@ AppboyPlugin.prototype.setLanguage = function (language) {
 }
 
 /**
- * Get the device ID - a randomly generated, app specific ID that is stored on the device. A
- * new ID will be generated if the user clears the data for the app or removes/re-installs the app.
- * The ID will persist across {@link Appboy#changeUser(String)} calls.
- *
- * @return The device ID.
+ * @return An app specific ID that is stored on the device.
  */
 AppboyPlugin.prototype.getDeviceId = function (successCallback, errorCallback) {
 	cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getDeviceId");

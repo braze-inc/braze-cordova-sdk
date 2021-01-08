@@ -15,6 +15,7 @@
     <allow-intent href="sms:*" />
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
+    <icon src="res/braze_icon.png" />
     <platform name="android">
         <allow-intent href="market:*" />
         <preference name="com.appboy.api_key" value="7ef72382-b92f-4258-9be9-9e19e92f3bf1" />
@@ -35,7 +36,8 @@
         <preference name="com.appboy.enable_location_collection" value="NO" />
         <preference name="com.appboy.geofences_enabled" value="NO" />
         <preference name="com.appboy.display_foreground_push_notifications" value="YES" />
-        <preference name="deployment-target" value="9.0" />
+        <preference name="deployment-target" value="11.0" />
+        <preference name="com.appboy.ios_disable_un_authorization_option_provisional" value="NO" />
     </platform>
     <plugin name="cordova-plugin-whitelist" spec="1" />
 </widget>
