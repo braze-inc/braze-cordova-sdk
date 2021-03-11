@@ -1,3 +1,12 @@
+## 2.22.0
+
+##### Breaking
+- Updated to [Braze Android SDK 13.0.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v13.0.0).
+
+##### Added
+- Added the ability to delay automatic session tracking for Android.
+  - `<preference name="com.appboy.android_disable_auto_session_tracking" value="true" />` in your `config.xml`.
+
 ## 2.21.0
 
 ##### Breaking

@@ -53,6 +53,7 @@ public class AppboyPlugin extends CordovaPlugin {
   private static final String CUSTOM_API_ENDPOINT_PREFERENCE = "com.appboy.android_api_endpoint";
   private static final String ENABLE_LOCATION_PREFERENCE = "com.appboy.enable_location_collection";
   private static final String ENABLE_GEOFENCES_PREFERENCE = "com.appboy.geofences_enabled";
+  private static final String DISABLE_AUTO_START_SESSIONS_PREFERENCE = "com.appboy.android_disable_auto_session_tracking";
 
   // Numeric preference prefix
   private static final String NUMERIC_PREFERENCE_PREFIX = "str_";
@@ -71,6 +72,7 @@ public class AppboyPlugin extends CordovaPlugin {
   private static final String LOG_CONTENT_CARDS_DISMISSED_METHOD = "logContentCardDismissed";
 
   private boolean mPluginInitializationFinished = false;
+  private boolean mDisableAutoStartSessions = false;
   private Context mApplicationContext;
   private Map<String, IEventSubscriber<FeedUpdatedEvent>> mFeedSubscriberMap = new ConcurrentHashMap<>();
 
@@ -92,8 +94,10 @@ public class AppboyPlugin extends CordovaPlugin {
     initializePluginIfAppropriate();
     Log.i(TAG, "Received " + action + " with the following arguments: " + args);
 
-    // Appboy methods
     switch (action) {
+      case "startSessionTracking":
+        mDisableAutoStartSessions = false;
+        return true;
       case "registerAppboyPushMessages":
         Appboy.getInstance(mApplicationContext).registerAppboyPushMessages(args.getString(0));
         return true;
@@ -315,14 +319,18 @@ public class AppboyPlugin extends CordovaPlugin {
   public void onStart() {
     super.onStart();
     initializePluginIfAppropriate();
-    Appboy.getInstance(mApplicationContext).openSession(this.cordova.getActivity());
+    if (!mDisableAutoStartSessions) {
+      Appboy.getInstance(mApplicationContext).openSession(this.cordova.getActivity());
+    }
   }
 
   @Override
   public void onStop() {
     super.onStop();
     initializePluginIfAppropriate();
-    Appboy.getInstance(mApplicationContext).closeSession(this.cordova.getActivity());
+    if (!mDisableAutoStartSessions) {
+      Appboy.getInstance(mApplicationContext).closeSession(this.cordova.getActivity());
+    }
   }
 
   /**
@@ -356,6 +364,12 @@ public class AppboyPlugin extends CordovaPlugin {
             .authority(customApiEndpoint).build()
         );
       }
+    }
+
+    // Disable auto starting sessions
+    if (cordovaPreferences.getBoolean(DISABLE_AUTO_START_SESSIONS_PREFERENCE, false)) {
+      AppboyLogger.d(TAG, "Disabling session auto starts");
+      mDisableAutoStartSessions = true;
     }
 
     // Set the values used in the config builder

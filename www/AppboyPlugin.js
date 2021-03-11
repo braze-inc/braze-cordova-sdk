@@ -422,6 +422,13 @@ AppboyPlugin.prototype.getDeviceId = function (successCallback, errorCallback) {
 	cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getDeviceId");
 }
 
+/**
+ * @return Starts SDK session tracking if previously disabled. Only used for Android.
+ */
+AppboyPlugin.prototype.startSessionTracking = function () {
+	cordova.exec(null, null, "AppboyPlugin", "startSessionTracking");
+}
+
 AppboyPlugin.prototype['NotificationSubscriptionTypes'] = {
   "OPTED_IN": 'opted_in',
   "SUBSCRIBED": 'subscribed',
