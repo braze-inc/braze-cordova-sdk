@@ -40,6 +40,7 @@ onDeviceReady: function() {
     document.getElementById("setCustomUserAttributeBtn").addEventListener("click", setCustomUserAttribute);
     document.getElementById("setUserPropertiesBtn").addEventListener("click", setUserProperties);
     document.getElementById("launchNewsFeedBtn").addEventListener("click", launchNewsFeed);
+    document.getElementById("launchContentCardsBtn").addEventListener("click", launchContentCards);
     document.getElementById("unsetCustomUserAttributeBtn").addEventListener("click", unsetCustomUserAttribute);
     document.getElementById("setCustomUserAttributeArrayBtn").addEventListener("click", setCustomUserAttributeArray);
     document.getElementById("incrementCustomUserAttributeBtn").addEventListener("click", incrementCustomUserAttribute);
@@ -51,10 +52,16 @@ onDeviceReady: function() {
     document.getElementById("getCardCountForCategoriesBtn").addEventListener("click", getCardCountForCategories);
     document.getElementById("getUnreadCardCountForCategoriesBtn").addEventListener("click", getUnreadCardCountForCategories);
     document.getElementById("getAllNewsFeedCardsBtn").addEventListener("click", getAllNewsFeedCards);
+    document.getElementById("getAllContentCardsBtn").addEventListener("click", getContentCardsFromServer);
+    document.getElementById("logContentCardsDisplayedBtn").addEventListener("click", logContentCardsDisplayed);
+    document.getElementById("logContentCardAnalyticsBtn").addEventListener("click", logContentCardAnalytics);
+    document.getElementById("addAliasBtn").addEventListener("click", addAlias);
     document.getElementById("wipeData").addEventListener("click", wipeData);
     document.getElementById("enableSdk").addEventListener("click", enableSdk);
     document.getElementById("disableSdk").addEventListener("click", disableSdk);
     document.getElementById("requestFlushBtn").addEventListener("click", requestDataFlush);
+    document.getElementById("setLanguageBtn").addEventListener("click", setLanguage);
+    document.getElementById("getDeviceId").addEventListener("click", getDeviceId);
 
     var success = function(message) {
         alert(message);
@@ -194,6 +201,10 @@ function launchNewsFeed() {
     AppboyPlugin.launchNewsFeed();
 }
 
+function launchContentCards() {
+    AppboyPlugin.launchContentCards();
+}
+
 // News feed functions
 function getNewsFeedUnreadCount() {
     AppboyPlugin.getNewsFeedUnreadCount(customPluginSuccessCallback("get Unread News Feed Count is : "), customPluginErrorCallback);
@@ -215,6 +226,42 @@ function getUnreadCardCountForCategories() {
 
 function getAllNewsFeedCards() {
     AppboyPlugin.getNewsFeed(customPluginSuccessArrayCallback("test"), customPluginErrorCallback);
+}
+
+function getContentCardsFromServer() {
+    AppboyPlugin.getContentCardsFromServer(customPluginSuccessArrayCallback("test"), customPluginErrorCallback);
+}
+
+function logContentCardsDisplayed() {
+    AppboyPlugin.logContentCardsDisplayed();
+}
+
+function logContentCardAnalytics() {
+    // Log all the analytics methods for the first returned card
+    AppboyPlugin.getContentCardsFromServer(function(cards) {
+        if (cards.length < 1) {
+            return;
+        }
+
+        var firstCardId = cards[0]["id"];
+        AppboyPlugin.logContentCardClicked(firstCardId);
+        AppboyPlugin.logContentCardImpression(firstCardId);
+        AppboyPlugin.logContentCardDismissed(firstCardId);
+    });
+}
+
+function addAlias() {
+    AppboyPlugin.addAlias("foo123", "bar456");
+    showTextBubble("Add alias called");
+}
+
+function setLanguage() {
+    AppboyPlugin.setLanguage("fr");
+    showTextBubble("Set Language called");
+}
+
+function getDeviceId() {
+    AppboyPlugin.getDeviceId(customPluginSuccessCallback("DeviceID: "), customPluginErrorCallback);
 }
 
 // Other helper functions

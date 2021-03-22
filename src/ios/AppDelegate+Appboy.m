@@ -1,6 +1,13 @@
 #import "AppDelegate+Appboy.h"
 #import <objc/runtime.h>
-#import <AppboyKit.h>
+#if __has_include(<Appboy_iOS_SDK/AppboyKit.h>)
+#import <Appboy_iOS_SDK/AppboyKit.h>
+#elif __has_include(<Appboy-iOS-SDK/Appboy_iOS_SDK.framework/Headers/AppboyKit.h>)
+#import <Appboy-iOS-SDK/Appboy_iOS_SDK.framework/Headers/AppboyKit.h>
+#else
+#import "AppboyKit.h"
+#endif
+#import "AppboyPlugin.h"
 
 @implementation AppDelegate (appboyNotifications)
 + (void)swizzleHostAppDelegate {
@@ -18,7 +25,7 @@
         SEL swizzledNoregisterForNotificationSelector = @selector(appboy_swizzled_no_application:didRegisterForRemoteNotificationsWithDeviceToken:);
         [self swizzleMethodWithClass:class originalSelector:noregisterForNotificationSelector andSwizzledSelector:swizzledNoregisterForNotificationSelector];
       }
-      
+
       if ([delegate respondsToSelector:@selector(application:didReceiveRemoteNotification:fetchCompletionHandler:)]) {
         SEL receivedNotificationSelector = @selector(application:didReceiveRemoteNotification:fetchCompletionHandler:);
         SEL swizzledReceivedNotificationSelector = @selector(appboy_swizzled_application:didReceiveRemoteNotification:fetchCompletionHandler:);
@@ -38,7 +45,7 @@
         SEL swizzledNoReceivedNotificationSelector = @selector(appboy_swizzled_no_application:didReceiveRemoteNotification:);
         [self swizzleMethodWithClass:class originalSelector:noReceivedNotificationSelector andSwizzledSelector:swizzledNoReceivedNotificationSelector];
       }
-      
+
       if ([delegate respondsToSelector:@selector(userNotificationCenter:didReceiveNotificationResponse:withCompletionHandler:)]) {
         SEL receivedNotificationResponseSelector = @selector(userNotificationCenter:didReceiveNotificationResponse:withCompletionHandler:);
         SEL swizzledReceivedNotificationResponseSelector = @selector(appboy_swizzled_userNotificationCenter:didReceiveNotificationResponse:withCompletionHandler:);
@@ -54,13 +61,13 @@
 + (void)swizzleMethodWithClass:(Class)class originalSelector:(SEL)originalSelector andSwizzledSelector:(SEL)swizzledSelector {
   Method originalMethod = class_getInstanceMethod(class, originalSelector);
   Method swizzledMethod = class_getInstanceMethod(class, swizzledSelector);
-  
+
   BOOL didAddMethod =
   class_addMethod(class,
                   originalSelector,
                   method_getImplementation(swizzledMethod),
                   method_getTypeEncoding(swizzledMethod));
-  
+
   if (didAddMethod) {
     class_replaceMethod(class,
                         swizzledSelector,
@@ -111,5 +118,15 @@
 
 - (void)appboy_swizzled_no_userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)())completionHandler {
   [[Appboy sharedInstance] userNotificationCenter:center didReceiveNotificationResponse:response withCompletionHandler:completionHandler];
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+       willPresentNotification:(UNNotification *)notification
+         withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler {
+    AppboyPlugin *pluginInstance = [self.viewController getCommandInstance:@"AppboyPlugin"];
+    NSString *enableForegroundNotifications = pluginInstance.commandDelegate.settings[@"com.appboy.display_foreground_push_notifications"];
+    if ([enableForegroundNotifications isEqualToString:@"YES"]) {
+        completionHandler(UNNotificationPresentationOptionAlert);
+    }
 }
 @end

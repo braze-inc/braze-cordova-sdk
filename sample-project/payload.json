@@ -1,0 +1,8 @@
+{
+    "aps": {
+        "alert": {
+            "body": "Adam added something new - take a look",
+            "title": "Photos"
+        }
+    }
+}

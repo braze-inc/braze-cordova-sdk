@@ -269,6 +269,15 @@ AppboyPlugin.prototype.unsetCustomUserAttribute = function (key) {
 	cordova.exec(null, null, "AppboyPlugin", "unsetCustomUserAttribute", [key]);
 }
 
+/**
+ * Adds an alias for the user.
+ * @param {string} alias - An identifier for this user.
+ * @param {string} label - A label for the alias. e.g. the source of the alias, like "internal_id"
+ */
+AppboyPlugin.prototype.addAlias = function (alias, label) {
+	cordova.exec(null, null, "AppboyPlugin", "addAlias", [alias, label]);
+}
+
 // Other
 /**
  * Launches the News Feed UI element.
@@ -288,7 +297,7 @@ AppboyPlugin.prototype.getNewsFeed = function (successCallback, errorCallback) {
 
 /**
 * Gets the number of unread News Feed Cards. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
-**/
+*/
 AppboyPlugin.prototype.getNewsFeedUnreadCount = function (successCallback, errorCallback) {
   cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getUnreadCardCountForCategories", ['all']);
 }
@@ -309,7 +318,7 @@ AppboyPlugin.prototype.getCardCountForCategories = function (successCallback, er
 
 /**
 * Gets the number of unread News Feed Cards for a category. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
-**/
+*/
 AppboyPlugin.prototype.getUnreadCardCountForCategories = function (successCallback, errorCallback, cardCategories) {
   cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getUnreadCardCountForCategories", cardCategories);
 }
@@ -343,6 +352,83 @@ AppboyPlugin.prototype.requestImmediateDataFlush = function () {
   cordova.exec(null, null, "AppboyPlugin", "requestImmediateDataFlush");
 }
 
+/**
+* Requests the latest Content Cards from the Braze SDK server.
+*/
+AppboyPlugin.prototype.requestContentCardsRefresh = function () {
+	cordova.exec(null, null, "AppboyPlugin", "requestContentCardsRefresh");
+}
+
+/**
+* Retrieves Content Cards from the Braze SDK. This will return the latest list of cards from the server.
+*/
+AppboyPlugin.prototype.getContentCardsFromServer = function (successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getContentCardsFromServer");
+}
+
+/**
+* Retrieves Content Cards from the Braze SDK. This will return the latest list of cards from the cache.
+*/
+AppboyPlugin.prototype.getContentCardsFromCache = function (successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getContentCardsFromCache");
+}
+
+/**
+ * Launches a default Content Cards UI element.
+ */
+AppboyPlugin.prototype.launchContentCards = function () {
+	cordova.exec(null, null, "AppboyPlugin", "launchContentCards");
+}
+
+/**
+ * Logs a Content Content feed displayed event.
+ */
+AppboyPlugin.prototype.logContentCardsDisplayed = function () {
+	cordova.exec(null, null, "AppboyPlugin", "logContentCardsDisplayed");
+}
+
+/**
+ * Logs a click for the given Content Card id.
+ */
+AppboyPlugin.prototype.logContentCardClicked = function (cardId) {
+	cordova.exec(null, null, "AppboyPlugin", "logContentCardClicked", [cardId]);
+}
+
+/**
+ * Logs an impression for the given Content Card id.
+ */
+AppboyPlugin.prototype.logContentCardImpression = function (cardId) {
+	cordova.exec(null, null, "AppboyPlugin", "logContentCardImpression", [cardId]);
+}
+
+/**
+ * Logs a dismissal for the given Content Card id.
+ */
+AppboyPlugin.prototype.logContentCardDismissed = function (cardId) {
+	cordova.exec(null, null, "AppboyPlugin", "logContentCardDismissed", [cardId]);
+}
+
+/**
+ * Sets the language for a user. Language Strings should be valid ISO 639-1 language codes. See loc.gov/standards/iso639-2/php/code_list.php.
+ */
+AppboyPlugin.prototype.setLanguage = function (language) {
+	cordova.exec(null, null, "AppboyPlugin", "setLanguage", [language]);
+}
+
+/**
+ * @return An app specific ID that is stored on the device.
+ */
+AppboyPlugin.prototype.getDeviceId = function (successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getDeviceId");
+}
+
+/**
+ * @return Starts SDK session tracking if previously disabled. Only used for Android.
+ */
+AppboyPlugin.prototype.startSessionTracking = function () {
+	cordova.exec(null, null, "AppboyPlugin", "startSessionTracking");
+}
+
 AppboyPlugin.prototype['NotificationSubscriptionTypes'] = {
   "OPTED_IN": 'opted_in',
   "SUBSCRIBED": 'subscribed',
@@ -361,6 +447,12 @@ AppboyPlugin.prototype['CardCategories'] = {
   "SOCIAL": 'social',
   "NO_CATEGORY": 'no_category',
   "ALL" : 'all'
+};
+
+AppboyPlugin.prototype['ContentCardTypes'] = {
+	'CLASSIC': 'Classic',
+	'BANNER': 'Banner',
+	'CAPTIONED': 'Captioned'
 };
 
 module.exports = new AppboyPlugin();

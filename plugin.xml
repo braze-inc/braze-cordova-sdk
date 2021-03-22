@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-  id="cordova-plugin-appboy" version="2.12.0">
+  id="cordova-plugin-appboy" version="2.22.0">
   <name>Device</name>
   <description>Appboy Cordova SDK</description>
   <license>MIT</license>
@@ -18,14 +18,13 @@
       </feature>
     </config-file>
     <source-file src="src/android/AppboyPlugin.java" target-dir="src/com/appboy/cordova" />
+    <source-file src="src/android/ContentCardUtils.java" target-dir="src/com/appboy/cordova" />
     <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference" />
     <config-file target="AndroidManifest.xml" parent="/manifest">
       <uses-permission android:name="android.permission.INTERNET" />
       <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     </config-file>
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
-      <activity android:name="com.appboy.ui.activities.AppboyFeedActivity" />
-      <activity android:name="com.appboy.ui.AppboyWebViewActivity"/>
       <service android:name="com.appboy.AppboyFirebaseMessagingService">
         <intent-filter>
           <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -36,7 +35,7 @@
 
   <!-- ios -->
   <platform name="ios">
-    <framework src="Appboy-iOS-SDK" type="podspec" spec="~> 3.20.2" />
+    <framework src="Appboy-iOS-SDK" type="podspec" spec="~> 3.31.1" />
 
     <!-- frameworks -->
     <framework src="libz.dylib" />
@@ -48,7 +47,6 @@
     <framework src="Social.framework"  weak="true" />
     <framework src="Accounts.framework" weak="true" />
     <framework src="AdSupport.framework" weak="true" />
-    <framework src="StoreKit.framework" weak="true" />
     <framework src="ImageIO.framework" weak="true" />
 
     <config-file target="config.xml" parent="/*">
