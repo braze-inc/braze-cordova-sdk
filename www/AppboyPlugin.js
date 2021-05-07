@@ -40,6 +40,14 @@ AppboyPlugin.prototype.changeUser = function (userId) {
 }
 
 /**
+* Prompts for push
+*/
+AppboyPlugin.prototype.promptForPush = function () {
+	cordova.exec(null, null, "AppboyPlugin", "promptForPush");
+  }
+
+
+/**
 * ** ANDROID ONLY**
 *
 * Registers the device as eligible to receive push notifications from Appboy.

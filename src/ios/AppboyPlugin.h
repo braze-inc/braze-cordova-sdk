@@ -8,6 +8,7 @@
 - (void) logPurchase:(CDVInvokedUrlCommand *)command;
 - (void) disableSdk:(CDVInvokedUrlCommand *)command;
 - (void) enableSdk:(CDVInvokedUrlCommand *)command;
+- (void) promptForPush:(CDVInvokedUrlCommand *)command;
 - (void) wipeData:(CDVInvokedUrlCommand *)command;
 - (void) requestImmediateDataFlush:(CDVInvokedUrlCommand *)command;
 - (void) getDeviceId:(CDVInvokedUrlCommand *)command;
