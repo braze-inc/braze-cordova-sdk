@@ -157,10 +157,18 @@
 
 - (void) setGender:(CDVInvokedUrlCommand *)command{
   NSString *gender = [command argumentAtIndex:0 withDefault:nil];
-  if ([gender.lowercaseString isEqualToString:@"m"]) {
-    [[Appboy sharedInstance].user setGender:ABKUserGenderMale];
-  } else if ([gender.lowercaseString isEqualToString:@"f"]) {
+  if ([gender.lowercaseString isEqualToString:@"f"]) {
     [[Appboy sharedInstance].user setGender:ABKUserGenderFemale];
+  } else if ([gender.lowercaseString isEqualToString:@"m"]) {
+    [[Appboy sharedInstance].user setGender:ABKUserGenderMale];
+  } else if ([gender.lowercaseString isEqualToString:@"n"]) {
+    [[Appboy sharedInstance].user setGender:ABKUserGenderNotApplicable];
+  } else if ([gender.lowercaseString isEqualToString:@"o"]) {
+    [[Appboy sharedInstance].user setGender:ABKUserGenderOther];
+  } else if ([gender.lowercaseString isEqualToString:@"p"]) {
+    [[Appboy sharedInstance].user setGender:ABKUserGenderPreferNotToSay];
+  } else if ([gender.lowercaseString isEqualToString:@"u"]) {
+    [[Appboy sharedInstance].user setGender:ABKUserGenderUnknown];
   }
 }
 

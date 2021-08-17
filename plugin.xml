@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-  id="cordova-plugin-appboy" version="2.24.0">
+  id="cordova-plugin-appboy" version="2.25.0">
   <name>Device</name>
   <description>Appboy Cordova SDK</description>
   <license>MIT</license>
@@ -25,7 +25,7 @@
       <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     </config-file>
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
-      <service android:name="com.appboy.AppboyFirebaseMessagingService">
+      <service android:name="com.braze.push.BrazeFirebaseMessagingService">
         <intent-filter>
           <action android:name="com.google.firebase.MESSAGING_EVENT" />
         </intent-filter>
@@ -35,7 +35,7 @@
 
   <!-- ios -->
   <platform name="ios">
-    <framework src="Appboy-iOS-SDK" type="podspec" spec="~> 4.3.0" />
+    <framework src="Appboy-iOS-SDK" type="podspec" spec="~> 4.3.2" />
 
     <!-- frameworks -->
     <framework src="libz.dylib" />

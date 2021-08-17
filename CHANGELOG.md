@@ -1,3 +1,14 @@
+## 2.25.0
+
+##### Breaking
+- Updated to [Braze Android SDK 15.0.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v15.0.0).
+
+##### Changed
+- Updated to [Braze iOS SDK 4.3.2](https://github.com/Appboy/appboy-ios-sdk/releases/tag/4.3.2).
+
+##### Added
+- Added `Other`, `Unknown`, `Not Applicable`, and `Prefer not to Say` options for user gender.
+
 ## 2.24.0
 
 ##### Breaking

@@ -7,8 +7,8 @@ import com.appboy.models.cards.CaptionedImageCard;
 import com.appboy.models.cards.Card;
 import com.appboy.models.cards.ShortNewsCard;
 import com.appboy.models.cards.TextAnnouncementCard;
-import com.appboy.support.AppboyLogger;
-import com.appboy.support.StringUtils;
+import com.braze.support.BrazeLogger;
+import com.braze.support.StringUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,7 +17,7 @@ import org.json.JSONObject;
 import java.util.List;
 
 public class ContentCardUtils {
-  private static final String TAG = String.format("Appboy.%s", ContentCardUtils.class.getName());
+  private static final String TAG = BrazeLogger.getBrazeLogTag(ContentCardUtils.class);
 
   /**
    * @return The card in the list with a matching id or null if not found.
@@ -49,7 +49,7 @@ public class ContentCardUtils {
       try {
         cards.put(mapContentCardFields(card));
       } catch (JSONException e) {
-        AppboyLogger.e(TAG, "Failed to map content card fields to JSON. Card: " + card, e);
+        BrazeLogger.e(TAG, "Failed to map content card fields to JSON. Card: " + card, e);
       }
     }
     return cards;
