@@ -436,8 +436,12 @@ AppboyPlugin.prototype['NotificationSubscriptionTypes'] = {
 };
 
 AppboyPlugin.prototype['Genders'] = {
+  "FEMALE": 'f',
   "MALE": 'm',
-  "FEMALE": 'f'
+  "NOT_APPLICABLE": 'n',
+  "OTHER": 'o',
+  "PREFER_NOT_TO_SAY": 'p',
+  "UNKNOWN": 'u'
 };
 
 AppboyPlugin.prototype['CardCategories'] = {

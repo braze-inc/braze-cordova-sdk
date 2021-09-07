@@ -1,3 +1,28 @@
+## 2.25.0
+
+##### Breaking
+- Updated to [Braze Android SDK 15.0.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v15.0.0).
+
+##### Changed
+- Updated to [Braze iOS SDK 4.3.2](https://github.com/Appboy/appboy-ios-sdk/releases/tag/4.3.2).
+
+##### Added
+- Added `Other`, `Unknown`, `Not Applicable`, and `Prefer not to Say` options for user gender.
+
+## 2.24.0
+
+##### Breaking
+- Updated to [Braze Android SDK 14.0.1](https://github.com/Appboy/appboy-android-sdk/releases/tag/v14.0.1).
+- Updated to [Braze iOS SDK 4.3.0](https://github.com/Appboy/appboy-ios-sdk/releases/tag/4.3.0).
+
+##### Changed
+- (minor) Changed logcat tag for Android plugin to be `BrazeCordova`.
+
+## 2.23.0
+
+##### Breaking
+- Updated to [Braze Android SDK 13.1.2](https://github.com/Appboy/appboy-android-sdk/releases/tag/v13.1.2).
+  
 ## 2.22.0
 
 ##### Breaking

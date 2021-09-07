@@ -18,7 +18,9 @@
     <icon src="res/braze_icon.png" />
     <platform name="android">
         <allow-intent href="market:*" />
-        <preference name="com.appboy.api_key" value="7ef72382-b92f-4258-9be9-9e19e92f3bf1" />
+        <preference name="AndroidXEnabled" value="true" />
+        <preference name="com.appboy.api_key" value="ec67377e-c490-4959-8c58-c045a254a65a" />
+        <preference name="com.appboy.android_api_endpoint" value="sondheim.braze.com" />
         <preference name="com.appboy.firebase_cloud_messaging_registration_enabled" value="true" />
         <preference name="com.appboy.android_fcm_sender_id" value="str_900857597716" />
         <preference name="com.appboy.android_default_session_timeout" value="str_5" />
