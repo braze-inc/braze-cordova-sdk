@@ -129,4 +129,14 @@
         completionHandler(UNNotificationPresentationOptionAlert);
     }
 }
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)(void))completionHandler {
+  [[Appboy sharedInstance] userNotificationCenter:center didReceiveNotificationResponse:response withCompletionHandler:completionHandler];
+  NSLog(@"Application delegate method userNotificationCenter:didReceiveNotificationResponse:withCompletionHandler: is called with user info: %@", response.notification.request.content.userInfo);
+
+  if ([ABKPushUtils isAppboyUserNotification:response]) {
+    [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
+    NSLog(@"User notification was sent from Braze, clearing badge number.");
+  }
+}
 @end
