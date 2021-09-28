@@ -8,16 +8,14 @@
       "android"
     ],
     "plugins": {
-      "cordova-plugin-whitelist": {},
       "cordova-plugin-appboy": {}
     }
   },
   "dependencies": {
-    "cordova-ios": "^5.1.1",
-    "cordova-plugin-whitelist": "^1.3.4"
+    "cordova-ios": "^5.1.1"
   },
   "devDependencies": {
     "appboy-cordova-sdk": "file:../local",
-    "cordova-android": "^9.1.0"
+    "cordova-android": "^10.1.1"
   }
 }

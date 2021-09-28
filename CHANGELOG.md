@@ -1,3 +1,14 @@
+## 2.26.0
+
+##### Breaking
+- Updated to [Braze Android SDK 16.0.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v16.0.0).
+
+##### Fixed
+- Fixed an issue in pre Android P WebViews where the system WebView would not properly handle view focus being returned to it.
+  - https://issuetracker.google.com/issues/36915710 for more information.
+  - This fix is applied by default and can be disabled via `com.braze.android_apply_cordova_webview_focus_request_fix` in your `config.xml`.
+  - When enabled, this fix sets a custom In App Message view vrapper factory with the native Android SDK, potentially overriding any other custom set view factories.
+
 ## 2.25.0
 
 ##### Breaking

@@ -2,6 +2,7 @@ package com.appboy.cordova;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.util.Log;
 
 import com.appboy.enums.CardCategory;
@@ -53,6 +54,11 @@ public class AppboyPlugin extends CordovaPlugin {
   private static final String ENABLE_LOCATION_PREFERENCE = "com.appboy.enable_location_collection";
   private static final String ENABLE_GEOFENCES_PREFERENCE = "com.appboy.geofences_enabled";
   private static final String DISABLE_AUTO_START_SESSIONS_PREFERENCE = "com.appboy.android_disable_auto_session_tracking";
+  /**
+   * When applied, restricts the SDK from taking
+   * focus away from the Cordova WebView on affected API versions.
+   */
+  private static final String ENABLE_CORDOVA_WEBVIEW_REQUEST_FOCUS_FIX_PREFERENCE = "com.braze.android_apply_cordova_webview_focus_request_fix";
 
   // Numeric preference prefix
   private static final String NUMERIC_PREFERENCE_PREFIX = "str_";
@@ -149,7 +155,7 @@ public class AppboyPlugin extends CordovaPlugin {
         return true;
     }
 
-    // Appboy User methods
+    // User methods
     BrazeUser currentUser = Braze.getInstance(mApplicationContext).getCurrentUser();
     if (currentUser != null) {
       switch (action) {
@@ -223,7 +229,7 @@ public class AppboyPlugin extends CordovaPlugin {
           currentUser.addAlias(args.getString(0), args.getString(1));
           return true;
         case "setDateOfBirth":
-          Month month = parseMonth(args.getInt(1));
+          Month month = Month.getMonth(args.getInt(1) - 1);
           currentUser.setDateOfBirth(args.getInt(0), month, args.getInt(2));
           return true;
         case "setCountry":
@@ -369,17 +375,6 @@ public class AppboyPlugin extends CordovaPlugin {
       BrazeLogger.setLogLevel(cordovaPreferences.getInteger(APPBOY_LOG_LEVEL_PREFERENCE, Log.INFO));
     }
 
-    // Set the custom endpoint
-    if (cordovaPreferences.contains(CUSTOM_API_ENDPOINT_PREFERENCE)) {
-      final String customApiEndpoint = cordovaPreferences.getString(CUSTOM_API_ENDPOINT_PREFERENCE, "");
-      if (!customApiEndpoint.equals("")) {
-        Braze.setAppboyEndpointProvider(appboyEndpoint ->
-            appboyEndpoint.buildUpon()
-            .authority(customApiEndpoint).build()
-        );
-      }
-    }
-
     // Disable auto starting sessions
     if (cordovaPreferences.getBoolean(DISABLE_AUTO_START_SESSIONS_PREFERENCE, false)) {
       BrazeLogger.d(TAG, "Disabling session auto starts");
@@ -421,6 +416,18 @@ public class AppboyPlugin extends CordovaPlugin {
     }
     if (cordovaPreferences.contains(ENABLE_GEOFENCES_PREFERENCE)) {
       configBuilder.setGeofencesEnabled(cordovaPreferences.getBoolean(ENABLE_GEOFENCES_PREFERENCE, false));
+    }
+    if (cordovaPreferences.contains(CUSTOM_API_ENDPOINT_PREFERENCE)) {
+      final String customApiEndpoint = cordovaPreferences.getString(CUSTOM_API_ENDPOINT_PREFERENCE, "");
+      if (!customApiEndpoint.equals("")) {
+        configBuilder.setCustomEndpoint(customApiEndpoint);
+      }
+    }
+
+    final boolean enableRequestFocusFix = cordovaPreferences.getBoolean(ENABLE_CORDOVA_WEBVIEW_REQUEST_FOCUS_FIX_PREFERENCE, true);
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P && enableRequestFocusFix) {
+      // Addresses Cordova bug in https://issuetracker.google.com/issues/36915710
+      BrazeInAppMessageManager.getInstance().setCustomInAppMessageViewWrapperFactory(new CordovaInAppMessageViewWrapper.CordovaInAppMessageViewWrapperFactory());
     }
 
     Braze.configure(mApplicationContext, configBuilder.build());
@@ -603,37 +610,6 @@ public class AppboyPlugin extends CordovaPlugin {
       array[i] = jsonArray.getString(i);
     }
     return array;
-  }
-
-  private static Month parseMonth(int monthInt) {
-    switch (monthInt) {
-      case 1:
-        return Month.JANUARY;
-      case 2:
-        return Month.FEBRUARY;
-      case 3:
-        return Month.MARCH;
-      case 4:
-        return Month.APRIL;
-      case 5:
-        return Month.MAY;
-      case 6:
-        return Month.JUNE;
-      case 7:
-        return Month.JULY;
-      case 8:
-        return Month.AUGUST;
-      case 9:
-        return Month.SEPTEMBER;
-      case 10:
-        return Month.OCTOBER;
-      case 11:
-        return Month.NOVEMBER;
-      case 12:
-        return Month.DECEMBER;
-      default:
-        return null;
-    }
   }
 
   /**

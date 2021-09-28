@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-  id="cordova-plugin-appboy" version="2.25.0">
+  id="cordova-plugin-appboy" version="2.26.0">
   <name>Device</name>
   <description>Appboy Cordova SDK</description>
   <license>MIT</license>
@@ -19,6 +19,7 @@
     </config-file>
     <source-file src="src/android/AppboyPlugin.java" target-dir="src/com/appboy/cordova" />
     <source-file src="src/android/ContentCardUtils.java" target-dir="src/com/appboy/cordova" />
+    <source-file src="src/android/CordovaInAppMessageViewWrapper.java" target-dir="src/com/appboy/cordova" />
     <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference" />
     <config-file target="AndroidManifest.xml" parent="/manifest">
       <uses-permission android:name="android.permission.INTERNET" />

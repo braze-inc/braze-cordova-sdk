@@ -41,5 +41,4 @@
         <preference name="deployment-target" value="11.0" />
         <preference name="com.appboy.ios_disable_un_authorization_option_provisional" value="NO" />
     </platform>
-    <plugin name="cordova-plugin-whitelist" spec="1" />
 </widget>

@@ -103,6 +103,17 @@ function logCustomEvent() {
         "Cart Value": 4.95,
         "Cart Item Name": "Spicy Chicken Bites 5 pack"
     });
+    AppboyPlugin.logCustomEvent("cordovaCustomEventWithNestedProperties", {
+        "array key": [1, "2", false],
+        "object key": {
+            "k1": "1",
+            "k2": 2,
+            "k3": false,
+        },
+        "deep key": {
+            "key": [1, "2", true]
+        }
+    });
     showTextBubble("Logged custom event");
 }
 
@@ -116,6 +127,17 @@ function logPurchase() {
     AppboyPlugin.logPurchase("testPurchaseWithNullCurrency", 10, null, 5, properties);
     AppboyPlugin.logPurchase("testPurchaseWithNullQuantity", 10, "USD");
     AppboyPlugin.logPurchase("testPurchaseWithoutProperties", 1500, "JPY", 2);
+    AppboyPlugin.logPurchase("testPurchaseWithNestedProperties", 10, "USD", 5, {
+        "array key": [1, "2", false],
+        "object key": {
+            "k1": "1",
+            "k2": 2,
+            "k3": false,
+        },
+        "deep key": {
+            "key": [1, "2", true]
+        }
+    });
     showTextBubble("Logged purchase");
 }
 

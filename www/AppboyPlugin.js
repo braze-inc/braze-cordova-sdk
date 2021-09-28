@@ -1,7 +1,7 @@
 var AppboyPlugin = function () {
 }
 
-// Appboy methods
+// Braze methods
 /**
  * When a user first uses Appboy on a device they are considered "anonymous". Use this method to identify a user
  *    with a unique ID, which enables the following:
