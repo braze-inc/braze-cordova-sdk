@@ -26,6 +26,7 @@ import com.braze.ui.inappmessage.BrazeInAppMessageManager;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaPreferences;
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,6 +36,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+
 
 public class AppboyPlugin extends CordovaPlugin {
   private static final String TAG = "BrazeCordova";
@@ -73,6 +76,7 @@ public class AppboyPlugin extends CordovaPlugin {
   private boolean mPluginInitializationFinished = false;
   private boolean mDisableAutoStartSessions = false;
   private Context mApplicationContext;
+  private static CallbackContext appboyContext;
   private final Map<String, IEventSubscriber<FeedUpdatedEvent>> mFeedSubscriberMap = new ConcurrentHashMap<>();
 
   @Override
@@ -92,8 +96,15 @@ public class AppboyPlugin extends CordovaPlugin {
   public boolean execute(final String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
     initializePluginIfAppropriate();
     Log.i(TAG, "Received " + action + " with the following arguments: " + args);
+  
 
     switch (action) {
+      /**
+       * Added to fix deep links. This is not from out of the box Appboy BE CAREFUL on updates
+       * startNotifications is a new action to allow communications between native to js side
+       */
+      case "startNotifications":
+        appboyContext = callbackContext;
       case "startSessionTracking":
         mDisableAutoStartSessions = false;
         return true;
@@ -665,5 +676,18 @@ public class AppboyPlugin extends CordovaPlugin {
 
     // Parse the string as an integer. Note that this is the same decoding used in CordovaPreferences
     return (int)(long)Long.decode(preferenceValue);
+  }
+
+  /**
+   *  Added to fix deep links. This is not from out of the box Appboy BE CAREFUL on updates
+   *
+   *   
+   * */ 
+  public static void sendEvent(JSONObject json) {
+    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, json);
+    pluginResult.setKeepCallback(true);
+    if (appboyContext != null) {
+      appboyContext.sendPluginResult(pluginResult);
+    }
   }
 }

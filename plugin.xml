@@ -18,11 +18,20 @@
       </feature>
     </config-file>
     <source-file src="src/android/AppboyPlugin.java" target-dir="src/com/appboy/cordova" />
+    <source-file src="src/android/QAppboyReceiver.java" target-dir="src/com/appboy/cordova" />
     <source-file src="src/android/ContentCardUtils.java" target-dir="src/com/appboy/cordova" />
     <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference" />
     <config-file target="AndroidManifest.xml" parent="/manifest">
       <uses-permission android:name="android.permission.INTERNET" />
       <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    </config-file>
+    <!-- Fix deep links. Added to fix deep links. This is not from out of the box Appboy BE CAREFUL on updates -->
+    <config-file target="AndroidManifest.xml" parent="/manifest/application">
+      <receiver android:exported="false" android:name="com.appboy.cordova.QAppboyReceiver">
+        <intent-filter>
+          <action android:name="com.braze.push.intent.NOTIFICATION_OPENED" />
+        </intent-filter>
+    </receiver>
     </config-file>
   </platform>
 
