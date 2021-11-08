@@ -72,6 +72,7 @@
             inApplication:notification.object
         withLaunchOptions:notification.userInfo
         withAppboyOptions:appboyLaunchOptions];
+  [[Appboy sharedInstance] addSdkMetadata:@[ABKSdkMetadataCordova]];
 
   if (![self.disableAutomaticPushRegistration isEqualToString:@"YES"]) {
     UIUserNotificationType notificationSettingTypes = (UIUserNotificationTypeBadge | UIUserNotificationTypeAlert | UIUserNotificationTypeSound);
@@ -329,6 +330,20 @@
   NSString *language = [command argumentAtIndex:0 withDefault:nil];
   if (language != nil) {
     [Appboy sharedInstance].user.language = language;
+  }
+}
+
+- (void) addToSubscriptionGroup:(CDVInvokedUrlCommand *)command {
+  NSString *groupId = [command argumentAtIndex:0 withDefault:nil];
+  if (groupId != nil) {
+    [[Appboy sharedInstance].user addToSubscriptionGroupWithGroupId:groupId];
+  }
+}
+
+- (void) removeFromSubscriptionGroup:(CDVInvokedUrlCommand *)command {
+  NSString *groupId = [command argumentAtIndex:0 withDefault:nil];
+  if (groupId != nil) {
+    [[Appboy sharedInstance].user removeFromSubscriptionGroupWithGroupId:groupId];
   }
 }
 

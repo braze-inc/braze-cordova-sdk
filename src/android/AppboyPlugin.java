@@ -18,6 +18,7 @@ import com.appboy.ui.activities.AppboyFeedActivity;
 import com.braze.Braze;
 import com.braze.BrazeUser;
 import com.braze.configuration.BrazeConfig;
+import com.braze.enums.BrazeSdkMetadata;
 import com.braze.events.ContentCardsUpdatedEvent;
 import com.braze.models.outgoing.BrazeProperties;
 import com.braze.support.BrazeLogger;
@@ -277,6 +278,12 @@ public class AppboyPlugin extends CordovaPlugin {
         case "setLanguage":
           currentUser.setLanguage(args.getString(0));
           return true;
+        case "addToSubscriptionGroup":
+          currentUser.addToSubscriptionGroup(args.getString(0));
+          return true;
+        case "removeFromSubscriptionGroup":
+          currentUser.removeFromSubscriptionGroup(args.getString(0));
+          return true;
       }
     }
 
@@ -385,7 +392,8 @@ public class AppboyPlugin extends CordovaPlugin {
     BrazeConfig.Builder configBuilder = new BrazeConfig.Builder();
 
     // Set the flavor
-    configBuilder.setSdkFlavor(SdkFlavor.CORDOVA);
+    configBuilder.setSdkFlavor(SdkFlavor.CORDOVA)
+                 .setSdkMetadata(EnumSet.of(BrazeSdkMetadata.CORDOVA));
 
     if (cordovaPreferences.contains(APPBOY_API_KEY_PREFERENCE)) {
       configBuilder.setApiKey(cordovaPreferences.getString(APPBOY_API_KEY_PREFERENCE, null));

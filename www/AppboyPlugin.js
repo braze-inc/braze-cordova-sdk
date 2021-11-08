@@ -416,6 +416,20 @@ AppboyPlugin.prototype.setLanguage = function (language) {
 }
 
 /**
+ * Adds user to given subscription group.
+ */
+AppboyPlugin.prototype.addToSubscriptionGroup = function (groupId) {
+	cordova.exec(null, null, "AppboyPlugin", "addToSubscriptionGroup", [groupId]);
+}
+
+/**
+ * Removes user from given subscription group.
+ */
+AppboyPlugin.prototype.removeFromSubscriptionGroup = function (groupId) {
+	cordova.exec(null, null, "AppboyPlugin", "removeFromSubscriptionGroup", [groupId]);
+}
+
+/**
  * @return An app specific ID that is stored on the device.
  */
 AppboyPlugin.prototype.getDeviceId = function (successCallback, errorCallback) {

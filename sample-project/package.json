@@ -12,10 +12,15 @@
     }
   },
   "dependencies": {
-    "cordova-ios": "^5.1.1"
+    "cordova-common": "^4.0.2",
+    "execa": "^5.1.1",
+    "node-properties-parser": "0.0.2",
+    "nopt": "^5.0.0",
+    "properties-parser": "^0.3.1"
   },
   "devDependencies": {
     "appboy-cordova-sdk": "file:../local",
-    "cordova-android": "^10.1.1"
+    "cordova-android": "^10.1.1",
+    "cordova-ios": "^5.1.1"
   }
 }

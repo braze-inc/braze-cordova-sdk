@@ -1,3 +1,12 @@
+## 2.27.0
+
+##### Breaking
+- Updated to [Braze Android SDK 17.0.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v17.0.0).
+- Updated to [Braze iOS SDK 4.4.0](https://github.com/Appboy/appboy-ios-sdk/releases/tag/4.4.0).
+
+##### Added
+- Added `addToSubscriptionGroup()` and `removeFromSubscriptionGroup()`.
+
 ## 2.26.0
 
 ##### Breaking

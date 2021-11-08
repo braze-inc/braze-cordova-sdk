@@ -190,6 +190,7 @@ function setUserProperties() {
     AppboyPlugin.setCustomUserAttribute("int", 5);
     AppboyPlugin.setCustomUserAttribute("bool", true);
     AppboyPlugin.setCustomUserAttribute("date", new Date());
+    AppboyPlugin.addToSubscriptionGroup("12345");
     showTextBubble("Set User Properties");
 }
 
