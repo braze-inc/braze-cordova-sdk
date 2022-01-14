@@ -1,3 +1,11 @@
+## 2.28.0
+
+##### Breaking
+- Updated to [Braze Android SDK 18.0.1](https://github.com/Appboy/appboy-android-sdk/releases/tag/v18.0.1).
+
+##### Fixed
+- Fixed an error around locating certain iOS resources when integrating the SDK.
+
 ## 2.27.0
 
 ##### Breaking
