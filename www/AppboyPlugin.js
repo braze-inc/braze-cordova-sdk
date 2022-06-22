@@ -381,13 +381,6 @@ AppboyPlugin.prototype.launchContentCards = function () {
 }
 
 /**
- * Logs a Content Content feed displayed event.
- */
-AppboyPlugin.prototype.logContentCardsDisplayed = function () {
-	cordova.exec(null, null, "AppboyPlugin", "logContentCardsDisplayed");
-}
-
-/**
  * Logs a click for the given Content Card id.
  */
 AppboyPlugin.prototype.logContentCardClicked = function (cardId) {

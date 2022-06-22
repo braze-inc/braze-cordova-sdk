@@ -1,3 +1,9 @@
+## 2.30.0
+
+##### Breaking
+- Updated to [Braze Android SDK 21.0.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v21.0.0).
+- Removed "logContentCardsDisplayed" from the javascript plugin.
+
 ## 2.29.0
 
 ##### Breaking
