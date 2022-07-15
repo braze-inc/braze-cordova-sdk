@@ -28,6 +28,7 @@
   @property NSString *enableLocationCollection;
   @property NSString *enableGeofences;
   @property NSString *disableUNAuthorizationOptionProvisional;
+  @property NSString *sessionTimeout;
 @end
 
 @implementation AppboyPlugin
@@ -42,6 +43,7 @@
   self.enableLocationCollection = settings[@"com.appboy.enable_location_collection"];
   self.enableGeofences = settings[@"com.appboy.geofences_enabled"];
   self.disableUNAuthorizationOptionProvisional = settings[@"com.appboy.ios_disable_un_authorization_option_provisional"];
+  self.sessionTimeout = settings[@"com.appboy.ios_session_timeout"];
 
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFinishLaunchingListener:) name:UIApplicationDidFinishLaunchingNotification object:nil];
   if (![self.disableAutomaticPushHandling isEqualToString:@"YES"]) {
@@ -56,6 +58,10 @@
   appboyLaunchOptions[ABKEnableAutomaticLocationCollectionKey] = self.enableLocationCollection;
   appboyLaunchOptions[ABKEnableGeofencesKey] = self.enableGeofences;
 
+  // Set the time interval for session time out (in seconds)
+  NSNumber *sessionTimeout = [[[NSNumberFormatter alloc] init] numberFromString:self.sessionTimeout];
+  appboyLaunchOptions[ABKSessionTimeoutKey] = sessionTimeout;
+    
   // Add the endpoint only if it's non nil
   if (self.apiEndpoint != nil) {
     appboyLaunchOptions[ABKEndpointKey] = self.apiEndpoint;
@@ -515,7 +521,9 @@
   formattedContentCardData[@"url"] = card.urlString ?: [NSNull null];
   formattedContentCardData[@"openURLInWebView"] = @(card.openUrlInWebView);
 
-  formattedContentCardData[@"extras"] = [AppboyPlugin getJsonFromExtras:card.extras];
+  if (card.extras != nil) {
+    formattedContentCardData[@"extras"] = [AppboyPlugin getJsonFromExtras:card.extras];
+  }
 
   if ([card isKindOfClass:[ABKCaptionedImageContentCard class]]) {
     ABKCaptionedImageContentCard *captionedCard = (ABKCaptionedImageContentCard *)card;
