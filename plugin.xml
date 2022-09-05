@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-  id="cordova-plugin-appboy" version="2.25.0">
+  id="cordova-plugin-appboy" version="2.30.1">
   <name>Device</name>
-  <description>Appboy Cordova SDK</description>
+  <description>Braze Cordova SDK</description>
   <license>MIT</license>
-  <keywords>cordova,appboy</keywords>
+  <keywords>cordova,appboy,braze</keywords>
   <js-module src="www/AppboyPlugin.js" name="AppboyPlugin">
     <clobbers target="AppboyPlugin" />
   </js-module>
@@ -20,6 +20,7 @@
     <source-file src="src/android/AppboyPlugin.java" target-dir="src/com/appboy/cordova" />
     <source-file src="src/android/QAppboyReceiver.java" target-dir="src/com/appboy/cordova" />
     <source-file src="src/android/ContentCardUtils.java" target-dir="src/com/appboy/cordova" />
+    <source-file src="src/android/CordovaInAppMessageViewWrapper.java" target-dir="src/com/appboy/cordova" />
     <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference" />
     <config-file target="AndroidManifest.xml" parent="/manifest">
       <uses-permission android:name="android.permission.INTERNET" />
@@ -27,7 +28,10 @@
     </config-file>
     <!-- Fix deep links. Added to fix deep links. This is not from out of the box Appboy BE CAREFUL on updates -->
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
+    
       <receiver android:exported="false" android:name="com.appboy.cordova.QAppboyReceiver">
+      <service android:name="com.braze.push.BrazeFirebaseMessagingService" android:exported="false">
+      
         <intent-filter>
           <action android:name="com.braze.push.intent.NOTIFICATION_OPENED" />
         </intent-filter>
@@ -37,20 +41,6 @@
 
   <!-- ios -->
   <platform name="ios">
-    <framework src="Appboy-iOS-SDK" type="podspec" spec="~> 4.3.2" />
-
-    <!-- frameworks -->
-    <framework src="libz.dylib" />
-    <framework src="SystemConfiguration.framework"/>
-    <framework src="QuartzCore.framework"/>
-    <framework src="CoreImage.framework"/>
-    <framework src="CoreText.framework"/>
-    <framework src="CoreTelephony.framework"  weak="true" />
-    <framework src="Social.framework"  weak="true" />
-    <framework src="Accounts.framework" weak="true" />
-    <framework src="AdSupport.framework" weak="true" />
-    <framework src="ImageIO.framework" weak="true" />
-
     <config-file target="config.xml" parent="/*">
       <feature name="AppboyPlugin">
         <param name="ios-package" value="AppboyPlugin" />
@@ -63,5 +53,13 @@
     <source-file src="src/ios/AppDelegate+Appboy.m" />
     <header-file src="src/ios/IDFADelegate.h" />
     <source-file src="src/ios/IDFADelegate.m" />
+    <podspec>
+      <config>
+        <source url="https://cdn.cocoapods.org/"/>
+      </config>
+      <pods use-frameworks="true">
+        <pod name="Appboy-iOS-SDK" spec="~> 4.4.2" />
+      </pods>
+    </podspec>
   </platform>
 </plugin>

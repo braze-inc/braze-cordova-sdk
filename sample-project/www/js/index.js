@@ -53,7 +53,6 @@ onDeviceReady: function() {
     document.getElementById("getUnreadCardCountForCategoriesBtn").addEventListener("click", getUnreadCardCountForCategories);
     document.getElementById("getAllNewsFeedCardsBtn").addEventListener("click", getAllNewsFeedCards);
     document.getElementById("getAllContentCardsBtn").addEventListener("click", getContentCardsFromServer);
-    document.getElementById("logContentCardsDisplayedBtn").addEventListener("click", logContentCardsDisplayed);
     document.getElementById("logContentCardAnalyticsBtn").addEventListener("click", logContentCardAnalytics);
     document.getElementById("addAliasBtn").addEventListener("click", addAlias);
     document.getElementById("wipeData").addEventListener("click", wipeData);
@@ -103,6 +102,17 @@ function logCustomEvent() {
         "Cart Value": 4.95,
         "Cart Item Name": "Spicy Chicken Bites 5 pack"
     });
+    AppboyPlugin.logCustomEvent("cordovaCustomEventWithNestedProperties", {
+        "array key": [1, "2", false],
+        "object key": {
+            "k1": "1",
+            "k2": 2,
+            "k3": false,
+        },
+        "deep key": {
+            "key": [1, "2", true]
+        }
+    });
     showTextBubble("Logged custom event");
 }
 
@@ -116,6 +126,17 @@ function logPurchase() {
     AppboyPlugin.logPurchase("testPurchaseWithNullCurrency", 10, null, 5, properties);
     AppboyPlugin.logPurchase("testPurchaseWithNullQuantity", 10, "USD");
     AppboyPlugin.logPurchase("testPurchaseWithoutProperties", 1500, "JPY", 2);
+    AppboyPlugin.logPurchase("testPurchaseWithNestedProperties", 10, "USD", 5, {
+        "array key": [1, "2", false],
+        "object key": {
+            "k1": "1",
+            "k2": 2,
+            "k3": false,
+        },
+        "deep key": {
+            "key": [1, "2", true]
+        }
+    });
     showTextBubble("Logged purchase");
 }
 
@@ -168,6 +189,7 @@ function setUserProperties() {
     AppboyPlugin.setCustomUserAttribute("int", 5);
     AppboyPlugin.setCustomUserAttribute("bool", true);
     AppboyPlugin.setCustomUserAttribute("date", new Date());
+    AppboyPlugin.addToSubscriptionGroup("12345");
     showTextBubble("Set User Properties");
 }
 
@@ -230,10 +252,6 @@ function getAllNewsFeedCards() {
 
 function getContentCardsFromServer() {
     AppboyPlugin.getContentCardsFromServer(customPluginSuccessArrayCallback("test"), customPluginErrorCallback);
-}
-
-function logContentCardsDisplayed() {
-    AppboyPlugin.logContentCardsDisplayed();
 }
 
 function logContentCardAnalytics() {

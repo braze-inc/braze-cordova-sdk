@@ -28,6 +28,7 @@
   @property NSString *enableLocationCollection;
   @property NSString *enableGeofences;
   @property NSString *disableUNAuthorizationOptionProvisional;
+  @property NSString *sessionTimeout;
 @end
 
 @implementation AppboyPlugin
@@ -42,6 +43,7 @@
   self.enableLocationCollection = settings[@"com.appboy.enable_location_collection"];
   self.enableGeofences = settings[@"com.appboy.geofences_enabled"];
   self.disableUNAuthorizationOptionProvisional = settings[@"com.appboy.ios_disable_un_authorization_option_provisional"];
+  self.sessionTimeout = settings[@"com.appboy.ios_session_timeout"];
 
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFinishLaunchingListener:) name:UIApplicationDidFinishLaunchingNotification object:nil];
   if (![self.disableAutomaticPushHandling isEqualToString:@"YES"]) {
@@ -56,6 +58,10 @@
   appboyLaunchOptions[ABKEnableAutomaticLocationCollectionKey] = self.enableLocationCollection;
   appboyLaunchOptions[ABKEnableGeofencesKey] = self.enableGeofences;
 
+  // Set the time interval for session time out (in seconds)
+  NSNumber *sessionTimeout = [[[NSNumberFormatter alloc] init] numberFromString:self.sessionTimeout];
+  appboyLaunchOptions[ABKSessionTimeoutKey] = sessionTimeout;
+    
   // Add the endpoint only if it's non nil
   if (self.apiEndpoint != nil) {
     appboyLaunchOptions[ABKEndpointKey] = self.apiEndpoint;
@@ -72,6 +78,7 @@
             inApplication:notification.object
         withLaunchOptions:notification.userInfo
         withAppboyOptions:appboyLaunchOptions];
+  [[Appboy sharedInstance] addSdkMetadata:@[ABKSdkMetadataCordova]];
 
   if (![self.disableAutomaticPushRegistration isEqualToString:@"YES"]) {
     UIUserNotificationType notificationSettingTypes = (UIUserNotificationTypeBadge | UIUserNotificationTypeAlert | UIUserNotificationTypeSound);
@@ -332,6 +339,20 @@
   }
 }
 
+- (void) addToSubscriptionGroup:(CDVInvokedUrlCommand *)command {
+  NSString *groupId = [command argumentAtIndex:0 withDefault:nil];
+  if (groupId != nil) {
+    [[Appboy sharedInstance].user addToSubscriptionGroupWithGroupId:groupId];
+  }
+}
+
+- (void) removeFromSubscriptionGroup:(CDVInvokedUrlCommand *)command {
+  NSString *groupId = [command argumentAtIndex:0 withDefault:nil];
+  if (groupId != nil) {
+    [[Appboy sharedInstance].user removeFromSubscriptionGroupWithGroupId:groupId];
+  }
+}
+
 - (void) getDeviceId:(CDVInvokedUrlCommand *)command {
   NSString *deviceId = [[Appboy sharedInstance] getDeviceId];
   [self sendCordovaSuccessPluginResultWithString:deviceId andCommand:command];
@@ -449,10 +470,6 @@
   }
 }
 
-- (void) logContentCardsDisplayed:(CDVInvokedUrlCommand *)command {
-  [[Appboy sharedInstance] logContentCardsDisplayed];
-}
-
 - (void) getContentCardsFromServer:(CDVInvokedUrlCommand *)command {
   NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
   NSOperationQueue *mainQueue = [NSOperationQueue mainQueue];
@@ -504,7 +521,9 @@
   formattedContentCardData[@"url"] = card.urlString ?: [NSNull null];
   formattedContentCardData[@"openURLInWebView"] = @(card.openUrlInWebView);
 
-  formattedContentCardData[@"extras"] = [AppboyPlugin getJsonFromExtras:card.extras];
+  if (card.extras != nil) {
+    formattedContentCardData[@"extras"] = [AppboyPlugin getJsonFromExtras:card.extras];
+  }
 
   if ([card isKindOfClass:[ABKCaptionedImageContentCard class]]) {
     ABKCaptionedImageContentCard *captionedCard = (ABKCaptionedImageContentCard *)card;

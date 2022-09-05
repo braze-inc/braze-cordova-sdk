@@ -1,5 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.appboy.hellocordova" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.appboy.hellocordova" 
+    version="1.0.0" 
+    xmlns="http://www.w3.org/ns/widgets" 
+    xmlns:cdv="http://cordova.apache.org/ns/1.0" 
+    xmlns:android="schemas.android.com/apk/res/android">
+    
     <name>HelloCordova</name>
     <description>
         A sample Apache Cordova application for the Braze SDK.
@@ -18,6 +23,7 @@
     <icon src="res/braze_icon.png" />
     <platform name="android">
         <allow-intent href="market:*" />
+        <preference name="android-targetSdkVersion" value="31" />
         <preference name="AndroidXEnabled" value="true" />
         <preference name="com.appboy.api_key" value="ec67377e-c490-4959-8c58-c045a254a65a" />
         <preference name="com.appboy.android_api_endpoint" value="sondheim.braze.com" />
@@ -28,6 +34,13 @@
         <preference name="com.appboy.android_log_level" value="0" />
         <preference name="com.appboy.enable_location_collection" value="false" />
         <preference name="com.appboy.geofences_enabled" value="false" />
+
+        <edit-config
+            file="app/src/main/AndroidManifest.xml"
+            target="/manifest/application/activity[@android:name='MainActivity']"
+            mode="merge">
+                <activity android:exported="true"/>
+        </edit-config>
     </platform>
     <platform name="ios">
         <allow-intent href="itms:*" />
@@ -41,5 +54,4 @@
         <preference name="deployment-target" value="11.0" />
         <preference name="com.appboy.ios_disable_un_authorization_option_provisional" value="NO" />
     </platform>
-    <plugin name="cordova-plugin-whitelist" spec="1" />
 </widget>

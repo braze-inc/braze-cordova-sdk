@@ -1,3 +1,54 @@
+## 2.30.1
+
+##### Added
+- Added the ability to set the session timeout for iOS (String) in seconds.
+  - Add `<preference name="com.appboy.com.appboy.ios_session_timeout" value="your_timeout" />` to your `config.xml`, replacing `your_timeout` with the desired number of seconds.
+
+##### Fixed
+- Fixed a bug where a Content Card without a key-value pair could cause a crash.
+
+## 2.30.0
+
+##### Breaking
+- Updated to [Braze Android SDK 21.0.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v21.0.0).
+- Removed "logContentCardsDisplayed" from the javascript plugin.
+
+## 2.29.0
+
+##### Breaking
+- Updated to [Braze Android SDK 19.0.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v19.0.0).
+
+##### Changed
+- Updated to [Braze iOS SDK 4.4.2](https://github.com/Appboy/appboy-ios-sdk/releases/tag/4.4.2).
+
+## 2.28.0
+
+##### Breaking
+- Updated to [Braze Android SDK 18.0.1](https://github.com/Appboy/appboy-android-sdk/releases/tag/v18.0.1).
+
+##### Fixed
+- Fixed an error around locating certain iOS resources when integrating the SDK.
+
+## 2.27.0
+
+##### Breaking
+- Updated to [Braze Android SDK 17.0.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v17.0.0).
+- Updated to [Braze iOS SDK 4.4.0](https://github.com/Appboy/appboy-ios-sdk/releases/tag/4.4.0).
+
+##### Added
+- Added `addToSubscriptionGroup()` and `removeFromSubscriptionGroup()`.
+
+## 2.26.0
+
+##### Breaking
+- Updated to [Braze Android SDK 16.0.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v16.0.0).
+
+##### Fixed
+- Fixed an issue in pre Android P WebViews where the system WebView would not properly handle view focus being returned to it.
+  - https://issuetracker.google.com/issues/36915710 for more information.
+  - This fix is applied by default and can be disabled via `com.braze.android_apply_cordova_webview_focus_request_fix` in your `config.xml`.
+  - When enabled, this fix sets a custom In App Message view vrapper factory with the native Android SDK, potentially overriding any other custom set view factories.
+
 ## 2.25.0
 
 ##### Breaking
