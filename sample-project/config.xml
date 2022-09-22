@@ -23,7 +23,8 @@
     <icon src="res/braze_icon.png" />
     <platform name="android">
         <allow-intent href="market:*" />
-        <preference name="android-targetSdkVersion" value="31" />
+        <preference name="android-targetSdkVersion" value="33" />
+        <preference name="GradleVersion" value="7.3.3" />
         <preference name="AndroidXEnabled" value="true" />
         <preference name="com.appboy.api_key" value="ec67377e-c490-4959-8c58-c045a254a65a" />
         <preference name="com.appboy.android_api_endpoint" value="sondheim.braze.com" />

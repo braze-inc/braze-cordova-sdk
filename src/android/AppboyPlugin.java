@@ -11,7 +11,6 @@ import com.appboy.enums.Month;
 import com.appboy.enums.NotificationSubscriptionType;
 import com.appboy.enums.SdkFlavor;
 import com.appboy.events.FeedUpdatedEvent;
-import com.appboy.events.IEventSubscriber;
 import com.appboy.models.cards.Card;
 import com.appboy.models.outgoing.AttributionData;
 import com.appboy.ui.activities.AppboyFeedActivity;
@@ -20,8 +19,10 @@ import com.braze.BrazeUser;
 import com.braze.configuration.BrazeConfig;
 import com.braze.enums.BrazeSdkMetadata;
 import com.braze.events.ContentCardsUpdatedEvent;
+import com.braze.events.IEventSubscriber;
 import com.braze.models.outgoing.BrazeProperties;
 import com.braze.support.BrazeLogger;
+import com.braze.support.PermissionUtils;
 import com.braze.ui.activities.ContentCardsActivity;
 import com.braze.ui.inappmessage.BrazeInAppMessageManager;
 
@@ -104,7 +105,7 @@ public class AppboyPlugin extends CordovaPlugin {
         mDisableAutoStartSessions = false;
         return true;
       case "registerAppboyPushMessages":
-        Braze.getInstance(mApplicationContext).registerAppboyPushMessages(args.getString(0));
+        Braze.getInstance(mApplicationContext).setRegisteredPushToken(args.getString(0));
         return true;
       case "changeUser":
         Braze.getInstance(mApplicationContext).changeUser(args.getString(0));
@@ -280,6 +281,9 @@ public class AppboyPlugin extends CordovaPlugin {
           return true;
         case "removeFromSubscriptionGroup":
           currentUser.removeFromSubscriptionGroup(args.getString(0));
+          return true;
+        case "requestPushPermission":
+          PermissionUtils.requestPushPermissionPrompt(cordova.getActivity());
           return true;
       }
     }

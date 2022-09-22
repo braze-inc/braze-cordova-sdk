@@ -54,6 +54,15 @@ AppboyPlugin.prototype.registerAppboyPushMessages = function (gcmRegistrationID)
 }
 
 /**
+* ** ANDROID ONLY**
+*
+* Requests the push permission prompt to be shown to the user.
+*/
+AppboyPlugin.prototype.requestPushPermission = function () {
+	cordova.exec(null, null, "AppboyPlugin", "requestPushPermission");
+}
+
+/**
  * Reports that the current user performed a custom named event.
  * @param {string} eventName - The identifier for the event to track. Best practice is to track generic events
  *      useful for segmenting, instead of specific user actions (i.e. track watched_sports_video instead of

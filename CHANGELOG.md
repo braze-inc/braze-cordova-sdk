@@ -1,3 +1,11 @@
+## 2.31.0
+
+##### Breaking
+- Updated to [Braze Android SDK 23.0.1](https://github.com/Appboy/appboy-android-sdk/releases/tag/v23.0.1).
+
+##### Added
+- Added a method `requestPushPermission()` for Android API 33 to request push permission prompts from the system on Android 13 devices.
+
 ## 2.30.1
 
 ##### Added

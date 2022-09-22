@@ -61,6 +61,7 @@ onDeviceReady: function() {
     document.getElementById("requestFlushBtn").addEventListener("click", requestDataFlush);
     document.getElementById("setLanguageBtn").addEventListener("click", setLanguage);
     document.getElementById("getDeviceId").addEventListener("click", getDeviceId);
+    document.getElementById("requestPushPermission").addEventListener("click", requestPushPermission);
 
     var success = function(message) {
         alert(message);
@@ -280,6 +281,11 @@ function setLanguage() {
 
 function getDeviceId() {
     AppboyPlugin.getDeviceId(customPluginSuccessCallback("DeviceID: "), customPluginErrorCallback);
+}
+
+function requestPushPermission() {
+    AppboyPlugin.requestPushPermission();
+    showTextBubble("requestPushPermission() called");
 }
 
 // Other helper functions
