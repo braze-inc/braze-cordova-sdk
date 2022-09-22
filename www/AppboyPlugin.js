@@ -411,6 +411,25 @@ AppboyPlugin.prototype.logContentCardDismissed = function (cardId) {
 }
 
 /**
+ * ** iOS ONLY **
+ *
+ * Gets a boolean indicating if the user received and answered (allowing or not) the prompt to allow notifications
+ */
+AppboyPlugin.prototype.hasUserAnsweredNotificationPrompt = function (successCallback) {
+	cordova.exec(successCallback, null, "AppboyPlugin", "hasUserAnsweredNotificationPrompt");
+}
+
+/**
+ * ** iOS ONLY **
+ *
+ * If the user was never prompted, it will prompt for permission to send push notifications.
+ * This method needs to be called each time when the app starts after the user has given permission, to ensure the token in Braze is up to date.
+ */
+AppboyPlugin.prototype.registerPushNotification = function (successCallback) {
+	cordova.exec(successCallback, null, "AppboyPlugin", "registerPushNotification");
+}
+
+/**
  * Sets the language for a user. Language Strings should be valid ISO 639-1 language codes. See loc.gov/standards/iso639-2/php/code_list.php.
  */
 AppboyPlugin.prototype.setLanguage = function (language) {

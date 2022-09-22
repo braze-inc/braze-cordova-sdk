@@ -146,6 +146,32 @@
   [[Appboy sharedInstance] requestImmediateDataFlush];
 }
 
+- (void)hasUserAnsweredNotificationPrompt:(CDVInvokedUrlCommand *)command {
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    [center getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
+        BOOL result = (settings.authorizationStatus != UNAuthorizationStatusNotDetermined);
+        [self sendCordovaSuccessPluginResultWithBool:result andCommand:command];
+    }];
+}
+
+- (void)registerPushNotification:(CDVInvokedUrlCommand *)command {
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    if (center.delegate == nil) {
+      center.delegate = [UIApplication sharedApplication].delegate;
+    }
+
+    UNAuthorizationOptions options = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
+    if (![self.disableUNAuthorizationOptionProvisional isEqualToString:@"YES"] && @available(iOS 12.0, *)) {
+      options = options | UNAuthorizationOptionProvisional;
+    }
+    [center requestAuthorizationWithOptions:options completionHandler:^(BOOL granted, NSError * _Nullable error) {
+      [[Appboy sharedInstance] pushAuthorizationFromUserNotificationCenter:granted];
+      [self sendCordovaSuccessPluginResultWithBool:granted andCommand:command];
+    }];
+    [[UIApplication sharedApplication] registerForRemoteNotifications];
+    [center setNotificationCategories:[ABKPushUtils getAppboyUNNotificationCategorySet]];
+}
+
 /*-------ABKUser.h-------*/
 - (void) setFirstName:(CDVInvokedUrlCommand *)command {
   NSString *firstName = [command argumentAtIndex:0 withDefault:nil];
@@ -583,6 +609,12 @@
 - (void) sendCordovaSuccessPluginResultWithInt:(NSUInteger)resultMessage andCommand:(CDVInvokedUrlCommand *)command {
   CDVPluginResult *pluginResult = nil;
   pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsInt:resultMessage];
+  [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void) sendCordovaSuccessPluginResultWithBool:(BOOL)resultMessage andCommand:(CDVInvokedUrlCommand *)command {
+  CDVPluginResult *pluginResult = nil;
+  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:resultMessage];
   [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
