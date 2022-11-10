@@ -555,6 +555,11 @@
 }
 
 + (NSString *) getJsonFromExtras:(NSDictionary *)extras {
+  if (!extras) {
+    NSLog(@"Got an error in getJsonFromExtras: extras is nil");
+    return @"{}";
+  }
+
   NSError *error;
   NSData *jsonData = [NSJSONSerialization dataWithJSONObject:extras
                                                      options:0
