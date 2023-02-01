@@ -5,8 +5,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.appboy:android-sdk-ui:16.0.0'
-    implementation 'com.google.firebase:firebase-messaging:22.0.0'
+    implementation 'com.appboy:android-sdk-ui:23.0.1'
+    implementation 'com.google.firebase:firebase-messaging:23.0.0'
 }
 
 buildscript {

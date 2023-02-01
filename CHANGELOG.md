@@ -1,3 +1,51 @@
+## 2.31.0
+
+##### Breaking
+- Updated to [Braze Android SDK 23.0.1](https://github.com/Appboy/appboy-android-sdk/releases/tag/v23.0.1).
+
+##### Added
+- Added a method `requestPushPermission()` for Android API 33 to request push permission prompts from the system on Android 13 devices.
+
+## 2.30.1
+
+##### Added
+- Added the ability to set the session timeout for iOS (String) in seconds.
+  - Add `<preference name="com.appboy.com.appboy.ios_session_timeout" value="your_timeout" />` to your `config.xml`, replacing `your_timeout` with the desired number of seconds.
+
+##### Fixed
+- Fixed a bug where a Content Card without a key-value pair could cause a crash.
+
+## 2.30.0
+
+##### Breaking
+- Updated to [Braze Android SDK 21.0.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v21.0.0).
+- Removed "logContentCardsDisplayed" from the javascript plugin.
+
+## 2.29.0
+
+##### Breaking
+- Updated to [Braze Android SDK 19.0.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v19.0.0).
+
+##### Changed
+- Updated to [Braze iOS SDK 4.4.2](https://github.com/Appboy/appboy-ios-sdk/releases/tag/4.4.2).
+
+## 2.28.0
+
+##### Breaking
+- Updated to [Braze Android SDK 18.0.1](https://github.com/Appboy/appboy-android-sdk/releases/tag/v18.0.1).
+
+##### Fixed
+- Fixed an error around locating certain iOS resources when integrating the SDK.
+
+## 2.27.0
+
+##### Breaking
+- Updated to [Braze Android SDK 17.0.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v17.0.0).
+- Updated to [Braze iOS SDK 4.4.0](https://github.com/Appboy/appboy-ios-sdk/releases/tag/4.4.0).
+
+##### Added
+- Added `addToSubscriptionGroup()` and `removeFromSubscriptionGroup()`.
+
 ## 2.26.0
 
 ##### Breaking

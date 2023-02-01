@@ -11,16 +11,18 @@ import com.appboy.enums.Month;
 import com.appboy.enums.NotificationSubscriptionType;
 import com.appboy.enums.SdkFlavor;
 import com.appboy.events.FeedUpdatedEvent;
-import com.appboy.events.IEventSubscriber;
 import com.appboy.models.cards.Card;
 import com.appboy.models.outgoing.AttributionData;
 import com.appboy.ui.activities.AppboyFeedActivity;
 import com.braze.Braze;
 import com.braze.BrazeUser;
 import com.braze.configuration.BrazeConfig;
+import com.braze.enums.BrazeSdkMetadata;
 import com.braze.events.ContentCardsUpdatedEvent;
+import com.braze.events.IEventSubscriber;
 import com.braze.models.outgoing.BrazeProperties;
 import com.braze.support.BrazeLogger;
+import com.braze.support.PermissionUtils;
 import com.braze.ui.activities.ContentCardsActivity;
 import com.braze.ui.inappmessage.BrazeInAppMessageManager;
 
@@ -71,7 +73,6 @@ public class AppboyPlugin extends CordovaPlugin {
   // Content Card method names
   private static final String GET_CONTENT_CARDS_FROM_SERVER_METHOD = "getContentCardsFromServer";
   private static final String GET_CONTENT_CARDS_FROM_CACHE_METHOD = "getContentCardsFromCache";
-  private static final String LOG_CONTENT_CARDS_DISPLAYED_METHOD = "logContentCardsDisplayed";
   private static final String LOG_CONTENT_CARDS_CLICKED_METHOD = "logContentCardClicked";
   private static final String LOG_CONTENT_CARDS_IMPRESSION_METHOD = "logContentCardImpression";
   private static final String LOG_CONTENT_CARDS_DISMISSED_METHOD = "logContentCardDismissed";
@@ -104,7 +105,7 @@ public class AppboyPlugin extends CordovaPlugin {
         mDisableAutoStartSessions = false;
         return true;
       case "registerAppboyPushMessages":
-        Braze.getInstance(mApplicationContext).registerAppboyPushMessages(args.getString(0));
+        Braze.getInstance(mApplicationContext).setRegisteredPushToken(args.getString(0));
         return true;
       case "changeUser":
         Braze.getInstance(mApplicationContext).changeUser(args.getString(0));
@@ -241,9 +242,7 @@ public class AppboyPlugin extends CordovaPlugin {
         case "setPhoneNumber":
           currentUser.setPhoneNumber(args.getString(0));
           return true;
-        case "setAvatarImageUrl":
-          currentUser.setAvatarImageUrl(args.getString(0));
-          return true;
+
         case "setPushNotificationSubscriptionType": {
           String subscriptionType = args.getString(0);
           switch (subscriptionType) {
@@ -277,6 +276,15 @@ public class AppboyPlugin extends CordovaPlugin {
         case "setLanguage":
           currentUser.setLanguage(args.getString(0));
           return true;
+        case "addToSubscriptionGroup":
+          currentUser.addToSubscriptionGroup(args.getString(0));
+          return true;
+        case "removeFromSubscriptionGroup":
+          currentUser.removeFromSubscriptionGroup(args.getString(0));
+          return true;
+        case "requestPushPermission":
+          PermissionUtils.requestPushPermissionPrompt(cordova.getActivity());
+          return true;
       }
     }
 
@@ -306,9 +314,6 @@ public class AppboyPlugin extends CordovaPlugin {
       case GET_CONTENT_CARDS_FROM_SERVER_METHOD:
       case GET_CONTENT_CARDS_FROM_CACHE_METHOD:
         return handleContentCardsUpdateGetters(action, callbackContext);
-      case LOG_CONTENT_CARDS_DISPLAYED_METHOD:
-        Braze.getInstance(mApplicationContext).logContentCardsDisplayed();
-        return true;
       case LOG_CONTENT_CARDS_CLICKED_METHOD:
       case LOG_CONTENT_CARDS_DISMISSED_METHOD:
       case LOG_CONTENT_CARDS_IMPRESSION_METHOD:
@@ -385,7 +390,8 @@ public class AppboyPlugin extends CordovaPlugin {
     BrazeConfig.Builder configBuilder = new BrazeConfig.Builder();
 
     // Set the flavor
-    configBuilder.setSdkFlavor(SdkFlavor.CORDOVA);
+    configBuilder.setSdkFlavor(SdkFlavor.CORDOVA)
+                 .setSdkMetadata(EnumSet.of(BrazeSdkMetadata.CORDOVA));
 
     if (cordovaPreferences.contains(APPBOY_API_KEY_PREFERENCE)) {
       configBuilder.setApiKey(cordovaPreferences.getString(APPBOY_API_KEY_PREFERENCE, null));
@@ -568,7 +574,7 @@ public class AppboyPlugin extends CordovaPlugin {
         desiredCard.logClick();
         break;
       case LOG_CONTENT_CARDS_DISMISSED_METHOD:
-        desiredCard.setIsDismissed(true);
+        desiredCard.setDismissed(true);
         break;
       case LOG_CONTENT_CARDS_IMPRESSION_METHOD:
         desiredCard.logImpression();

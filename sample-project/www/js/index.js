@@ -53,7 +53,6 @@ onDeviceReady: function() {
     document.getElementById("getUnreadCardCountForCategoriesBtn").addEventListener("click", getUnreadCardCountForCategories);
     document.getElementById("getAllNewsFeedCardsBtn").addEventListener("click", getAllNewsFeedCards);
     document.getElementById("getAllContentCardsBtn").addEventListener("click", getContentCardsFromServer);
-    document.getElementById("logContentCardsDisplayedBtn").addEventListener("click", logContentCardsDisplayed);
     document.getElementById("logContentCardAnalyticsBtn").addEventListener("click", logContentCardAnalytics);
     document.getElementById("addAliasBtn").addEventListener("click", addAlias);
     document.getElementById("wipeData").addEventListener("click", wipeData);
@@ -62,6 +61,7 @@ onDeviceReady: function() {
     document.getElementById("requestFlushBtn").addEventListener("click", requestDataFlush);
     document.getElementById("setLanguageBtn").addEventListener("click", setLanguage);
     document.getElementById("getDeviceId").addEventListener("click", getDeviceId);
+    document.getElementById("requestPushPermission").addEventListener("click", requestPushPermission);
 
     var success = function(message) {
         alert(message);
@@ -190,6 +190,7 @@ function setUserProperties() {
     AppboyPlugin.setCustomUserAttribute("int", 5);
     AppboyPlugin.setCustomUserAttribute("bool", true);
     AppboyPlugin.setCustomUserAttribute("date", new Date());
+    AppboyPlugin.addToSubscriptionGroup("12345");
     showTextBubble("Set User Properties");
 }
 
@@ -254,10 +255,6 @@ function getContentCardsFromServer() {
     AppboyPlugin.getContentCardsFromServer(customPluginSuccessArrayCallback("test"), customPluginErrorCallback);
 }
 
-function logContentCardsDisplayed() {
-    AppboyPlugin.logContentCardsDisplayed();
-}
-
 function logContentCardAnalytics() {
     // Log all the analytics methods for the first returned card
     AppboyPlugin.getContentCardsFromServer(function(cards) {
@@ -284,6 +281,11 @@ function setLanguage() {
 
 function getDeviceId() {
     AppboyPlugin.getDeviceId(customPluginSuccessCallback("DeviceID: "), customPluginErrorCallback);
+}
+
+function requestPushPermission() {
+    AppboyPlugin.requestPushPermission();
+    showTextBubble("requestPushPermission() called");
 }
 
 // Other helper functions

@@ -1,4 +1,5 @@
 {
   "name": "appboy-cordova-sdk",
-  "version": "2.26.0"
+  "version": "2.31.0",
+  "main": "www/AppboyPlugin.js"
 }

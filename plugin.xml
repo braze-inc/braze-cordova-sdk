@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-  id="cordova-plugin-appboy" version="2.26.0">
+  id="cordova-plugin-appboy" version="2.31.0">
   <name>Device</name>
-  <description>Appboy Cordova SDK</description>
+  <description>Braze Cordova SDK</description>
   <license>MIT</license>
-  <keywords>cordova,appboy</keywords>
+  <keywords>cordova,appboy,braze</keywords>
   <js-module src="www/AppboyPlugin.js" name="AppboyPlugin">
     <clobbers target="AppboyPlugin" />
   </js-module>
@@ -36,20 +36,6 @@
 
   <!-- ios -->
   <platform name="ios">
-    <framework src="Appboy-iOS-SDK" type="podspec" spec="~> 4.3.2" />
-
-    <!-- frameworks -->
-    <framework src="libz.dylib" />
-    <framework src="SystemConfiguration.framework"/>
-    <framework src="QuartzCore.framework"/>
-    <framework src="CoreImage.framework"/>
-    <framework src="CoreText.framework"/>
-    <framework src="CoreTelephony.framework"  weak="true" />
-    <framework src="Social.framework"  weak="true" />
-    <framework src="Accounts.framework" weak="true" />
-    <framework src="AdSupport.framework" weak="true" />
-    <framework src="ImageIO.framework" weak="true" />
-
     <config-file target="config.xml" parent="/*">
       <feature name="AppboyPlugin">
         <param name="ios-package" value="AppboyPlugin" />
@@ -62,5 +48,13 @@
     <source-file src="src/ios/AppDelegate+Appboy.m" />
     <header-file src="src/ios/IDFADelegate.h" />
     <source-file src="src/ios/IDFADelegate.m" />
+    <podspec>
+      <config>
+        <source url="https://cdn.cocoapods.org/"/>
+      </config>
+      <pods use-frameworks="true">
+        <pod name="Appboy-iOS-SDK" spec="~> 4.4.2" />
+      </pods>
+    </podspec>
   </platform>
 </plugin>

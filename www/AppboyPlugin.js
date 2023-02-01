@@ -54,6 +54,15 @@ AppboyPlugin.prototype.registerAppboyPushMessages = function (gcmRegistrationID)
 }
 
 /**
+* ** ANDROID ONLY**
+*
+* Requests the push permission prompt to be shown to the user.
+*/
+AppboyPlugin.prototype.requestPushPermission = function () {
+	cordova.exec(null, null, "AppboyPlugin", "requestPushPermission");
+}
+
+/**
  * Reports that the current user performed a custom named event.
  * @param {string} eventName - The identifier for the event to track. Best practice is to track generic events
  *      useful for segmenting, instead of specific user actions (i.e. track watched_sports_video instead of
@@ -381,13 +390,6 @@ AppboyPlugin.prototype.launchContentCards = function () {
 }
 
 /**
- * Logs a Content Content feed displayed event.
- */
-AppboyPlugin.prototype.logContentCardsDisplayed = function () {
-	cordova.exec(null, null, "AppboyPlugin", "logContentCardsDisplayed");
-}
-
-/**
  * Logs a click for the given Content Card id.
  */
 AppboyPlugin.prototype.logContentCardClicked = function (cardId) {
@@ -413,6 +415,20 @@ AppboyPlugin.prototype.logContentCardDismissed = function (cardId) {
  */
 AppboyPlugin.prototype.setLanguage = function (language) {
 	cordova.exec(null, null, "AppboyPlugin", "setLanguage", [language]);
+}
+
+/**
+ * Adds user to given subscription group.
+ */
+AppboyPlugin.prototype.addToSubscriptionGroup = function (groupId) {
+	cordova.exec(null, null, "AppboyPlugin", "addToSubscriptionGroup", [groupId]);
+}
+
+/**
+ * Removes user from given subscription group.
+ */
+AppboyPlugin.prototype.removeFromSubscriptionGroup = function (groupId) {
+	cordova.exec(null, null, "AppboyPlugin", "removeFromSubscriptionGroup", [groupId]);
 }
 
 /**
