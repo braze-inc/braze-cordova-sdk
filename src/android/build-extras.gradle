@@ -5,7 +5,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.appboy:android-sdk-ui:23.0.1'
+    implementation 'com.braze:android-sdk-ui:24.1.0'
     implementation 'com.google.firebase:firebase-messaging:23.0.0'
 }
 
@@ -24,4 +24,11 @@ buildscript {
 // in the root gradle file
 ext.postBuildExtras = {
     apply plugin: com.google.gms.googleservices.GoogleServicesPlugin
+
+    android {
+        kotlinOptions {
+            freeCompilerArgs = ['-Xjvm-default=all']
+            jvmTarget = "1.8"
+        }
+    }
 }

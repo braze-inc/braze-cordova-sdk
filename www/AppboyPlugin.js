@@ -42,15 +42,23 @@ AppboyPlugin.prototype.changeUser = function (userId) {
 /**
 * ** ANDROID ONLY**
 *
-* Registers the device as eligible to receive push notifications from Appboy.
-* Appboy will use the provided For GCM/ADM applications, this takes the GCM/ADM registration ID to send the device GCM/ADM messages.
-* For apps integrating Baidu Cloud Push, this method is used to register the Baidu user with Appboy.
-* This should only be used if you already use GCM/ADM messaging in your app from another provider or are integrating Baidu Cloud Push.
+* Registers the device as eligible to receive push notifications from Braze.
 *
-* @param {string} registrationId - The registration ID, or for apps integrating Baidu Cloud Push, the Baidu user id.
+* @param {string} registrationId - The registration ID / push token.
 */
-AppboyPlugin.prototype.registerAppboyPushMessages = function (gcmRegistrationID) {
-	cordova.exec(null, null, "AppboyPlugin", "registerAppboyPushMessages", [gcmRegistrationID]);
+AppboyPlugin.prototype.registerAppboyPushMessages = function (registrationID) {
+	cordova.exec(null, null, "AppboyPlugin", "registerAppboyPushMessages", [registrationID]);
+}
+
+/**
+* ** ANDROID ONLY**
+*
+* Registers the device as eligible to receive push notifications from Braze.
+*
+* @param {string} pushToken - The registration ID / push token.
+*/
+AppboyPlugin.prototype.setRegisteredPushToken = function (pushToken) {
+	cordova.exec(null, null, "AppboyPlugin", "setRegisteredPushToken", [pushToken]);
 }
 
 /**
@@ -104,7 +112,6 @@ AppboyPlugin.prototype.logPurchase = function (productId, price, currencyCode, q
 	cordova.exec(null, null, "AppboyPlugin", "logPurchase", [productId, price, currencyCode, quantity, purchaseProperties]);
 }
 
-// Appboy user methods
 /**
  * Sets the attribution information for the user. For in apps that have an install tracking integration.
  */
@@ -208,15 +215,6 @@ AppboyPlugin.prototype.setHomeCity = function (homeCity) {
  */
 AppboyPlugin.prototype.setPhoneNumber = function (phoneNumber) {
 	cordova.exec(null, null, "AppboyPlugin", "setPhoneNumber", [phoneNumber]);
-}
-
-/**
- * Sets the url for the avatar image for the user, which will be displayed on the user profile and throughout the Appboy
- *    dashboard.
- * @param {string} avatarImageUrl
- */
-AppboyPlugin.prototype.setAvatarImageUrl = function (avatarImageUrl) {
-	cordova.exec(null, null, "AppboyPlugin", "setAvatarImageUrl", [avatarImageUrl]);
 }
 
 /**

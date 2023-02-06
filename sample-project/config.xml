@@ -23,7 +23,11 @@
     <icon src="res/braze_icon.png" />
     <platform name="android">
         <allow-intent href="market:*" />
+        <preference name="GradlePluginKotlinEnabled" value="true" />
+        <preference name="GradlePluginKotlinCodeStyle" value="official" />
+        <preference name="GradlePluginKotlinVersion" value="1.5.21" />
         <preference name="android-targetSdkVersion" value="33" />
+        <preference name="android-compileSdkVersion" value="33" />
         <preference name="GradleVersion" value="7.3.3" />
         <preference name="AndroidXEnabled" value="true" />
         <preference name="com.appboy.api_key" value="ec67377e-c490-4959-8c58-c045a254a65a" />
@@ -46,7 +50,8 @@
     <platform name="ios">
         <allow-intent href="itms:*" />
         <allow-intent href="itms-apps:*" />
-        <preference name="com.appboy.api_key" value="06a4b5d1-099b-4910-9604-583ac8f2dc10" />
+        <preference name="com.appboy.ios_api_endpoint" value="sondheim.braze.com" />
+        <preference name="com.appboy.api_key" value="56614add-1d2c-4bd3-a22d-023164fca958" />
         <preference name="com.appboy.ios_disable_automatic_push_registration" value="NO" />
         <preference name="com.appboy.ios_enable_idfa_automatic_collection" value="YES" />
         <preference name="com.appboy.enable_location_collection" value="NO" />

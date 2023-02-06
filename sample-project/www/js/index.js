@@ -182,7 +182,6 @@ function setUserProperties() {
     AppboyPlugin.setHomeCity("New York");
     AppboyPlugin.setPhoneNumber("1234567890");
     AppboyPlugin.setDateOfBirth(1987, 9, 21);
-    AppboyPlugin.setAvatarImageUrl("https://raw.githubusercontent.com/Appboy/appboy-android-sdk/master/Appboy_Logo_400x100.png");
     AppboyPlugin.setPushNotificationSubscriptionType(AppboyPlugin.NotificationSubscriptionTypes.OPTED_IN);
     AppboyPlugin.setEmailNotificationSubscriptionType(AppboyPlugin.NotificationSubscriptionTypes.OPTED_IN);
     AppboyPlugin.setCustomUserAttribute("string", "stringValue");

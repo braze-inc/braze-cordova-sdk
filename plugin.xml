@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-  id="cordova-plugin-appboy" version="2.31.0">
+  id="cordova-plugin-appboy" version="2.33.0">
   <name>Device</name>
   <description>Braze Cordova SDK</description>
   <license>MIT</license>
@@ -13,13 +13,13 @@
   <platform name="android">
     <config-file target="res/xml/config.xml" parent="/*">
       <feature name="AppboyPlugin">
-        <param name="android-package" value="com.appboy.cordova.AppboyPlugin" />
+        <param name="android-package" value="com.braze.cordova.BrazePlugin" />
         <param name="onload" value="true" />
       </feature>
     </config-file>
-    <source-file src="src/android/AppboyPlugin.java" target-dir="src/com/appboy/cordova" />
-    <source-file src="src/android/ContentCardUtils.java" target-dir="src/com/appboy/cordova" />
-    <source-file src="src/android/CordovaInAppMessageViewWrapper.java" target-dir="src/com/appboy/cordova" />
+    <source-file src="src/android/BrazePlugin.kt" target-dir="java/com/braze/cordova" />
+    <source-file src="src/android/ContentCardUtils.kt" target-dir="java/com/braze/cordova" />
+    <source-file src="src/android/CordovaInAppMessageViewWrapper.kt" target-dir="java/com/braze/cordova" />
     <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference" />
     <config-file target="AndroidManifest.xml" parent="/manifest">
       <uses-permission android:name="android.permission.INTERNET" />
@@ -38,22 +38,23 @@
   <platform name="ios">
     <config-file target="config.xml" parent="/*">
       <feature name="AppboyPlugin">
-        <param name="ios-package" value="AppboyPlugin" />
+        <param name="ios-package" value="BrazePlugin" />
         <param name="onload" value="true" />
       </feature>
     </config-file>
-    <header-file src="src/ios/AppboyPlugin.h" />
-    <source-file src="src/ios/AppboyPlugin.m" />
-    <header-file src="src/ios/AppDelegate+Appboy.h" />
-    <source-file src="src/ios/AppDelegate+Appboy.m" />
-    <header-file src="src/ios/IDFADelegate.h" />
-    <source-file src="src/ios/IDFADelegate.m" />
+    <header-file src="src/ios/BrazePlugin.h" />
+    <source-file src="src/ios/BrazePlugin.m" />
+    <header-file src="src/ios/AppDelegate+Braze.h" />
+    <source-file src="src/ios/AppDelegate+Braze.m" />
+    <header-file src="src/ios/BrazeIDFADelegate.h" />
     <podspec>
       <config>
         <source url="https://cdn.cocoapods.org/"/>
       </config>
       <pods use-frameworks="true">
-        <pod name="Appboy-iOS-SDK" spec="~> 4.4.2" />
+        <pod name="BrazeKit" spec="~> 5.8.1" />
+        <pod name="BrazeUI" spec="~> 5.8.1" />
+        <pod name="BrazeLocation" spec="~> 5.8.1" />
       </pods>
     </podspec>
   </platform>

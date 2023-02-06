@@ -1,3 +1,23 @@
+## 2.33.0
+
+##### Breaking
+- Migrated the iOS plugin to use the new [Braze Swift SDK](https://github.com/braze-inc/braze-swift-sdk) (5.8.1).
+  - News Feed UI is no longer supported on iOS.
+
+## 2.32.0
+
+##### Breaking
+- Updated to [Braze Android SDK 24.1.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v24.1.0).
+- Updated the Android bridge to Kotlin.
+  - `<preference name="GradlePluginKotlinEnabled" value="true" />` is now required in your `config.xml`.
+- Removed `setAvatarImageUrl()`.
+
+##### Changed
+- Added an `main` value to `package.json`.
+
+##### Added
+- Added `setRegisteredPushToken()` which replaces the deprecated `registerAppboyPushMessages()` method.
+
 ## 2.31.0
 
 ##### Breaking

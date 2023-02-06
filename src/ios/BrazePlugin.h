@@ -1,8 +1,13 @@
 #import <Cordova/CDV.h>
+#import "BrazeIDFADelegate.h"
+@import BrazeKit;
 
-@interface AppboyPlugin : CDVPlugin <UIAlertViewDelegate> {}
+@interface BrazePlugin : CDVPlugin <UIAlertViewDelegate> {}
 
-/*-------Appboy.h-------*/
+@property Braze *braze;
+@property id<BrazeIDFADelegate> idfaDelegate;
+
+/*-------Braze-------*/
 - (void) changeUser:(CDVInvokedUrlCommand *)command;
 - (void) logCustomEvent:(CDVInvokedUrlCommand *)command;
 - (void) logPurchase:(CDVInvokedUrlCommand *)command;
@@ -12,7 +17,7 @@
 - (void) requestImmediateDataFlush:(CDVInvokedUrlCommand *)command;
 - (void) getDeviceId:(CDVInvokedUrlCommand *)command;
 
-/*-------ABKUser.h-------*/
+/*-------Braze.User-------*/
 - (void) setFirstName:(CDVInvokedUrlCommand *)command;
 - (void) setLastName:(CDVInvokedUrlCommand *)command;
 - (void) setEmail:(CDVInvokedUrlCommand *)command;
@@ -21,7 +26,6 @@
 - (void) setCountry:(CDVInvokedUrlCommand *)command;
 - (void) setHomeCity:(CDVInvokedUrlCommand *)command;
 - (void) setPhoneNumber:(CDVInvokedUrlCommand *)command;
-- (void) setAvatarImageUrl:(CDVInvokedUrlCommand *)command;
 - (void) setLanguage:(CDVInvokedUrlCommand *)command;
 
 - (void) setPushNotificationSubscriptionType:(CDVInvokedUrlCommand *)command;
@@ -39,7 +43,7 @@
 - (void) removeFromCustomAttributeArray:(CDVInvokedUrlCommand *)command;
 - (void) addAlias:(CDVInvokedUrlCommand *)command;
 
-/*-------Appboy UI-------*/
+/*-------BrazeUI-------*/
 - (void) launchNewsFeed:(CDVInvokedUrlCommand *)command;
 - (void) launchContentCards:(CDVInvokedUrlCommand *)command;
 
