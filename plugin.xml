@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-  id="cordova-plugin-appboy" version="2.33.0">
+  id="cordova-plugin-appboy" version="3.0.0">
   <name>Device</name>
   <description>Braze Cordova SDK</description>
   <license>MIT</license>
@@ -19,6 +19,7 @@
     </config-file>
     <source-file src="src/android/BrazePlugin.kt" target-dir="java/com/braze/cordova" />
     <source-file src="src/android/ContentCardUtils.kt" target-dir="java/com/braze/cordova" />
+    <source-file src="src/android/FeatureFlagUtils.kt" target-dir="java/com/braze/cordova" />
     <source-file src="src/android/CordovaInAppMessageViewWrapper.kt" target-dir="java/com/braze/cordova" />
     <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference" />
     <config-file target="AndroidManifest.xml" parent="/manifest">
@@ -52,9 +53,9 @@
         <source url="https://cdn.cocoapods.org/"/>
       </config>
       <pods use-frameworks="true">
-        <pod name="BrazeKit" spec="~> 5.8.1" />
-        <pod name="BrazeUI" spec="~> 5.8.1" />
-        <pod name="BrazeLocation" spec="~> 5.8.1" />
+        <pod name="BrazeKit" spec="~> 5.11.0" />
+        <pod name="BrazeUI" spec="~> 5.11.0" />
+        <pod name="BrazeLocation" spec="~> 5.11.0" />
       </pods>
     </podspec>
   </platform>

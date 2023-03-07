@@ -34,6 +34,10 @@ bindEvents: function() {
     // function, we must explicitly call 'app.receivedEvent(...);'
 onDeviceReady: function() {
     app.receivedEvent('deviceready');
+    document.getElementById("getFeatureFlagBtn").addEventListener("click", getFeatureFlag);
+    document.getElementById("getAllFeatureFlagsBtn").addEventListener("click", getAllFeatureFlags);
+    document.getElementById("refreshFeatureFlagsBtn").addEventListener("click", refreshFeatureFlags);
+    document.getElementById("subscribeToFeatureFlagsBtn").addEventListener("click", subscribeToFeatureFlags)
     document.getElementById("changeUserBtn").addEventListener("click", changeUser);
     document.getElementById("logCustomEventBtn").addEventListener("click", logCustomEvent);
     document.getElementById("logPurchaseBtn").addEventListener("click", logPurchase);
@@ -90,6 +94,24 @@ app.initialize();
 function changeUser() {
     AppboyPlugin.changeUser(document.getElementById("changeUserInputId").value);
     showTextBubble("Change user called");
+}
+
+function getFeatureFlag() {
+    AppboyPlugin.getFeatureFlag(document.getElementById("featureFlagInputId").value, customPluginSuccessJsonCallback("FeatureFlag: "), customPluginErrorCallback);
+}
+
+function getAllFeatureFlags() {
+    AppboyPlugin.getAllFeatureFlags(customPluginSuccessArrayCallback("GetAllFeatureFlags: "), customPluginErrorCallback);
+}
+
+function refreshFeatureFlags() {
+    AppboyPlugin.refreshFeatureFlags();
+    showTextBubble("Refresh feature flags");
+}
+
+function subscribeToFeatureFlags() {
+    AppboyPlugin.subscribeToFeatureFlagUpdates(featureFlagsUpdated);
+    showTextBubble("Subscribed to Feature Flags");
 }
 
 function logCustomEvent() {
@@ -312,6 +334,13 @@ function customPluginSuccessCallback(bubbleMessage) {
 /**
 * Serves as the success callback for the Appboy Plugin. Displays a text bubble with a message when called.
 **/
+function customPluginSuccessJsonCallback(bubbleMessage) {
+    return function(callbackResult) { showTextBubble(bubbleMessage + " JSON: " + JSON.stringify(callbackResult)) };
+}
+
+/**
+* Serves as the success callback for the Appboy Plugin. Displays a text bubble with a message when called.
+**/
 function customPluginSuccessArrayCallback(bubbleMessage) {
     return function(callbackResult) {
         var numElements = callbackResult.length;
@@ -320,6 +349,14 @@ function customPluginSuccessArrayCallback(bubbleMessage) {
             console.log(JSON.stringify(callbackResult[i]));
         }
  };
+}
+
+function featureFlagsUpdated(featureFlags) {
+    var numElements = featureFlags.length;
+    showTextBubble("Feature Flags Updated: " + numElements + " objects")
+    for (var i = 0; i < numElements; i++) {
+        console.log(" Feature Flag - " + JSON.stringify(featureFlags[i]));
+    }
 }
 
 /**

@@ -437,6 +437,43 @@ AppboyPlugin.prototype.getDeviceId = function (successCallback, errorCallback) {
 }
 
 /**
+ * Requests a specific Feature Flags. This will pull the data from a local cache and does
+ * not force a refresh.
+ *
+ * @param id The ID of the Feature Flag to retrieve.
+ * @return [FeatureFlag] of the requested ID. If the Feature Flag does not exist, a [FeatureFlag]
+ * will be returned with enabled set to `false` and empty properties.
+ */
+AppboyPlugin.prototype.getFeatureFlag = function (id, successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getFeatureFlag", [id]);
+}
+
+/**
+ * Retrieves the offline/cached list of Feature Flags from offline storage.
+ *
+ * @return The list of cached Feature Flags. Note that this does not request a
+ * fresh list of Feature Flags from Braze. If the SDK is disabled or the
+ * cached list of feature flags cannot be retrieved, returns empty list.
+ */
+AppboyPlugin.prototype.getAllFeatureFlags = function (successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getAllFeatureFlags");
+}
+
+/**
+ * Requests a refresh of Feature Flags from the Braze server.
+ */
+AppboyPlugin.prototype.refreshFeatureFlags = function (successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "AppboyPlugin", "refreshFeatureFlags");
+}
+
+/**
+ * Subscribes to Feature Flags events. The subscriber callback will be called when Feature Flags are updated.
+ */
+AppboyPlugin.prototype.subscribeToFeatureFlagUpdates = function (successCallback) {
+	cordova.exec(successCallback, null, "AppboyPlugin", "subscribeToFeatureFlagUpdates");
+}
+
+/**
  * @return Starts SDK session tracking if previously disabled. Only used for Android.
  */
 AppboyPlugin.prototype.startSessionTracking = function () {

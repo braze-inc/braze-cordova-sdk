@@ -5,7 +5,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.braze:android-sdk-ui:24.1.0'
+    implementation 'com.braze:android-sdk-ui:24.2.0'
     implementation 'com.google.firebase:firebase-messaging:23.0.0'
 }
 

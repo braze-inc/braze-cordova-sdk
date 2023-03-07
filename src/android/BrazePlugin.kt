@@ -13,9 +13,11 @@ import com.braze.configuration.BrazeConfig
 import com.braze.cordova.ContentCardUtils.getCardById
 import com.braze.cordova.ContentCardUtils.mapContentCards
 import com.braze.cordova.CordovaInAppMessageViewWrapper.CordovaInAppMessageViewWrapperFactory
+import com.braze.cordova.FeatureFlagUtils.mapFeatureFlags
 import com.braze.enums.BrazeSdkMetadata
 import com.braze.events.ContentCardsUpdatedEvent
 import com.braze.events.IEventSubscriber
+import com.braze.events.FeatureFlagsUpdatedEvent
 import com.braze.models.outgoing.BrazeProperties
 import com.braze.support.BrazeLogger.Priority.*
 import com.braze.support.BrazeLogger.brazelog
@@ -27,6 +29,7 @@ import com.braze.ui.inappmessage.BrazeInAppMessageManager
 import org.apache.cordova.CallbackContext
 import org.apache.cordova.CordovaPlugin
 import org.apache.cordova.CordovaPreferences
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -275,6 +278,32 @@ open class BrazePlugin : CordovaPlugin() {
             "launchContentCards" -> {
                 val intent = Intent(applicationContext, ContentCardsActivity::class.java)
                 cordova.activity.startActivity(intent)
+                return true
+            }
+            "getFeatureFlag" -> {
+                callbackContext.success(Braze.getInstance(applicationContext).getFeatureFlag(args.getString(0)).forJsonPut())
+                return true
+            }
+            "getAllFeatureFlags" -> {
+                callbackContext.success(
+                    mapFeatureFlags(
+                        Braze.getInstance(applicationContext).getAllFeatureFlags()
+                    )
+                )
+                return true
+            }
+            "refreshFeatureFlags" -> {
+                runOnBraze { it.refreshFeatureFlags() }
+                return true
+            }
+            "subscribeToFeatureFlagUpdates" -> {
+                runOnBraze { 
+                    it.subscribeToFeatureFlagsUpdates() { event: FeatureFlagsUpdatedEvent ->
+                        val result = PluginResult(PluginResult.Status.OK, mapFeatureFlags(event.featureFlags))
+                        result.setKeepCallback(true)
+                        callbackContext.sendPluginResult(result)
+                    }
+                }
                 return true
             }
             GET_NEWS_FEED_METHOD,

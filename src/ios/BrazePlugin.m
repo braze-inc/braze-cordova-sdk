@@ -5,8 +5,6 @@
 @import BrazeLocation;
 @import BrazeUI;
 @import UserNotifications;
-@import AppTrackingTransparency;
-@import AdSupport;
 
 @interface BrazePlugin()
   @property NSString *APIKey;
@@ -35,11 +33,6 @@
   self.sessionTimeout = settings[@"com.appboy.ios_session_timeout"];
 
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFinishLaunchingListener:) name:UIApplicationDidFinishLaunchingNotification object:nil];
-  
-  [[NSNotificationCenter defaultCenter] addObserver:self
-                                           selector:@selector(requestAppTrackingTransparencyAuthorization)
-                                               name:UIApplicationDidBecomeActiveNotification
-                                             object:nil];
 
   if (![self.disableAutomaticPushHandling isEqualToString:@"YES"]) {
     [AppDelegate swizzleHostAppDelegate];
@@ -61,6 +54,7 @@
   [configuration.api addSDKMetadata:@[[BRZSDKMetadata cordova]]];
   self.braze = [[Braze alloc] initWithConfiguration:configuration];
   self.braze.inAppMessagePresenter = [[BrazeInAppMessageUI alloc] init];
+  self.subscriptions = [NSMutableArray array];
   
   // Set the IDFA delegate for the plugin
   if ([self.enableIDFACollection isEqualToString:@"YES"]) {
@@ -91,14 +85,6 @@
       }
     }];
     [[UIApplication sharedApplication] registerForRemoteNotifications];
-  }
-}
-
-- (void)requestAppTrackingTransparencyAuthorization {
-  if (@available(iOS 14, *)) {
-    [ATTrackingManager requestTrackingAuthorizationWithCompletionHandler:^(ATTrackingManagerAuthorizationStatus status) {
-      NSLog(@"Got result from App Track Transparency popup %ld", (long)status);
-    }];
   }
 }
 
@@ -606,6 +592,58 @@
   }
 }
 
+/*-------Feature Flags-------*/
+- (void)getFeatureFlag:(CDVInvokedUrlCommand *)command {
+  NSString *featureFlagId = [command argumentAtIndex:0 withDefault:nil];
+  BRZFeatureFlag *featureFlag = [self.braze.featureFlags featureFlagWithId:featureFlagId];
+  
+  [self sendCordovaSuccessPluginResultWithDictionary:[BrazePlugin formattedFeatureFlag:featureFlag] andCommand:command];
+}
+
+- (void)getAllFeatureFlags:(CDVInvokedUrlCommand *)command {
+  [self sendCordovaSuccessPluginResultWithArray:[BrazePlugin formattedFeatureFlagsMap:self.braze.featureFlags.featureFlags]
+                                     andCommand:command];
+}
+
+- (void)refreshFeatureFlags:(CDVInvokedUrlCommand *)command {
+  [self.braze.featureFlags requestRefreshWithCompletion:^(NSArray<BRZFeatureFlag *> * flags, NSError * error) {
+    if (error) {
+      NSLog(@"%@", error.debugDescription);
+    } else {
+      NSLog(@"Got Feature Flags from server callback");
+      [self sendCordovaSuccessPluginResultWithArray:[BrazePlugin formattedFeatureFlagsMap:self.braze.featureFlags.featureFlags]
+                                         andCommand:command];
+    }
+  }];
+}
+
+- (void)subscribeToFeatureFlagUpdates:(CDVInvokedUrlCommand *)command {
+  [self.subscriptions addObject:[self.braze.featureFlags subscribeToUpdates:^(NSArray<BRZFeatureFlag *> * featureFlags) {
+    NSArray<NSDictionary *> *mappedFlags = [BrazePlugin formattedFeatureFlagsMap:featureFlags];
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:mappedFlags];
+    [pluginResult setKeepCallbackAsBool:YES];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+  }]];
+}
+
++ (NSDictionary *)formattedFeatureFlag:(BRZFeatureFlag *)featureFlag {
+  NSMutableDictionary *formattedFlag = [NSMutableDictionary dictionary];
+  formattedFlag[@"id"] = featureFlag.identifier;
+  formattedFlag[@"enabled"] = @(featureFlag.enabled);
+  formattedFlag[@"properties"] = featureFlag.properties;
+  
+  return formattedFlag;
+}
+
++ (NSArray<NSDictionary *> *)formattedFeatureFlagsMap:(NSArray<BRZFeatureFlag *> *)featureFlags {
+  NSMutableArray<NSDictionary *> *mappedFlags = [NSMutableArray array];
+  for (BRZFeatureFlag *flag in featureFlags) {
+    [mappedFlags addObject:[BrazePlugin formattedFeatureFlag:flag]];
+  }
+  
+  return mappedFlags;
+}
+
 /*-------Cordova Helper Methods-------*/
 - (void)sendCordovaErrorPluginResultWithString:(NSString *)resultMessage andCommand:(CDVInvokedUrlCommand *)command {
   CDVPluginResult *pluginResult = nil;
@@ -628,6 +666,12 @@
 - (void)sendCordovaSuccessPluginResultWithArray:(NSArray *)resultMessage andCommand:(CDVInvokedUrlCommand *)command {
   CDVPluginResult *pluginResult = nil;
   pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:resultMessage];
+  [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)sendCordovaSuccessPluginResultWithDictionary:(NSDictionary *)resultMessage andCommand:(CDVInvokedUrlCommand *)command {
+  CDVPluginResult *pluginResult = nil;
+  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultMessage];
   [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 

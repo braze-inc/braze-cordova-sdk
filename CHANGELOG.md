@@ -1,3 +1,12 @@
+## 3.0.0
+
+##### Added
+- Added support for the upcoming Braze Feature Flags product with `getFeatureFlag()`, `getAllFeatureFlags()`, `refreshFeatureFlags()`, and `subscribeToFeatureFlagUpdates()`.
+
+##### Changed
+- Updated to [Braze Swift SDK 5.11.0](https://github.com/braze-inc/braze-swift-sdk/releases/tag/5.11.0).
+- Removed automatic requests for App Tracking Transparency permissions on iOS.
+
 ## 2.33.0
 
 ##### Breaking
