@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.appboy.hellocordova" 
+<widget id="com.braze.hellocordova" 
     version="1.0.0" 
     xmlns="http://www.w3.org/ns/widgets" 
     xmlns:cdv="http://cordova.apache.org/ns/1.0" 
@@ -30,15 +30,15 @@
         <preference name="android-compileSdkVersion" value="33" />
         <preference name="GradleVersion" value="7.3.3" />
         <preference name="AndroidXEnabled" value="true" />
-        <preference name="com.appboy.api_key" value="ec67377e-c490-4959-8c58-c045a254a65a" />
-        <preference name="com.appboy.android_api_endpoint" value="sondheim.braze.com" />
-        <preference name="com.appboy.firebase_cloud_messaging_registration_enabled" value="true" />
-        <preference name="com.appboy.android_fcm_sender_id" value="str_900857597716" />
-        <preference name="com.appboy.android_default_session_timeout" value="str_5" />
-        <preference name="com.appboy.android_handle_push_deep_links_automatically" value="true" />
-        <preference name="com.appboy.android_log_level" value="0" />
-        <preference name="com.appboy.enable_location_collection" value="false" />
-        <preference name="com.appboy.geofences_enabled" value="false" />
+        <preference name="com.braze.api_key" value="ec67377e-c490-4959-8c58-c045a254a65a" />
+        <preference name="com.braze.android_api_endpoint" value="sondheim.braze.com" />
+        <preference name="com.braze.firebase_cloud_messaging_registration_enabled" value="true" />
+        <preference name="com.braze.android_fcm_sender_id" value="str_900857597716" />
+        <preference name="com.braze.android_default_session_timeout" value="str_5" />
+        <preference name="com.braze.android_handle_push_deep_links_automatically" value="true" />
+        <preference name="com.braze.android_log_level" value="0" />
+        <preference name="com.braze.enable_location_collection" value="false" />
+        <preference name="com.braze.geofences_enabled" value="false" />
 
         <edit-config
             file="app/src/main/AndroidManifest.xml"
@@ -50,14 +50,14 @@
     <platform name="ios">
         <allow-intent href="itms:*" />
         <allow-intent href="itms-apps:*" />
-        <preference name="com.appboy.ios_api_endpoint" value="sondheim.braze.com" />
-        <preference name="com.appboy.api_key" value="56614add-1d2c-4bd3-a22d-023164fca958" />
-        <preference name="com.appboy.ios_disable_automatic_push_registration" value="NO" />
-        <preference name="com.appboy.ios_enable_idfa_automatic_collection" value="YES" />
-        <preference name="com.appboy.enable_location_collection" value="NO" />
-        <preference name="com.appboy.geofences_enabled" value="NO" />
-        <preference name="com.appboy.display_foreground_push_notifications" value="YES" />
+        <preference name="com.braze.ios_api_endpoint" value="sondheim.braze.com" />
+        <preference name="com.braze.api_key" value="56614add-1d2c-4bd3-a22d-023164fca958" />
+        <preference name="com.braze.ios_disable_automatic_push_registration" value="NO" />
+        <preference name="com.braze.ios_enable_idfa_automatic_collection" value="YES" />
+        <preference name="com.braze.enable_location_collection" value="NO" />
+        <preference name="com.braze.geofences_enabled" value="NO" />
+        <preference name="com.braze.display_foreground_push_notifications" value="YES" />
         <preference name="deployment-target" value="11.0" />
-        <preference name="com.appboy.ios_disable_un_authorization_option_provisional" value="NO" />
+        <preference name="com.braze.ios_disable_un_authorization_option_provisional" value="NO" />
     </platform>
 </widget>

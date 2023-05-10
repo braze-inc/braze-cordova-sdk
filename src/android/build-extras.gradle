@@ -1,11 +1,10 @@
 repositories {
     google()
     mavenCentral()
-    maven { url 'https://appboy.github.io/appboy-android-sdk/sdk' }
 }
 
 dependencies {
-    implementation 'com.braze:android-sdk-ui:24.2.0'
+    implementation 'com.braze:android-sdk-ui:25.0.0'
     implementation 'com.google.firebase:firebase-messaging:23.0.0'
 }
 

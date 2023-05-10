@@ -1,3 +1,28 @@
+## 4.0.0
+
+##### Breaking
+- Renamed instances of `Appboy` to `Braze`.
+  - To ensure that your project is properly migrated to the new naming conventions, note and replace the following instances in your project:
+    - The plugin has been renamed from `cordova-plugin-appboy` to `cordova-plugin-braze`. 
+      - Ensure that you run `cordova plugin remove cordova-plugin-appboy` and then re-add the plugin using the instructions in the [README](./README.md).
+    - This GitHub repository has been moved to the URL `https://github.com/braze-inc/braze-cordova-sdk`.
+    - In your project's `config.xml` file, rename instances of `com.appboy` to `com.braze` for each of your configuration property keys.
+    - The JavaScript class interface `AppboyPlugin` has been renamed to `BrazePlugin`.
+- Updated to [Braze Android SDK 25.0.0](https://github.com/braze-inc/braze-android-sdk/blob/master/CHANGELOG.md#2500).
+- Updated to [Braze Swift SDK 5.13.0](https://github.com/braze-inc/braze-swift-sdk/releases/tag/5.13.0).
+  - This update fixes the iOS behavior introduced in version `2.33.0` when logging clicks for content cards. Calling `logContentCardClicked` now only sends a click event for metrics, instead of both sending a click event as well as redirecting to the associated `url` field.
+    - For instance, to log a content card click and redirect to a URL, you will need two commands:
+    ```
+    BrazePlugin.logContentCardClicked(contentCardId);
+
+    // Your own custom implementation
+    YourApp.openUrl(contentCard["url"]);
+    ```
+    - This brings the iOS behavior to match pre-`2.33.0` versions and bring parity with Android's behavior.
+
+##### Added
+- Added property methods for Feature Flags: `getFeatureFlagBooleanProperty(id, key)`, `getFeatureFlagStringProperty(id, key)`, `getFeatureFlagNumberProperty(id, key)`
+
 ## 3.0.0
 
 ##### Added

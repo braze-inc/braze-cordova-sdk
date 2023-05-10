@@ -5,7 +5,7 @@
 @import BrazeKit;
 @import UserNotifications;
 
-static NSString *const PluginName = @"AppboyPlugin";
+static NSString *const PluginName = @"BrazePlugin";
 
 @implementation AppDelegate (BrazeNotifications)
 + (void)swizzleHostAppDelegate {
@@ -138,7 +138,7 @@ static NSString *const PluginName = @"AppboyPlugin";
        willPresentNotification:(UNNotification *)notification
          withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler {
     BrazePlugin *pluginInstance = [self.viewController getCommandInstance:PluginName];
-    NSString *enableForegroundNotifications = pluginInstance.commandDelegate.settings[@"com.appboy.display_foreground_push_notifications"];
+    NSString *enableForegroundNotifications = pluginInstance.commandDelegate.settings[@"com.braze.display_foreground_push_notifications"];
     if ([enableForegroundNotifications isEqualToString:@"YES"]) {
         completionHandler(UNNotificationPresentationOptionAlert);
     }

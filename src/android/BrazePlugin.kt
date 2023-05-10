@@ -4,9 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
-import com.braze.enums.*
-import com.braze.events.FeedUpdatedEvent
-import com.braze.models.outgoing.AttributionData
 import com.braze.Braze
 import com.braze.BrazeUser
 import com.braze.configuration.BrazeConfig
@@ -14,10 +11,12 @@ import com.braze.cordova.ContentCardUtils.getCardById
 import com.braze.cordova.ContentCardUtils.mapContentCards
 import com.braze.cordova.CordovaInAppMessageViewWrapper.CordovaInAppMessageViewWrapperFactory
 import com.braze.cordova.FeatureFlagUtils.mapFeatureFlags
-import com.braze.enums.BrazeSdkMetadata
+import com.braze.enums.*
 import com.braze.events.ContentCardsUpdatedEvent
-import com.braze.events.IEventSubscriber
 import com.braze.events.FeatureFlagsUpdatedEvent
+import com.braze.events.FeedUpdatedEvent
+import com.braze.events.IEventSubscriber
+import com.braze.models.outgoing.AttributionData
 import com.braze.models.outgoing.BrazeProperties
 import com.braze.support.BrazeLogger.Priority.*
 import com.braze.support.BrazeLogger.brazelog
@@ -29,7 +28,7 @@ import com.braze.ui.inappmessage.BrazeInAppMessageManager
 import org.apache.cordova.CallbackContext
 import org.apache.cordova.CordovaPlugin
 import org.apache.cordova.CordovaPreferences
-import org.apache.cordova.PluginResult;
+import org.apache.cordova.PluginResult
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -297,11 +296,50 @@ open class BrazePlugin : CordovaPlugin() {
                 return true
             }
             "subscribeToFeatureFlagUpdates" -> {
-                runOnBraze { 
-                    it.subscribeToFeatureFlagsUpdates() { event: FeatureFlagsUpdatedEvent ->
+                runOnBraze {
+                    it.subscribeToFeatureFlagsUpdates { event: FeatureFlagsUpdatedEvent ->
                         val result = PluginResult(PluginResult.Status.OK, mapFeatureFlags(event.featureFlags))
-                        result.setKeepCallback(true)
+                        result.keepCallback = true
                         callbackContext.sendPluginResult(result)
+                    }
+                }
+                return true
+            }
+            "getFeatureFlagBooleanProperty" -> {
+                runOnBraze {
+                    val flagId = args.getString(0)
+                    val propKey = args.getString(1)
+                    val result = it.getFeatureFlag(flagId).getBooleanProperty(propKey)
+                    if (result == null) {
+                        callbackContext.sendCordovaSuccessPluginResultAsNull()
+                    } else {
+                        callbackContext.sendPluginResult(PluginResult(PluginResult.Status.OK, result))
+                    }
+                }
+                return true
+            }
+            "getFeatureFlagStringProperty" -> {
+                runOnBraze {
+                    val flagId = args.getString(0)
+                    val propKey = args.getString(1)
+                    val result = it.getFeatureFlag(flagId).getStringProperty(propKey)
+                    if (result == null) {
+                        callbackContext.sendCordovaSuccessPluginResultAsNull()
+                    } else {
+                        callbackContext.sendPluginResult(PluginResult(PluginResult.Status.OK, result))
+                    }
+                }
+                return true
+            }
+            "getFeatureFlagNumberProperty" -> {
+                runOnBraze {
+                    val flagId = args.getString(0)
+                    val propKey = args.getString(1)
+                    val result = it.getFeatureFlag(flagId).getNumberProperty(propKey)
+                    if (result == null) {
+                        callbackContext.sendCordovaSuccessPluginResultAsNull()
+                    } else {
+                        callbackContext.sendPluginResult(PluginResult(PluginResult.Status.OK, result.toFloat()))
                     }
                 }
                 return true
@@ -368,8 +406,8 @@ open class BrazePlugin : CordovaPlugin() {
         brazelog { "Setting Cordova preferences: ${cordovaPreferences.all}" }
 
         // Set the log level
-        if (cordovaPreferences.contains(APPBOY_LOG_LEVEL_PREFERENCE)) {
-            logLevel = cordovaPreferences.getInteger(APPBOY_LOG_LEVEL_PREFERENCE, Log.INFO)
+        if (cordovaPreferences.contains(BRAZE_LOG_LEVEL_PREFERENCE)) {
+            logLevel = cordovaPreferences.getInteger(BRAZE_LOG_LEVEL_PREFERENCE, Log.INFO)
         }
 
         // Disable auto starting sessions
@@ -384,8 +422,8 @@ open class BrazePlugin : CordovaPlugin() {
         // Set the flavor
         configBuilder.setSdkFlavor(SdkFlavor.CORDOVA)
             .setSdkMetadata(EnumSet.of(BrazeSdkMetadata.CORDOVA))
-        if (cordovaPreferences.contains(APPBOY_API_KEY_PREFERENCE)) {
-            configBuilder.setApiKey(cordovaPreferences.getString(APPBOY_API_KEY_PREFERENCE, null))
+        if (cordovaPreferences.contains(BRAZE_API_KEY_PREFERENCE)) {
+            configBuilder.setApiKey(cordovaPreferences.getString(BRAZE_API_KEY_PREFERENCE, null))
         }
         if (cordovaPreferences.contains(SMALL_NOTIFICATION_ICON_PREFERENCE)) {
             configBuilder.setSmallNotificationIcon(cordovaPreferences.getString(SMALL_NOTIFICATION_ICON_PREFERENCE, null))
@@ -559,19 +597,19 @@ open class BrazePlugin : CordovaPlugin() {
 
     companion object {
         // Preference keys found in the config.xml
-        private const val APPBOY_API_KEY_PREFERENCE = "com.appboy.api_key"
-        private const val AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE = "com.appboy.firebase_cloud_messaging_registration_enabled"
-        private const val FCM_SENDER_ID_PREFERENCE = "com.appboy.android_fcm_sender_id"
-        private const val APPBOY_LOG_LEVEL_PREFERENCE = "com.appboy.android_log_level"
-        private const val SMALL_NOTIFICATION_ICON_PREFERENCE = "com.appboy.android_small_notification_icon"
-        private const val LARGE_NOTIFICATION_ICON_PREFERENCE = "com.appboy.android_large_notification_icon"
-        private const val DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE = "com.appboy.android_notification_accent_color"
-        private const val DEFAULT_SESSION_TIMEOUT_PREFERENCE = "com.appboy.android_default_session_timeout"
-        private const val SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE = "com.appboy.android_handle_push_deep_links_automatically"
-        private const val CUSTOM_API_ENDPOINT_PREFERENCE = "com.appboy.android_api_endpoint"
-        private const val ENABLE_LOCATION_PREFERENCE = "com.appboy.enable_location_collection"
-        private const val ENABLE_GEOFENCES_PREFERENCE = "com.appboy.geofences_enabled"
-        private const val DISABLE_AUTO_START_SESSIONS_PREFERENCE = "com.appboy.android_disable_auto_session_tracking"
+        private const val BRAZE_API_KEY_PREFERENCE = "com.braze.api_key"
+        private const val AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE = "com.braze.firebase_cloud_messaging_registration_enabled"
+        private const val FCM_SENDER_ID_PREFERENCE = "com.braze.android_fcm_sender_id"
+        private const val BRAZE_LOG_LEVEL_PREFERENCE = "com.braze.android_log_level"
+        private const val SMALL_NOTIFICATION_ICON_PREFERENCE = "com.braze.android_small_notification_icon"
+        private const val LARGE_NOTIFICATION_ICON_PREFERENCE = "com.braze.android_large_notification_icon"
+        private const val DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE = "com.braze.android_notification_accent_color"
+        private const val DEFAULT_SESSION_TIMEOUT_PREFERENCE = "com.braze.android_default_session_timeout"
+        private const val SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE = "com.braze.android_handle_push_deep_links_automatically"
+        private const val CUSTOM_API_ENDPOINT_PREFERENCE = "com.braze.android_api_endpoint"
+        private const val ENABLE_LOCATION_PREFERENCE = "com.braze.enable_location_collection"
+        private const val ENABLE_GEOFENCES_PREFERENCE = "com.braze.geofences_enabled"
+        private const val DISABLE_AUTO_START_SESSIONS_PREFERENCE = "com.braze.android_disable_auto_session_tracking"
 
         /**
          * When applied, restricts the SDK from taking
@@ -650,6 +688,10 @@ open class BrazePlugin : CordovaPlugin() {
 
             // Parse the string as an integer.
             return preferenceValue?.toInt() ?: -1
+        }
+
+        private fun CallbackContext.sendCordovaSuccessPluginResultAsNull() {
+            this.sendPluginResult(PluginResult(PluginResult.Status.OK, null as String?))
         }
     }
 }

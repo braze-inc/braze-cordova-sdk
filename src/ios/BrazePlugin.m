@@ -22,15 +22,15 @@
 
 - (void)pluginInitialize {
   NSDictionary *settings = self.commandDelegate.settings;
-  self.APIKey = settings[@"com.appboy.api_key"];
-  self.disableAutomaticPushRegistration = settings[@"com.appboy.ios_disable_automatic_push_registration"];
-  self.disableAutomaticPushHandling = settings[@"com.appboy.ios_disable_automatic_push_handling"];
-  self.apiEndpoint = settings[@"com.appboy.ios_api_endpoint"];
-  self.enableIDFACollection = settings[@"com.appboy.ios_enable_idfa_automatic_collection"];
-  self.enableLocationCollection = settings[@"com.appboy.enable_location_collection"];
-  self.enableGeofences = settings[@"com.appboy.geofences_enabled"];
-  self.disableUNAuthorizationOptionProvisional = settings[@"com.appboy.ios_disable_un_authorization_option_provisional"];
-  self.sessionTimeout = settings[@"com.appboy.ios_session_timeout"];
+  self.APIKey = settings[@"com.braze.api_key"];
+  self.disableAutomaticPushRegistration = settings[@"com.braze.ios_disable_automatic_push_registration"];
+  self.disableAutomaticPushHandling = settings[@"com.braze.ios_disable_automatic_push_handling"];
+  self.apiEndpoint = settings[@"com.braze.ios_api_endpoint"];
+  self.enableIDFACollection = settings[@"com.braze.ios_enable_idfa_automatic_collection"];
+  self.enableLocationCollection = settings[@"com.braze.enable_location_collection"];
+  self.enableGeofences = settings[@"com.braze.geofences_enabled"];
+  self.disableUNAuthorizationOptionProvisional = settings[@"com.braze.ios_disable_un_authorization_option_provisional"];
+  self.sessionTimeout = settings[@"com.braze.ios_session_timeout"];
 
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFinishLaunchingListener:) name:UIApplicationDidFinishLaunchingNotification object:nil];
 
@@ -514,7 +514,7 @@
 
   NSMutableArray *mappedCards = [NSMutableArray arrayWithCapacity:[cards count]];
   [cards enumerateObjectsUsingBlock:^(id card, NSUInteger idx, BOOL *stop) {
-     [mappedCards addObject:[BrazePlugin RCTFormatContentCard:card]];
+     [mappedCards addObject:[BrazePlugin formattedContentCard:card]];
   }];
 
   [self sendCordovaSuccessPluginResultWithArray:mappedCards andCommand:command];
@@ -532,7 +532,7 @@
   return nil;
 }
 
-+ (NSDictionary *)RCTFormatContentCard:(BRZContentCardRaw *)card {
++ (NSDictionary *)formattedContentCard:(BRZContentCardRaw *)card {
   NSMutableDictionary *formattedContentCardData = [NSMutableDictionary dictionary];
   
   formattedContentCardData[@"id"] = card.identifier;
@@ -597,7 +597,15 @@
   NSString *featureFlagId = [command argumentAtIndex:0 withDefault:nil];
   BRZFeatureFlag *featureFlag = [self.braze.featureFlags featureFlagWithId:featureFlagId];
   
-  [self sendCordovaSuccessPluginResultWithDictionary:[BrazePlugin formattedFeatureFlag:featureFlag] andCommand:command];
+  NSError* error = nil;
+  id flagJSON = [NSJSONSerialization JSONObjectWithData:[featureFlag json]
+                                                options:NSJSONReadingMutableContainers
+                                                  error:&error];
+  if (error || flagJSON == nil) {
+    [self sendCordovaErrorPluginResultWithString:error.debugDescription andCommand:command];
+  } else {
+    [self sendCordovaSuccessPluginResultWithDictionary:flagJSON andCommand:command];
+  }
 }
 
 - (void)getAllFeatureFlags:(CDVInvokedUrlCommand *)command {
@@ -626,19 +634,57 @@
   }]];
 }
 
-+ (NSDictionary *)formattedFeatureFlag:(BRZFeatureFlag *)featureFlag {
-  NSMutableDictionary *formattedFlag = [NSMutableDictionary dictionary];
-  formattedFlag[@"id"] = featureFlag.identifier;
-  formattedFlag[@"enabled"] = @(featureFlag.enabled);
-  formattedFlag[@"properties"] = featureFlag.properties;
-  
-  return formattedFlag;
+- (void)getFeatureFlagBooleanProperty:(CDVInvokedUrlCommand *)command {
+  NSString *featureFlagId = [command argumentAtIndex:0 withDefault:nil];
+  NSString *propertyKey = [command argumentAtIndex:1 withDefault:nil];
+
+  BRZFeatureFlag *featureFlag = [self.braze.featureFlags featureFlagWithId:featureFlagId];
+  NSNumber *boolProperty = [featureFlag boolPropertyForKey:propertyKey];
+  if (boolProperty) {
+    [self sendCordovaSuccessPluginResultWithBool:boolProperty andCommand:command];
+  } else {
+    [self sendCordovaSuccessPluginResultAsNull:command];
+  }
+}
+
+- (void)getFeatureFlagStringProperty:(CDVInvokedUrlCommand *)command {
+  NSString *featureFlagId = [command argumentAtIndex:0 withDefault:nil];
+  NSString *propertyKey = [command argumentAtIndex:1 withDefault:nil];
+
+  BRZFeatureFlag *featureFlag = [self.braze.featureFlags featureFlagWithId:featureFlagId];
+  NSString *stringProperty = [featureFlag stringPropertyForKey:propertyKey];
+  if (stringProperty) {
+    [self sendCordovaSuccessPluginResultWithString:stringProperty andCommand:command];
+  } else {
+    [self sendCordovaSuccessPluginResultAsNull:command];
+  }
+}
+
+- (void)getFeatureFlagNumberProperty:(CDVInvokedUrlCommand *)command {
+  NSString *featureFlagId = [command argumentAtIndex:0 withDefault:nil];
+  NSString *propertyKey = [command argumentAtIndex:1 withDefault:nil];
+
+  BRZFeatureFlag *featureFlag = [self.braze.featureFlags featureFlagWithId:featureFlagId];
+  NSNumber *numberProperty = [featureFlag numberPropertyForKey:propertyKey];
+  if (numberProperty) {
+    [self sendCordovaSuccessPluginResultWithDouble:[numberProperty doubleValue] andCommand:command];
+  } else {
+    [self sendCordovaSuccessPluginResultAsNull:command];
+  }
 }
 
 + (NSArray<NSDictionary *> *)formattedFeatureFlagsMap:(NSArray<BRZFeatureFlag *> *)featureFlags {
   NSMutableArray<NSDictionary *> *mappedFlags = [NSMutableArray array];
   for (BRZFeatureFlag *flag in featureFlags) {
-    [mappedFlags addObject:[BrazePlugin formattedFeatureFlag:flag]];
+    NSError* error = nil;
+    id flagJSON = [NSJSONSerialization JSONObjectWithData:[flag json]
+                                                  options:NSJSONReadingMutableContainers
+                                                    error:&error];
+    if (!error) {
+      [mappedFlags addObject:flagJSON];
+    } else {
+      NSLog(@"Failed to serialize Feature Flag with error: %@", error);
+    }
   }
   
   return mappedFlags;
@@ -663,6 +709,18 @@
   [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+- (void)sendCordovaSuccessPluginResultWithDouble:(double)resultMessage andCommand:(CDVInvokedUrlCommand *)command {
+  CDVPluginResult *pluginResult = nil;
+  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDouble:resultMessage];
+  [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)sendCordovaSuccessPluginResultWithBool:(BOOL)resultMessage andCommand:(CDVInvokedUrlCommand *)command {
+  CDVPluginResult *pluginResult = nil;
+  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:resultMessage];
+  [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 - (void)sendCordovaSuccessPluginResultWithArray:(NSArray *)resultMessage andCommand:(CDVInvokedUrlCommand *)command {
   CDVPluginResult *pluginResult = nil;
   pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:resultMessage];
@@ -672,6 +730,12 @@
 - (void)sendCordovaSuccessPluginResultWithDictionary:(NSDictionary *)resultMessage andCommand:(CDVInvokedUrlCommand *)command {
   CDVPluginResult *pluginResult = nil;
   pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:resultMessage];
+  [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)sendCordovaSuccessPluginResultAsNull:(CDVInvokedUrlCommand *)command {
+  CDVPluginResult *pluginResult = nil;
+  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:(NSString *)[NSNull null]];
   [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 

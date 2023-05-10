@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-  id="cordova-plugin-appboy" version="3.0.0">
+  id="cordova-plugin-braze" version="4.0.0">
   <name>Device</name>
   <description>Braze Cordova SDK</description>
   <license>MIT</license>
   <keywords>cordova,appboy,braze</keywords>
-  <js-module src="www/AppboyPlugin.js" name="AppboyPlugin">
+  <js-module src="www/BrazePlugin.js" name="BrazePlugin">
+    <clobbers target="BrazePlugin" />
     <clobbers target="AppboyPlugin" />
   </js-module>
 
   <!-- android -->
   <platform name="android">
     <config-file target="res/xml/config.xml" parent="/*">
-      <feature name="AppboyPlugin">
+      <feature name="BrazePlugin">
         <param name="android-package" value="com.braze.cordova.BrazePlugin" />
         <param name="onload" value="true" />
       </feature>
@@ -38,7 +39,7 @@
   <!-- ios -->
   <platform name="ios">
     <config-file target="config.xml" parent="/*">
-      <feature name="AppboyPlugin">
+      <feature name="BrazePlugin">
         <param name="ios-package" value="BrazePlugin" />
         <param name="onload" value="true" />
       </feature>
@@ -53,9 +54,9 @@
         <source url="https://cdn.cocoapods.org/"/>
       </config>
       <pods use-frameworks="true">
-        <pod name="BrazeKit" spec="~> 5.11.0" />
-        <pod name="BrazeUI" spec="~> 5.11.0" />
-        <pod name="BrazeLocation" spec="~> 5.11.0" />
+        <pod name="BrazeKit" spec="~> 5.13.0" />
+        <pod name="BrazeUI" spec="~> 5.13.0" />
+        <pod name="BrazeLocation" spec="~> 5.13.0" />
       </pods>
     </podspec>
   </platform>

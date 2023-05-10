@@ -1,5 +1,5 @@
 {
-  "name": "appboy-cordova-sdk",
-  "version": "3.0.0",
-  "main": "www/AppboyPlugin.js"
+  "name": "braze-cordova-sdk",
+  "version": "4.0.0",
+  "main": "www/BrazePlugin.js"
 }

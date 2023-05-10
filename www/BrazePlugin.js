@@ -1,9 +1,9 @@
-var AppboyPlugin = function () {
+var BrazePlugin = function () {
 }
 
 // Braze methods
 /**
- * When a user first uses Appboy on a device they are considered "anonymous". Use this method to identify a user
+ * When a user first uses Braze on a device they are considered "anonymous". Use this method to identify a user
  *    with a unique ID, which enables the following:
  *
  *    - If the same user is identified on another device, their user profile, usage history and event history will
@@ -16,7 +16,7 @@ var AppboyPlugin = function () {
  *    existing user ID), the current session for the previous user (anonymous or not) is automatically ended and
  *    a new session is started. Similarly, following a call to changeUser, any events which fire are guaranteed to
  *    be for the new user -- if an in-flight server request completes for the old user after the user switch no
- *    events will fire, so you do not need to worry about filtering out events from Appboy for old users.
+ *    events will fire, so you do not need to worry about filtering out events from Braze for old users.
  *
  * Additionally, if you identify a user which has never been identified on another device, the entire history of
  *    that user as an "anonymous" user on this device will be preserved and associated with the newly identified
@@ -35,8 +35,8 @@ var AppboyPlugin = function () {
  *
  * @param {string} userId - A unique identifier for this user.
  */
-AppboyPlugin.prototype.changeUser = function (userId) {
-	cordova.exec(null, null, "AppboyPlugin", "changeUser", [userId]);
+BrazePlugin.prototype.changeUser = function (userId) {
+	cordova.exec(null, null, "BrazePlugin", "changeUser", [userId]);
 }
 
 /**
@@ -46,8 +46,8 @@ AppboyPlugin.prototype.changeUser = function (userId) {
 *
 * @param {string} registrationId - The registration ID / push token.
 */
-AppboyPlugin.prototype.registerAppboyPushMessages = function (registrationID) {
-	cordova.exec(null, null, "AppboyPlugin", "registerAppboyPushMessages", [registrationID]);
+BrazePlugin.prototype.registerAppboyPushMessages = function (registrationID) {
+	cordova.exec(null, null, "BrazePlugin", "registerAppboyPushMessages", [registrationID]);
 }
 
 /**
@@ -57,8 +57,8 @@ AppboyPlugin.prototype.registerAppboyPushMessages = function (registrationID) {
 *
 * @param {string} pushToken - The registration ID / push token.
 */
-AppboyPlugin.prototype.setRegisteredPushToken = function (pushToken) {
-	cordova.exec(null, null, "AppboyPlugin", "setRegisteredPushToken", [pushToken]);
+BrazePlugin.prototype.setRegisteredPushToken = function (pushToken) {
+	cordova.exec(null, null, "BrazePlugin", "setRegisteredPushToken", [pushToken]);
 }
 
 /**
@@ -66,8 +66,8 @@ AppboyPlugin.prototype.setRegisteredPushToken = function (pushToken) {
 *
 * Requests the push permission prompt to be shown to the user.
 */
-AppboyPlugin.prototype.requestPushPermission = function () {
-	cordova.exec(null, null, "AppboyPlugin", "requestPushPermission");
+BrazePlugin.prototype.requestPushPermission = function () {
+	cordova.exec(null, null, "BrazePlugin", "requestPushPermission");
 }
 
 /**
@@ -80,8 +80,8 @@ AppboyPlugin.prototype.requestPushPermission = function () {
  *      characters in length, cannot begin with a $, and can only contain alphanumeric characters and punctuation.
  *      Values can be numeric, boolean, or strings 255 characters or shorter.
  */
-AppboyPlugin.prototype.logCustomEvent = function (eventName, eventProperties) {
-	cordova.exec(null, null, "AppboyPlugin", "logCustomEvent", [eventName, eventProperties]);
+BrazePlugin.prototype.logCustomEvent = function (eventName, eventProperties) {
+	cordova.exec(null, null, "BrazePlugin", "logCustomEvent", [eventName, eventProperties]);
 }
 
 /**
@@ -108,15 +108,15 @@ AppboyPlugin.prototype.logCustomEvent = function (eventName, eventProperties) {
  *      characters in length, cannot begin with a $, and can only contain alphanumeric characters and punctuation.
  *      Values can be numeric, boolean, or strings 255 characters or shorter.
  */
-AppboyPlugin.prototype.logPurchase = function (productId, price, currencyCode, quantity, purchaseProperties) {
-	cordova.exec(null, null, "AppboyPlugin", "logPurchase", [productId, price, currencyCode, quantity, purchaseProperties]);
+BrazePlugin.prototype.logPurchase = function (productId, price, currencyCode, quantity, purchaseProperties) {
+	cordova.exec(null, null, "BrazePlugin", "logPurchase", [productId, price, currencyCode, quantity, purchaseProperties]);
 }
 
 /**
  * Sets the attribution information for the user. For in apps that have an install tracking integration.
  */
-AppboyPlugin.prototype.setUserAttributionData = function (network, campaign, adgroup, creative) {
-	cordova.exec(null, null, "AppboyPlugin", "setUserAttributionData", [network, campaign, adgroup, creative]);
+BrazePlugin.prototype.setUserAttributionData = function (network, campaign, adgroup, creative) {
+	cordova.exec(null, null, "BrazePlugin", "setUserAttributionData", [network, campaign, adgroup, creative]);
 }
 
 /**
@@ -128,21 +128,21 @@ AppboyPlugin.prototype.setUserAttributionData = function (network, campaign, adg
  *    255 characters in length, cannot begin with a $, and can only contain alphanumeric characters and punctuation.
  *    Passing a null value will remove this custom attribute from the user.
  */
-AppboyPlugin.prototype.setCustomUserAttribute = function (key, value) {
+BrazePlugin.prototype.setCustomUserAttribute = function (key, value) {
 	var valueType = typeof(value);
 	if (value instanceof Date) {
-  		cordova.exec(null, null, "AppboyPlugin", "setDateCustomUserAttribute", [key, Math.floor(value.getTime() / 1000)]);
+  		cordova.exec(null, null, "BrazePlugin", "setDateCustomUserAttribute", [key, Math.floor(value.getTime() / 1000)]);
   	} else if (value instanceof Array) {
-  		cordova.exec(null, null, "AppboyPlugin", "setCustomUserAttributeArray", [key, value]);
+  		cordova.exec(null, null, "BrazePlugin", "setCustomUserAttributeArray", [key, value]);
   	} else if (valueType === "boolean") {
-  		cordova.exec(null, null, "AppboyPlugin", "setBoolCustomUserAttribute", [key, value]);
+  		cordova.exec(null, null, "BrazePlugin", "setBoolCustomUserAttribute", [key, value]);
   	} else if (valueType === "string") {
-  		cordova.exec(null, null, "AppboyPlugin", "setStringCustomUserAttribute", [key, value]);
+  		cordova.exec(null, null, "BrazePlugin", "setStringCustomUserAttribute", [key, value]);
   	} else if (valueType === "number") {
   		if (parseInt(value) === parseFloat(value)) {
-  			cordova.exec(null, null, "AppboyPlugin", "setIntCustomUserAttribute", [key, value]);
+  			cordova.exec(null, null, "BrazePlugin", "setIntCustomUserAttribute", [key, value]);
   		} else {
-  			cordova.exec(null, null, "AppboyPlugin", "setDoubleCustomUserAttribute", [key, value]);
+  			cordova.exec(null, null, "BrazePlugin", "setDoubleCustomUserAttribute", [key, value]);
   		}
   	}
 }
@@ -156,56 +156,56 @@ AppboyPlugin.prototype.setCustomUserAttribute = function (key, value) {
  *    a $, and can only contain alphanumeric characters and punctuation.
  * @param {integer} - May be negative to decrement.
  */
-AppboyPlugin.prototype.incrementCustomUserAttribute = function (key, value) {
-	cordova.exec(null, null, "AppboyPlugin", "incrementCustomUserAttribute", [key, value]);
+BrazePlugin.prototype.incrementCustomUserAttribute = function (key, value) {
+	cordova.exec(null, null, "BrazePlugin", "incrementCustomUserAttribute", [key, value]);
 }
 
 /**
  * Sets the first name of the user.
  * @param {string} firstName - Limited to 255 characters in length.
  */
-AppboyPlugin.prototype.setFirstName = function (firstName) {
-	cordova.exec(null, null, "AppboyPlugin", "setFirstName", [firstName]);
+BrazePlugin.prototype.setFirstName = function (firstName) {
+	cordova.exec(null, null, "BrazePlugin", "setFirstName", [firstName]);
 }
 
 /**
  * Sets the last name of the user.
  * @param {string} lastName - Limited to 255 characters in length.
  */
-AppboyPlugin.prototype.setLastName = function (lastName) {
-	cordova.exec(null, null, "AppboyPlugin", "setLastName", [lastName]);
+BrazePlugin.prototype.setLastName = function (lastName) {
+	cordova.exec(null, null, "BrazePlugin", "setLastName", [lastName]);
 }
 
 /**
  * Sets the email address of the user.
  * @param {string} email - Must pass RFC-5322 email address validation.
  */
-AppboyPlugin.prototype.setEmail = function (email) {
-	cordova.exec(null, null, "AppboyPlugin", "setEmail", [email]);
+BrazePlugin.prototype.setEmail = function (email) {
+	cordova.exec(null, null, "BrazePlugin", "setEmail", [email]);
 }
 
 /**
  * Sets the gender of the user.
  * @param {ab.User.Genders} gender - Generally 'm' or 'f'.
  */
-AppboyPlugin.prototype.setGender = function (gender) {
-	cordova.exec(null, null, "AppboyPlugin", "setGender", [gender]);
+BrazePlugin.prototype.setGender = function (gender) {
+	cordova.exec(null, null, "BrazePlugin", "setGender", [gender]);
 }
 
 /**
  * Sets the country for the user.
  * @param {string} country - Limited to 255 characters in length.
  */
-AppboyPlugin.prototype.setCountry = function (country) {
-	cordova.exec(null, null, "AppboyPlugin", "setCountry", [country]);
+BrazePlugin.prototype.setCountry = function (country) {
+	cordova.exec(null, null, "BrazePlugin", "setCountry", [country]);
 }
 
 /**
  * Sets the home city for the user.
  * @param {string} homeCity - Limited to 255 characters in length.
  */
-AppboyPlugin.prototype.setHomeCity = function (homeCity) {
-	cordova.exec(null, null, "AppboyPlugin", "setHomeCity", [homeCity]);
+BrazePlugin.prototype.setHomeCity = function (homeCity) {
+	cordova.exec(null, null, "BrazePlugin", "setHomeCity", [homeCity]);
 }
 
 /**
@@ -213,8 +213,8 @@ AppboyPlugin.prototype.setHomeCity = function (homeCity) {
  * @param {string} phoneNumber - A phone number is considered valid if it is no more than 255 characters in length and
  *    contains only numbers, whitespace, and the following special characters +.-()
  */
-AppboyPlugin.prototype.setPhoneNumber = function (phoneNumber) {
-	cordova.exec(null, null, "AppboyPlugin", "setPhoneNumber", [phoneNumber]);
+BrazePlugin.prototype.setPhoneNumber = function (phoneNumber) {
+	cordova.exec(null, null, "BrazePlugin", "setPhoneNumber", [phoneNumber]);
 }
 
 /**
@@ -223,8 +223,8 @@ AppboyPlugin.prototype.setPhoneNumber = function (phoneNumber) {
  * @param {integer} month - 1-12
  * @param {integer} day
  */
-AppboyPlugin.prototype.setDateOfBirth = function (year, month, day) {
-	cordova.exec(null, null, "AppboyPlugin", "setDateOfBirth", [year, month, day]);
+BrazePlugin.prototype.setDateOfBirth = function (year, month, day) {
+	cordova.exec(null, null, "BrazePlugin", "setDateOfBirth", [year, month, day]);
 }
 
 /**
@@ -232,8 +232,8 @@ AppboyPlugin.prototype.setDateOfBirth = function (year, month, day) {
  * @param {NotificationSubscriptionTypes} notificationSubscriptionType - Notification setting (explicitly
  *    opted-in, subscribed, or unsubscribed).
  */
-AppboyPlugin.prototype.setPushNotificationSubscriptionType = function (notificationSubscriptionType) {
-	cordova.exec(null, null, "AppboyPlugin", "setPushNotificationSubscriptionType", [notificationSubscriptionType]);
+BrazePlugin.prototype.setPushNotificationSubscriptionType = function (notificationSubscriptionType) {
+	cordova.exec(null, null, "BrazePlugin", "setPushNotificationSubscriptionType", [notificationSubscriptionType]);
 }
 
 /**
@@ -241,8 +241,8 @@ AppboyPlugin.prototype.setPushNotificationSubscriptionType = function (notificat
  * @param {NotificationSubscriptionTypes} notificationSubscriptionType - Notification setting (explicitly
  *    opted-in, subscribed, or unsubscribed).
  */
-AppboyPlugin.prototype.setEmailNotificationSubscriptionType = function (notificationSubscriptionType) {
-	cordova.exec(null, null, "AppboyPlugin", "setEmailNotificationSubscriptionType", [notificationSubscriptionType]);
+BrazePlugin.prototype.setEmailNotificationSubscriptionType = function (notificationSubscriptionType) {
+	cordova.exec(null, null, "BrazePlugin", "setEmailNotificationSubscriptionType", [notificationSubscriptionType]);
 }
 
 /**
@@ -252,8 +252,8 @@ AppboyPlugin.prototype.setEmailNotificationSubscriptionType = function (notifica
  * @param {string} value - The string to be added to the array. Strings are limited to 255 characters in length, cannot
  *    begin with a $, and can only contain alphanumeric characters and punctuation.
  */
-AppboyPlugin.prototype.addToCustomUserAttributeArray = function (key, value) {
-	cordova.exec(null, null, "AppboyPlugin", "addToCustomAttributeArray", [key, value]);
+BrazePlugin.prototype.addToCustomUserAttributeArray = function (key, value) {
+	cordova.exec(null, null, "BrazePlugin", "addToCustomAttributeArray", [key, value]);
 }
 
 /**
@@ -263,8 +263,8 @@ AppboyPlugin.prototype.addToCustomUserAttributeArray = function (key, value) {
  * @param {string} value - The string to be removed from the array. Strings are limited to 255 characters in length,
  *    cannot beging with a $, and can only contain alphanumeric characters and punctuation.
  */
-AppboyPlugin.prototype.removeFromCustomUserAttributeArray = function (key, value) {
-	cordova.exec(null, null, "AppboyPlugin", "removeFromCustomAttributeArray", [key, value]);
+BrazePlugin.prototype.removeFromCustomUserAttributeArray = function (key, value) {
+	cordova.exec(null, null, "BrazePlugin", "removeFromCustomAttributeArray", [key, value]);
 }
 
 /**
@@ -272,8 +272,8 @@ AppboyPlugin.prototype.removeFromCustomUserAttributeArray = function (key, value
  * @param {string} key - The identifier of the custom attribute. Limited to 255 characters in length, cannot begin with
  *    a $, and can only contain alphanumeric characters and punctuation.
  */
-AppboyPlugin.prototype.unsetCustomUserAttribute = function (key) {
-	cordova.exec(null, null, "AppboyPlugin", "unsetCustomUserAttribute", [key]);
+BrazePlugin.prototype.unsetCustomUserAttribute = function (key) {
+	cordova.exec(null, null, "BrazePlugin", "unsetCustomUserAttribute", [key]);
 }
 
 /**
@@ -281,23 +281,23 @@ AppboyPlugin.prototype.unsetCustomUserAttribute = function (key) {
  * @param {string} alias - An identifier for this user.
  * @param {string} label - A label for the alias. e.g. the source of the alias, like "internal_id"
  */
-AppboyPlugin.prototype.addAlias = function (alias, label) {
-	cordova.exec(null, null, "AppboyPlugin", "addAlias", [alias, label]);
+BrazePlugin.prototype.addAlias = function (alias, label) {
+	cordova.exec(null, null, "BrazePlugin", "addAlias", [alias, label]);
 }
 
 // Other
 /**
  * Launches the News Feed UI element.
  */
-AppboyPlugin.prototype.launchNewsFeed = function () {
-	cordova.exec(null, null, "AppboyPlugin", "launchNewsFeed", []);
+BrazePlugin.prototype.launchNewsFeed = function () {
+	cordova.exec(null, null, "BrazePlugin", "launchNewsFeed", []);
 }
 
 /**
  * Returns array of serialized card items
  */
-AppboyPlugin.prototype.getNewsFeed = function (successCallback, errorCallback) {
-  cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getNewsFeed", ['all']);
+BrazePlugin.prototype.getNewsFeed = function (successCallback, errorCallback) {
+  cordova.exec(successCallback, errorCallback, "BrazePlugin", "getNewsFeed", ['all']);
 }
 
 // News Feed methods
@@ -305,135 +305,135 @@ AppboyPlugin.prototype.getNewsFeed = function (successCallback, errorCallback) {
 /**
 * Gets the number of unread News Feed Cards. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
 */
-AppboyPlugin.prototype.getNewsFeedUnreadCount = function (successCallback, errorCallback) {
-  cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getUnreadCardCountForCategories", ['all']);
+BrazePlugin.prototype.getNewsFeedUnreadCount = function (successCallback, errorCallback) {
+  cordova.exec(successCallback, errorCallback, "BrazePlugin", "getUnreadCardCountForCategories", ['all']);
 }
 
 /**
 * Gets the number of News Feed Cards. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
 **/
-AppboyPlugin.prototype.getNewsFeedCardCount = function (successCallback, errorCallback) {
-  cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getCardCountForCategories", ['all']);
+BrazePlugin.prototype.getNewsFeedCardCount = function (successCallback, errorCallback) {
+  cordova.exec(successCallback, errorCallback, "BrazePlugin", "getCardCountForCategories", ['all']);
 }
 
 /**
 * Gets the number of News Feed Cards for a category. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
 **/
-AppboyPlugin.prototype.getCardCountForCategories = function (successCallback, errorCallback, cardCategories) {
-  cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getCardCountForCategories", cardCategories);
+BrazePlugin.prototype.getCardCountForCategories = function (successCallback, errorCallback, cardCategories) {
+  cordova.exec(successCallback, errorCallback, "BrazePlugin", "getCardCountForCategories", cardCategories);
 }
 
 /**
 * Gets the number of unread News Feed Cards for a category. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
 */
-AppboyPlugin.prototype.getUnreadCardCountForCategories = function (successCallback, errorCallback, cardCategories) {
-  cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getUnreadCardCountForCategories", cardCategories);
+BrazePlugin.prototype.getUnreadCardCountForCategories = function (successCallback, errorCallback, cardCategories) {
+  cordova.exec(successCallback, errorCallback, "BrazePlugin", "getUnreadCardCountForCategories", cardCategories);
 }
 
 /**
 * Wipes Data on the Braze SDK. On iOS, the SDK will be disabled for the rest of the app run.
 */
-AppboyPlugin.prototype.wipeData = function () {
-  cordova.exec(null, null, "AppboyPlugin", "wipeData");
+BrazePlugin.prototype.wipeData = function () {
+  cordova.exec(null, null, "BrazePlugin", "wipeData");
 }
 
 /**
 * Enables the Braze SDK after a previous call to disableSDK().
 * On iOS, the SDK will be enabled only after a subsequent call to startWithApiKey().
 */
-AppboyPlugin.prototype.enableSdk = function () {
-  cordova.exec(null, null, "AppboyPlugin", "enableSdk");
+BrazePlugin.prototype.enableSdk = function () {
+  cordova.exec(null, null, "BrazePlugin", "enableSdk");
 }
 
 /**
 * Disables the Braze SDK immediately.
 */
-AppboyPlugin.prototype.disableSdk = function () {
-  cordova.exec(null, null, "AppboyPlugin", "disableSdk");
+BrazePlugin.prototype.disableSdk = function () {
+  cordova.exec(null, null, "BrazePlugin", "disableSdk");
 }
 
 /**
 * Requests that the Braze SDK immediately flush any pending data.
 */
-AppboyPlugin.prototype.requestImmediateDataFlush = function () {
-  cordova.exec(null, null, "AppboyPlugin", "requestImmediateDataFlush");
+BrazePlugin.prototype.requestImmediateDataFlush = function () {
+  cordova.exec(null, null, "BrazePlugin", "requestImmediateDataFlush");
 }
 
 /**
 * Requests the latest Content Cards from the Braze SDK server.
 */
-AppboyPlugin.prototype.requestContentCardsRefresh = function () {
-	cordova.exec(null, null, "AppboyPlugin", "requestContentCardsRefresh");
+BrazePlugin.prototype.requestContentCardsRefresh = function () {
+	cordova.exec(null, null, "BrazePlugin", "requestContentCardsRefresh");
 }
 
 /**
 * Retrieves Content Cards from the Braze SDK. This will return the latest list of cards from the server.
 */
-AppboyPlugin.prototype.getContentCardsFromServer = function (successCallback, errorCallback) {
-	cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getContentCardsFromServer");
+BrazePlugin.prototype.getContentCardsFromServer = function (successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "BrazePlugin", "getContentCardsFromServer");
 }
 
 /**
 * Retrieves Content Cards from the Braze SDK. This will return the latest list of cards from the cache.
 */
-AppboyPlugin.prototype.getContentCardsFromCache = function (successCallback, errorCallback) {
-	cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getContentCardsFromCache");
+BrazePlugin.prototype.getContentCardsFromCache = function (successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "BrazePlugin", "getContentCardsFromCache");
 }
 
 /**
  * Launches a default Content Cards UI element.
  */
-AppboyPlugin.prototype.launchContentCards = function () {
-	cordova.exec(null, null, "AppboyPlugin", "launchContentCards");
+BrazePlugin.prototype.launchContentCards = function () {
+	cordova.exec(null, null, "BrazePlugin", "launchContentCards");
 }
 
 /**
  * Logs a click for the given Content Card id.
  */
-AppboyPlugin.prototype.logContentCardClicked = function (cardId) {
-	cordova.exec(null, null, "AppboyPlugin", "logContentCardClicked", [cardId]);
+BrazePlugin.prototype.logContentCardClicked = function (cardId) {
+	cordova.exec(null, null, "BrazePlugin", "logContentCardClicked", [cardId]);
 }
 
 /**
  * Logs an impression for the given Content Card id.
  */
-AppboyPlugin.prototype.logContentCardImpression = function (cardId) {
-	cordova.exec(null, null, "AppboyPlugin", "logContentCardImpression", [cardId]);
+BrazePlugin.prototype.logContentCardImpression = function (cardId) {
+	cordova.exec(null, null, "BrazePlugin", "logContentCardImpression", [cardId]);
 }
 
 /**
  * Logs a dismissal for the given Content Card id.
  */
-AppboyPlugin.prototype.logContentCardDismissed = function (cardId) {
-	cordova.exec(null, null, "AppboyPlugin", "logContentCardDismissed", [cardId]);
+BrazePlugin.prototype.logContentCardDismissed = function (cardId) {
+	cordova.exec(null, null, "BrazePlugin", "logContentCardDismissed", [cardId]);
 }
 
 /**
  * Sets the language for a user. Language Strings should be valid ISO 639-1 language codes. See loc.gov/standards/iso639-2/php/code_list.php.
  */
-AppboyPlugin.prototype.setLanguage = function (language) {
-	cordova.exec(null, null, "AppboyPlugin", "setLanguage", [language]);
+BrazePlugin.prototype.setLanguage = function (language) {
+	cordova.exec(null, null, "BrazePlugin", "setLanguage", [language]);
 }
 
 /**
  * Adds user to given subscription group.
  */
-AppboyPlugin.prototype.addToSubscriptionGroup = function (groupId) {
-	cordova.exec(null, null, "AppboyPlugin", "addToSubscriptionGroup", [groupId]);
+BrazePlugin.prototype.addToSubscriptionGroup = function (groupId) {
+	cordova.exec(null, null, "BrazePlugin", "addToSubscriptionGroup", [groupId]);
 }
 
 /**
  * Removes user from given subscription group.
  */
-AppboyPlugin.prototype.removeFromSubscriptionGroup = function (groupId) {
-	cordova.exec(null, null, "AppboyPlugin", "removeFromSubscriptionGroup", [groupId]);
+BrazePlugin.prototype.removeFromSubscriptionGroup = function (groupId) {
+	cordova.exec(null, null, "BrazePlugin", "removeFromSubscriptionGroup", [groupId]);
 }
 
 /**
  * @return An app specific ID that is stored on the device.
  */
-AppboyPlugin.prototype.getDeviceId = function (successCallback, errorCallback) {
-	cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getDeviceId");
+BrazePlugin.prototype.getDeviceId = function (successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "BrazePlugin", "getDeviceId");
 }
 
 /**
@@ -444,8 +444,8 @@ AppboyPlugin.prototype.getDeviceId = function (successCallback, errorCallback) {
  * @return [FeatureFlag] of the requested ID. If the Feature Flag does not exist, a [FeatureFlag]
  * will be returned with enabled set to `false` and empty properties.
  */
-AppboyPlugin.prototype.getFeatureFlag = function (id, successCallback, errorCallback) {
-	cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getFeatureFlag", [id]);
+BrazePlugin.prototype.getFeatureFlag = function (id, successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "BrazePlugin", "getFeatureFlag", [id]);
 }
 
 /**
@@ -455,38 +455,71 @@ AppboyPlugin.prototype.getFeatureFlag = function (id, successCallback, errorCall
  * fresh list of Feature Flags from Braze. If the SDK is disabled or the
  * cached list of feature flags cannot be retrieved, returns empty list.
  */
-AppboyPlugin.prototype.getAllFeatureFlags = function (successCallback, errorCallback) {
-	cordova.exec(successCallback, errorCallback, "AppboyPlugin", "getAllFeatureFlags");
+BrazePlugin.prototype.getAllFeatureFlags = function (successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "BrazePlugin", "getAllFeatureFlags");
 }
 
 /**
  * Requests a refresh of Feature Flags from the Braze server.
  */
-AppboyPlugin.prototype.refreshFeatureFlags = function (successCallback, errorCallback) {
-	cordova.exec(successCallback, errorCallback, "AppboyPlugin", "refreshFeatureFlags");
+BrazePlugin.prototype.refreshFeatureFlags = function (successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "BrazePlugin", "refreshFeatureFlags");
 }
 
 /**
  * Subscribes to Feature Flags events. The subscriber callback will be called when Feature Flags are updated.
  */
-AppboyPlugin.prototype.subscribeToFeatureFlagUpdates = function (successCallback) {
-	cordova.exec(successCallback, null, "AppboyPlugin", "subscribeToFeatureFlagUpdates");
+BrazePlugin.prototype.subscribeToFeatureFlagUpdates = function (flagId, propertyKey, successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "BrazePlugin", "subscribeToFeatureFlagUpdates", [flagId, propertyKey]);
+}
+
+/**
+ * Requests a boolean property for a given Feature Flag ID and a property key.
+ * @param {string} flagId - The identifier for the Feature Flag.
+ * @param {string} propertyKey - The key for the boolean property.
+ * 
+ * @return The boolean property requested. This should return null if there is no such property.
+ */
+BrazePlugin.prototype.getFeatureFlagBooleanProperty = function (flagId, propertyKey, successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "BrazePlugin", "getFeatureFlagBooleanProperty", [flagId, propertyKey]);
+}
+
+/**
+ * Requests a string property for a given Feature Flag ID and a property key.
+ * @param {string} flagId - The identifier for the Feature Flag.
+ * @param {string} propertyKey - The key for the string property.
+ * 
+ * @return The string property requested. This should return null if there is no such property.
+ */
+BrazePlugin.prototype.getFeatureFlagStringProperty = function (flagId, propertyKey, successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "BrazePlugin", "getFeatureFlagStringProperty", [flagId, propertyKey]);
+}
+
+/**
+ * Requests a number property for a given Feature Flag ID and a property key.
+ * @param {string} flagId - The identifier for the Feature Flag.
+ * @param {string} propertyKey - The key for the number property.
+ * 
+ * @return The number property requested. This should return null if there is no such property.
+ */
+BrazePlugin.prototype.getFeatureFlagNumberProperty = function (flagId, propertyKey, successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "BrazePlugin", "getFeatureFlagNumberProperty", [flagId, propertyKey]);
 }
 
 /**
  * @return Starts SDK session tracking if previously disabled. Only used for Android.
  */
-AppboyPlugin.prototype.startSessionTracking = function () {
-	cordova.exec(null, null, "AppboyPlugin", "startSessionTracking");
+BrazePlugin.prototype.startSessionTracking = function () {
+	cordova.exec(null, null, "BrazePlugin", "startSessionTracking");
 }
 
-AppboyPlugin.prototype['NotificationSubscriptionTypes'] = {
+BrazePlugin.prototype['NotificationSubscriptionTypes'] = {
   "OPTED_IN": 'opted_in',
   "SUBSCRIBED": 'subscribed',
   "UNSUBSCRIBED": 'unsubscribed'
 };
 
-AppboyPlugin.prototype['Genders'] = {
+BrazePlugin.prototype['Genders'] = {
   "FEMALE": 'f',
   "MALE": 'm',
   "NOT_APPLICABLE": 'n',
@@ -495,7 +528,7 @@ AppboyPlugin.prototype['Genders'] = {
   "UNKNOWN": 'u'
 };
 
-AppboyPlugin.prototype['CardCategories'] = {
+BrazePlugin.prototype['CardCategories'] = {
   "ADVERTISING": 'advertising',
   "ANNOUNCEMENTS": 'announcements',
   "NEWS": 'news',
@@ -504,10 +537,13 @@ AppboyPlugin.prototype['CardCategories'] = {
   "ALL" : 'all'
 };
 
-AppboyPlugin.prototype['ContentCardTypes'] = {
+BrazePlugin.prototype['ContentCardTypes'] = {
 	'CLASSIC': 'Classic',
 	'BANNER': 'Banner',
 	'CAPTIONED': 'Captioned'
 };
 
+var AppboyPlugin = BrazePlugin;
+
+module.exports = new BrazePlugin();
 module.exports = new AppboyPlugin();
