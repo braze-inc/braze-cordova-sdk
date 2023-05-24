@@ -1,3 +1,18 @@
+## 5.0.0
+
+##### Breaking
+- Updated these Feature Flag methods to return promises instead of using a callback parameter
+  - `getAllFeatureFlags()`
+  - `getFeatureFlag(id)`
+  - `getFeatureFlagBooleanProperty(id, key)`
+  - `getFeatureFlagStringProperty(id, key)`
+  - `getFeatureFlagNumberProperty(id, key)`
+  - To get a boolean property, for example, you can now use the following syntax:
+  ```
+  const booleanProperty = await BrazePlugin.getFeatureFlagBooleanProperty("feature-flag-id", "property-key");
+  ```
+- Changed `subscribeToFeatureFlagUpdates` to `subscribeToFeatureFlagsUpdates`.
+
 ## 4.0.0
 
 ##### Breaking

@@ -441,35 +441,48 @@ BrazePlugin.prototype.getDeviceId = function (successCallback, errorCallback) {
  * not force a refresh.
  *
  * @param id The ID of the Feature Flag to retrieve.
- * @return [FeatureFlag] of the requested ID. If the Feature Flag does not exist, a [FeatureFlag]
- * will be returned with enabled set to `false` and empty properties.
+ * @return A promise containing the [FeatureFlag] of the requested ID.
+ * If the Feature Flag does not exist, a [FeatureFlag] will be returned with 
+ * enabled set to `false` and empty properties.
  */
-BrazePlugin.prototype.getFeatureFlag = function (id, successCallback, errorCallback) {
-	cordova.exec(successCallback, errorCallback, "BrazePlugin", "getFeatureFlag", [id]);
+BrazePlugin.prototype.getFeatureFlag = function (id) {
+	return new Promise((resolve, reject) => {
+		cordova.exec((featureFlag) => {
+			resolve(featureFlag);
+		}, (error) => {
+			reject(error);
+		}, "BrazePlugin", "getFeatureFlag", [id]);
+	});
 }
 
 /**
  * Retrieves the offline/cached list of Feature Flags from offline storage.
  *
- * @return The list of cached Feature Flags. Note that this does not request a
+ * @return A promise containing the list of cached Feature Flags. Note that this does not request a
  * fresh list of Feature Flags from Braze. If the SDK is disabled or the
  * cached list of feature flags cannot be retrieved, returns empty list.
  */
-BrazePlugin.prototype.getAllFeatureFlags = function (successCallback, errorCallback) {
-	cordova.exec(successCallback, errorCallback, "BrazePlugin", "getAllFeatureFlags");
+BrazePlugin.prototype.getAllFeatureFlags = function () {
+	return new Promise((resolve, reject) => {
+		cordova.exec((featureFlags) => {
+			resolve(featureFlags);
+		}, (error) => {
+			reject(error);
+		}, "BrazePlugin", "getAllFeatureFlags");
+	});
 }
 
 /**
  * Requests a refresh of Feature Flags from the Braze server.
  */
-BrazePlugin.prototype.refreshFeatureFlags = function (successCallback, errorCallback) {
-	cordova.exec(successCallback, errorCallback, "BrazePlugin", "refreshFeatureFlags");
+BrazePlugin.prototype.refreshFeatureFlags = function () {
+	cordova.exec(null, null, "BrazePlugin", "refreshFeatureFlags");
 }
 
 /**
  * Subscribes to Feature Flags events. The subscriber callback will be called when Feature Flags are updated.
  */
-BrazePlugin.prototype.subscribeToFeatureFlagUpdates = function (flagId, propertyKey, successCallback, errorCallback) {
+BrazePlugin.prototype.subscribeToFeatureFlagsUpdates = function (flagId, propertyKey, successCallback, errorCallback) {
 	cordova.exec(successCallback, errorCallback, "BrazePlugin", "subscribeToFeatureFlagUpdates", [flagId, propertyKey]);
 }
 
@@ -478,10 +491,16 @@ BrazePlugin.prototype.subscribeToFeatureFlagUpdates = function (flagId, property
  * @param {string} flagId - The identifier for the Feature Flag.
  * @param {string} propertyKey - The key for the boolean property.
  * 
- * @return The boolean property requested. This should return null if there is no such property.
+ * @return A promise containing the boolean property requested. This should return null if there is no such property.
  */
-BrazePlugin.prototype.getFeatureFlagBooleanProperty = function (flagId, propertyKey, successCallback, errorCallback) {
-	cordova.exec(successCallback, errorCallback, "BrazePlugin", "getFeatureFlagBooleanProperty", [flagId, propertyKey]);
+BrazePlugin.prototype.getFeatureFlagBooleanProperty = function(flagId, propertyKey) {
+	return new Promise((resolve, reject) => {
+		cordova.exec((property) => {
+			resolve(property);
+		}, (error) => {
+			reject(error);
+		}, "BrazePlugin", "getFeatureFlagBooleanProperty", [flagId, propertyKey]);
+	})	
 }
 
 /**
@@ -489,10 +508,16 @@ BrazePlugin.prototype.getFeatureFlagBooleanProperty = function (flagId, property
  * @param {string} flagId - The identifier for the Feature Flag.
  * @param {string} propertyKey - The key for the string property.
  * 
- * @return The string property requested. This should return null if there is no such property.
+ * @return A promise containing the string property requested. This should return null if there is no such property.
  */
-BrazePlugin.prototype.getFeatureFlagStringProperty = function (flagId, propertyKey, successCallback, errorCallback) {
-	cordova.exec(successCallback, errorCallback, "BrazePlugin", "getFeatureFlagStringProperty", [flagId, propertyKey]);
+BrazePlugin.prototype.getFeatureFlagStringProperty = function(flagId, propertyKey) {
+	return new Promise((resolve, reject) => {
+		cordova.exec((stringProperty) => {
+			resolve(stringProperty);
+		}, (error) => {
+			reject(error);
+		}, "BrazePlugin", "getFeatureFlagStringProperty", [flagId, propertyKey]);
+	})	
 }
 
 /**
@@ -500,10 +525,16 @@ BrazePlugin.prototype.getFeatureFlagStringProperty = function (flagId, propertyK
  * @param {string} flagId - The identifier for the Feature Flag.
  * @param {string} propertyKey - The key for the number property.
  * 
- * @return The number property requested. This should return null if there is no such property.
+ * @return A promise containing the number property requested. This should return null if there is no such property.
  */
-BrazePlugin.prototype.getFeatureFlagNumberProperty = function (flagId, propertyKey, successCallback, errorCallback) {
-	cordova.exec(successCallback, errorCallback, "BrazePlugin", "getFeatureFlagNumberProperty", [flagId, propertyKey]);
+BrazePlugin.prototype.getFeatureFlagNumberProperty = function(flagId, propertyKey) {
+	return new Promise((resolve, reject) => {
+		cordova.exec((numberProperty) => {
+			resolve(numberProperty);
+		}, (error) => {
+			reject(error);
+		}, "BrazePlugin", "getFeatureFlagNumberProperty", [flagId, propertyKey]);
+	})	
 }
 
 /**

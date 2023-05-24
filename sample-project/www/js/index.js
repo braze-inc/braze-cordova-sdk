@@ -98,12 +98,19 @@ function changeUser() {
     showTextBubble(`User changed to ${userId}`);
 }
 
-function getFeatureFlag() {
-    BrazePlugin.getFeatureFlag(document.getElementById("featureFlagInputId").value, customPluginSuccessJsonCallback("FeatureFlag: "), customPluginErrorCallback);
+async function getFeatureFlag() {
+    try {
+        const featureFlag = await BrazePlugin.getFeatureFlag(document.getElementById("featureFlagInputId").value);
+        showTextBubble(`Feature Flag: ${JSON.stringify(featureFlag)}`);
+    } catch (error) {
+        // This method can error out if the Feature Flag fails to serialize at the native layer.
+        showTextBubble(JSON.stringify(error));
+    }
 }
 
-function getAllFeatureFlags() {
-    BrazePlugin.getAllFeatureFlags(customPluginSuccessArrayCallback("GetAllFeatureFlags: "), customPluginErrorCallback);
+async function getAllFeatureFlags() {
+    const featureFlags = await BrazePlugin.getAllFeatureFlags();
+    showTextBubble(`All Feature Flags: ${JSON.stringify(featureFlags)}`);
 }
 
 function refreshFeatureFlags() {
@@ -112,11 +119,11 @@ function refreshFeatureFlags() {
 }
 
 function subscribeToFeatureFlags() {
-    BrazePlugin.subscribeToFeatureFlagUpdates(featureFlagsUpdated);
+    BrazePlugin.subscribeToFeatureFlagsUpdates(featureFlagsUpdated);
     showTextBubble("Subscribed to Feature Flags");
 }
 
-function getFeatureFlagProperty() {
+async function getFeatureFlagProperty() {
     const featureFlagId = document.getElementById("featureFlagInputId").value;
     const propertyKey = document.getElementById("featureFlagPropertyKey").value;
     const propertyType = document.getElementById("featureFlagPropertyType").value;
@@ -130,13 +137,16 @@ function getFeatureFlagProperty() {
     }
     switch (propertyType) {
         case 'boolean':
-            BrazePlugin.getFeatureFlagBooleanProperty(featureFlagId, propertyKey, customPluginSuccessCallback("Got boolean property: "), customPluginErrorCallback);
+            const booleanProperty = await BrazePlugin.getFeatureFlagBooleanProperty(featureFlagId, propertyKey);
+            showTextBubble(`Got boolean property: ${booleanProperty}`);
             break;
         case 'number':
-            BrazePlugin.getFeatureFlagNumberProperty(featureFlagId, propertyKey, customPluginSuccessCallback("Got number property: "), customPluginErrorCallback);
+            const numberProperty = await BrazePlugin.getFeatureFlagNumberProperty(featureFlagId, propertyKey);
+            showTextBubble(`Got number property: ${numberProperty}`);
             break;
         case 'string':
-            BrazePlugin.getFeatureFlagStringProperty(featureFlagId, propertyKey, customPluginSuccessCallback("Got string property: "), customPluginErrorCallback);
+            const stringProperty = await BrazePlugin.getFeatureFlagStringProperty(featureFlagId, propertyKey);
+            showTextBubble(`Got string property: ${stringProperty}`);
             break;
         default:
             showTextBubble("No property type selected.");

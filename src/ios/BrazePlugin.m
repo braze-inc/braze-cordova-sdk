@@ -614,15 +614,7 @@
 }
 
 - (void)refreshFeatureFlags:(CDVInvokedUrlCommand *)command {
-  [self.braze.featureFlags requestRefreshWithCompletion:^(NSArray<BRZFeatureFlag *> * flags, NSError * error) {
-    if (error) {
-      NSLog(@"%@", error.debugDescription);
-    } else {
-      NSLog(@"Got Feature Flags from server callback");
-      [self sendCordovaSuccessPluginResultWithArray:[BrazePlugin formattedFeatureFlagsMap:self.braze.featureFlags.featureFlags]
-                                         andCommand:command];
-    }
-  }];
+  [self.braze.featureFlags requestRefresh];
 }
 
 - (void)subscribeToFeatureFlagUpdates:(CDVInvokedUrlCommand *)command {
