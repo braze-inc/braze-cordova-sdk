@@ -38,6 +38,7 @@
 
   <!-- ios -->
   <platform name="ios">
+    <hook type="before_plugin_install" src="hooks/iOSBeforeInstall.js" />
     <config-file target="config.xml" parent="/*">
       <feature name="BrazePlugin">
         <param name="ios-package" value="BrazePlugin" />
