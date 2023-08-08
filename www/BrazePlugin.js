@@ -34,9 +34,10 @@ var BrazePlugin = function () {
  *    to target while logged out and switching back to that user ID as part of your app's logout process.
  *
  * @param {string} userId - A unique identifier for this user.
+ * @param {string} sdkAuthenticationToken - A JWT token used for SDK Authentication.
  */
-BrazePlugin.prototype.changeUser = function (userId) {
-	cordova.exec(null, null, "BrazePlugin", "changeUser", [userId]);
+BrazePlugin.prototype.changeUser = function (userId, sdkAuthenticationToken) {
+	cordova.exec(null, null, "BrazePlugin", "changeUser", [userId, sdkAuthenticationToken]);
 }
 
 /**
@@ -573,6 +574,29 @@ BrazePlugin.prototype['ContentCardTypes'] = {
 	'BANNER': 'Banner',
 	'CAPTIONED': 'Captioned'
 };
+
+/**
+ * Sets the signature used for SDK authentication
+ * for the currently identified user.
+ *
+ * @param {string} jwtToken - SDK Authentication JWT token.
+ */
+BrazePlugin.prototype.setSdkAuthenticationSignature = function (jwtToken) {
+	cordova.exec(null, null, "BrazePlugin", "setSdkAuthenticationSignature", [jwtToken]);
+}
+
+/**
+* Subscribes to SDK Authentication failures.
+*
+* Reports failures in the following JSON format:
+* 	(string) "signature"
+* 	(number) "errorCode"
+* 	(string) "errorReason"
+* 	(string) "userId"
+*/
+BrazePlugin.prototype.subscribeToSdkAuthenticationFailures = function (successCallback, errorCallback) {
+	cordova.exec(successCallback, errorCallback, "BrazePlugin", "subscribeToSdkAuthenticationFailures");
+}
 
 var AppboyPlugin = BrazePlugin;
 

@@ -39,6 +39,7 @@
         <preference name="com.braze.android_log_level" value="0" />
         <preference name="com.braze.enable_location_collection" value="false" />
         <preference name="com.braze.geofences_enabled" value="false" />
+        <preference name="com.braze.sdk_authentication_enabled" value="true" />
 
         <edit-config
             file="app/src/main/AndroidManifest.xml"
@@ -56,6 +57,7 @@
         <preference name="com.braze.ios_enable_idfa_automatic_collection" value="YES" />
         <preference name="com.braze.enable_location_collection" value="NO" />
         <preference name="com.braze.geofences_enabled" value="NO" />
+        <preference name="com.braze.sdk_authentication_enabled" value="YES" />
         <preference name="com.braze.display_foreground_push_notifications" value="YES" />
         <preference name="deployment-target" value="11.0" />
         <preference name="com.braze.ios_disable_un_authorization_option_provisional" value="NO" />

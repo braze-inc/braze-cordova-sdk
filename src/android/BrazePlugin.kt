@@ -77,7 +77,10 @@ open class BrazePlugin : CordovaPlugin() {
                 return true
             }
             "changeUser" -> {
-                runOnBraze { it.changeUser(args.getString(0)) }
+                val userId = args.getString(0)
+                // Pass along the SDK Auth token if provided
+                val sdkAuthToken = args.optString(1)
+                runOnBraze { it.changeUser(userId, sdkAuthToken) }
                 return true
             }
             "logCustomEvent" -> {
@@ -344,6 +347,23 @@ open class BrazePlugin : CordovaPlugin() {
                 }
                 return true
             }
+            "subscribeToSdkAuthenticationFailures" -> {
+                runOnBraze {
+                    it.subscribeToSdkAuthenticationFailures { sdkAuthErrorEvent ->
+                        val jsonResult = JSONObject().apply {
+                            put("signature", sdkAuthErrorEvent.signature)
+                            put("errorCode", sdkAuthErrorEvent.errorCode)
+                            put("errorReason", sdkAuthErrorEvent.errorReason)
+                            put("userId", sdkAuthErrorEvent.userId)
+                            put("requestInitiationTime", sdkAuthErrorEvent.requestInitiationTime)
+                        }
+                        val result = PluginResult(PluginResult.Status.OK, jsonResult)
+                        result.keepCallback = true
+                        callbackContext.sendPluginResult(result)
+                    }
+                }
+                return true
+            }
             GET_NEWS_FEED_METHOD,
             GET_CARD_COUNT_FOR_CATEGORIES_METHOD,
             GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD -> return handleNewsFeedGetters(action, args, callbackContext)
@@ -464,6 +484,9 @@ open class BrazePlugin : CordovaPlugin() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P && enableRequestFocusFix) {
             // Addresses Cordova bug in https://issuetracker.google.com/issues/36915710
             BrazeInAppMessageManager.getInstance().setCustomInAppMessageViewWrapperFactory(CordovaInAppMessageViewWrapperFactory())
+        }
+        if (cordovaPreferences.contains(SDK_AUTH_ENABLED_PREFERENCE)) {
+            configBuilder.setIsSdkAuthenticationEnabled(cordovaPreferences.getBoolean(SDK_AUTH_ENABLED_PREFERENCE, false))
         }
         Braze.configure(applicationContext, configBuilder.build())
     }
@@ -610,6 +633,7 @@ open class BrazePlugin : CordovaPlugin() {
         private const val ENABLE_LOCATION_PREFERENCE = "com.braze.enable_location_collection"
         private const val ENABLE_GEOFENCES_PREFERENCE = "com.braze.geofences_enabled"
         private const val DISABLE_AUTO_START_SESSIONS_PREFERENCE = "com.braze.android_disable_auto_session_tracking"
+        private const val SDK_AUTH_ENABLED_PREFERENCE = "com.braze.sdk_authentication_enabled"
 
         /**
          * When applied, restricts the SDK from taking

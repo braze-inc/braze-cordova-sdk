@@ -1,3 +1,17 @@
+## 6.0.0
+
+##### Breaking
+- Updated the native iOS version [from Braze Swift SDK 5.13.0 to 6.5.0](https://github.com/braze-inc/braze-swift-sdk/compare/5.13.0...6.5.0#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+- Updated the native Android version [from Braze Android SDK 25.0.0 to 26.3.1](https://github.com/braze-inc/braze-android-sdk/compare/v25.0.0...v26.3.1#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+
+##### Added
+- Added support for Braze SDK Authentication.
+  - Enabled on Android via `<preference name="com.braze.sdk_authentication_enabled" value="true" />`.
+  - Enabled on iOS via `<preference name="com.braze.sdk_authentication_enabled" value="YES" />`.
+  - Updated `changeUser()` to accept an optional second parameter for an SDK Auth token, e.g. `changeUser("user id here", "jwt token here")`.
+  - Added `subscribeToSdkAuthenticationFailures()` which listens for SDK authentication failures.
+  - Added `setSdkAuthenticationSignature()` to set a Braze SDK Authentication signature JWT token.
+
 ## 5.0.0
 
 ##### Breaking

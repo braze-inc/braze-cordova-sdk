@@ -40,6 +40,7 @@ var app = {
         document.getElementById("subscribeToFeatureFlagsBtn").addEventListener("click", subscribeToFeatureFlags);
         document.getElementById("getFeatureFlagPropertyBtn").addEventListener("click", getFeatureFlagProperty);
         document.getElementById("changeUserBtn").addEventListener("click", changeUser);
+        document.getElementById("setSdkAuthBtn").addEventListener("click", setSdkAuthenticationSignature);
         document.getElementById("logCustomEventBtn").addEventListener("click", logCustomEvent);
         document.getElementById("logPurchaseBtn").addEventListener("click", logPurchase);
         document.getElementById("setCustomUserAttributeBtn").addEventListener("click", setCustomUserAttribute);
@@ -67,14 +68,7 @@ var app = {
         document.getElementById("setLanguageBtn").addEventListener("click", setLanguage);
         document.getElementById("getDeviceId").addEventListener("click", getDeviceId);
         document.getElementById("requestPushPermission").addEventListener("click", requestPushPermission);
-
-        var success = function(message) {
-            alert(message);
-        }
-
-        var failure = function() {
-            alert("Error calling Hello Plugin");
-        }
+        BrazePlugin.subscribeToSdkAuthenticationFailures(customPluginSuccessCallback(), customPluginErrorCallback);
     },
         // Update DOM on a Received Event
     receivedEvent: function(id) {
@@ -94,8 +88,27 @@ app.initialize();
 // Braze methods
 function changeUser() {
     const userId = document.getElementById("changeUserInputId").value;
-    BrazePlugin.changeUser(userId);
-    showTextBubble(`User changed to ${userId}`);
+    const sdkAuthSignature = document.getElementById("sdkAuthSignature").value;
+    if (!userId) {
+        showTextBubble("User ID not entered.");
+        return;
+    }
+    if (!sdkAuthSignature) {
+        BrazePlugin.changeUser(userId);
+    } else {
+        BrazePlugin.changeUser(userId, sdkAuthSignature);
+    }
+    showTextBubble(`User changed to ${userId} with auth signature ${sdkAuthSignature}`);
+}
+
+function setSdkAuthenticationSignature() {
+    const sdkAuthSignature = document.getElementById("sdkAuthSignature").value;
+    if (!sdkAuthSignature) {
+        showTextBubble("SDK auth signature not entered.");
+        return;
+    }
+    BrazePlugin.setSdkAuthenticationSignature(sdkAuthSignature);
+    showTextBubble(`SDK authentication signature set to ${sdkAuthSignature}`);
 }
 
 async function getFeatureFlag() {
@@ -382,7 +395,13 @@ function showTextBubble(bubbleMessage) {
 * Serves as the success callback for the Braze Plugin. Displays a text bubble with a message when called.
 **/
 function customPluginSuccessCallback(bubbleMessage) {
-    return function(callbackResult) { showTextBubble(bubbleMessage + " " + callbackResult) };
+    return function(callbackResult) { 
+        if (typeof callbackResult === 'object') {
+            console.log(JSON.stringify(callbackResult));
+        } else {
+            showTextBubble(bubbleMessage + " " + callbackResult);
+        }
+    };
 }
 
 /**
@@ -397,6 +416,7 @@ function customPluginSuccessJsonCallback(bubbleMessage) {
 **/
 function customPluginSuccessArrayCallback(bubbleMessage) {
     return function(callbackResult) {
+        console.log(callbackResult);
         var numElements = callbackResult.length;
         showTextBubble("Logging all " + numElements + " objects")
         for (var i = 0; i < numElements; i++) {

@@ -6,7 +6,7 @@
 @import BrazeUI;
 @import UserNotifications;
 
-@interface BrazePlugin()
+@interface BrazePlugin() <BrazeSDKAuthDelegate>
   @property NSString *APIKey;
   @property NSString *disableAutomaticPushRegistration;
   @property NSString *disableAutomaticPushHandling;
@@ -16,6 +16,8 @@
   @property NSString *enableGeofences;
   @property NSString *disableUNAuthorizationOptionProvisional;
   @property NSString *sessionTimeout;
+  @property NSString *enableSDKAuth;
+  @property NSString *sdkAuthCallbackID;
 @end
 
 @implementation BrazePlugin
@@ -31,6 +33,7 @@
   self.enableGeofences = settings[@"com.braze.geofences_enabled"];
   self.disableUNAuthorizationOptionProvisional = settings[@"com.braze.ios_disable_un_authorization_option_provisional"];
   self.sessionTimeout = settings[@"com.braze.ios_session_timeout"];
+  self.enableSDKAuth = settings[@"com.braze.sdk_authentication_enabled"];
 
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFinishLaunchingListener:) name:UIApplicationDidFinishLaunchingNotification object:nil];
 
@@ -63,6 +66,12 @@
     [self.braze setAdTrackingEnabled:[self.idfaDelegate isAdvertisingTrackingEnabledOrATTAuthorized]];
   }
 
+  // Set the SDK authentication delegate
+  if ([self.enableSDKAuth isEqualToString:@"YES"]) {
+    NSLog(@"SDK authentication enabled. To receive and handle authentication errors, call `subscribeToSdkAuthenticationFailures`.");
+    self.braze.sdkAuthDelegate = self;
+  }
+
   if (![self.disableAutomaticPushRegistration isEqualToString:@"YES"]) {
     UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     // If the delegate hasn't been set yet, set it here in the plugin
@@ -88,10 +97,26 @@
   }
 }
 
-/*-------Braze-------*/
+// MARK: - Braze
 - (void)changeUser:(CDVInvokedUrlCommand *)command {
   NSString *userId = [command argumentAtIndex:0 withDefault:nil];
-  [self.braze changeUser:userId];
+  NSString *sdkAuthSignature = [command argumentAtIndex:1 withDefault:nil];
+  if (userId && sdkAuthSignature) {
+    [self.braze changeUser:userId sdkAuthSignature:sdkAuthSignature];
+  } else if (userId) {
+    [self.braze changeUser:userId];
+  }
+}
+
+- (void)setSdkAuthenticationSignature:(CDVInvokedUrlCommand *)command {
+  NSString *sdkAuthSignature = [command argumentAtIndex:0 withDefault:nil];
+  if (sdkAuthSignature) {
+    [self.braze setSDKAuthenticationSignature:sdkAuthSignature];
+  }
+}
+
+- (void)subscribeToSdkAuthenticationFailures:(CDVInvokedUrlCommand *)command {
+  self.sdkAuthCallbackID = command.callbackId;
 }
 
 - (void)logCustomEvent:(CDVInvokedUrlCommand *)command {
@@ -130,7 +155,7 @@
   [self.braze requestImmediateDataFlush];
 }
 
-/*-------Braze.User-------*/
+// MARK: - Braze.User
 - (void)setFirstName:(CDVInvokedUrlCommand *)command {
   NSString *firstName = [command argumentAtIndex:0 withDefault:nil];
   [self.braze.user setFirstName:firstName];
@@ -338,7 +363,7 @@
   }];
 }
 
-/*-------BrazeUI-------*/
+// MARK: - BrazeUI
 - (void)launchNewsFeed:(CDVInvokedUrlCommand *)command {
   NSLog(@"News Feed UI not supported on iOS.");
 }
@@ -352,7 +377,7 @@
   [mainViewController presentViewController:contentCardsModal animated:YES completion:nil];
 }
 
-/*-------News Feed-------*/
+// MARK: - News Feed
 - (void)getNewsFeed:(CDVInvokedUrlCommand *)command {
   [self.braze.newsFeed requestRefresh];
   NSArray *cardCategories = [self getCardCategoriesFromStringArray:command.arguments];
@@ -469,7 +494,7 @@
   return categoryMask;
 }
 
-/*-------Content Cards-------*/
+// MARK: - Content Cards
 - (void)requestContentCardsRefresh:(CDVInvokedUrlCommand *)command {
   [self.braze.contentCards requestRefresh];
 }
@@ -592,7 +617,7 @@
   }
 }
 
-/*-------Feature Flags-------*/
+// MARK: - Feature Flags
 - (void)getFeatureFlag:(CDVInvokedUrlCommand *)command {
   NSString *featureFlagId = [command argumentAtIndex:0 withDefault:nil];
   BRZFeatureFlag *featureFlag = [self.braze.featureFlags featureFlagWithId:featureFlagId];
@@ -682,7 +707,23 @@
   return mappedFlags;
 }
 
-/*-------Cordova Helper Methods-------*/
+
+// MARK: - BrazeSDKAuthDelegate
+- (void)braze:(Braze * _Nonnull)braze sdkAuthenticationFailedWithError:(BRZSDKAuthenticationError * _Nonnull)error {
+  if (self.sdkAuthCallbackID) {
+    NSMutableDictionary *sdkAuthErrorEvent = [[NSMutableDictionary alloc] init];
+    sdkAuthErrorEvent[@"signature"] = error.signature;
+    sdkAuthErrorEvent[@"errorCode"] = @(error.code);
+    sdkAuthErrorEvent[@"errorReason"] = error.reason;
+    sdkAuthErrorEvent[@"userId"] = error.userId;
+    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                                  messageAsDictionary:sdkAuthErrorEvent];
+    [pluginResult setKeepCallbackAsBool:YES];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.sdkAuthCallbackID];
+  }
+}
+
+// MARK: - Cordova Helper Methods
 - (void)sendCordovaErrorPluginResultWithString:(NSString *)resultMessage andCommand:(CDVInvokedUrlCommand *)command {
   CDVPluginResult *pluginResult = nil;
   pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:resultMessage];

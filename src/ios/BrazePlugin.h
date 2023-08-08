@@ -10,6 +10,8 @@
 
 /*-------Braze-------*/
 - (void)changeUser:(CDVInvokedUrlCommand *)command;
+- (void)setSdkAuthenticationSignature:(CDVInvokedUrlCommand *)command;
+- (void)subscribeToSdkAuthenticationFailures:(CDVInvokedUrlCommand *)command;
 - (void)logCustomEvent:(CDVInvokedUrlCommand *)command;
 - (void)logPurchase:(CDVInvokedUrlCommand *)command;
 - (void)disableSdk:(CDVInvokedUrlCommand *)command;
