@@ -1,5 +1,5 @@
 {
-  "name": "com.appboy.hellocordova",
+  "name": "com.braze.hellocordova",
   "version": "2.3.2",
   "displayName": "HelloCordova",
   "cordova": {
@@ -8,7 +8,7 @@
       "android"
     ],
     "plugins": {
-      "cordova-plugin-appboy": {}
+      "cordova-plugin-braze": {}
     }
   },
   "dependencies": {
@@ -22,8 +22,8 @@
     "xcode": "^3.0.1"
   },
   "devDependencies": {
-    "appboy-cordova-sdk": "file:../local",
-    "cordova-android": "^10.1.2",
+    "braze-cordova-sdk": "file:../local",
+    "cordova-android": "^11.0.0",
     "cordova-ios": "^6.2.0"
   }
 }

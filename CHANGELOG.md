@@ -1,3 +1,86 @@
+## 6.0.0
+
+##### Breaking
+- Updated the native iOS version [from Braze Swift SDK 5.13.0 to 6.5.0](https://github.com/braze-inc/braze-swift-sdk/compare/5.13.0...6.5.0#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+- Updated the native Android version [from Braze Android SDK 25.0.0 to 26.3.1](https://github.com/braze-inc/braze-android-sdk/compare/v25.0.0...v26.3.1#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+
+##### Added
+- Added support for Braze SDK Authentication.
+  - Enabled on Android via `<preference name="com.braze.sdk_authentication_enabled" value="true" />`.
+  - Enabled on iOS via `<preference name="com.braze.sdk_authentication_enabled" value="YES" />`.
+  - Updated `changeUser()` to accept an optional second parameter for an SDK Auth token, e.g. `changeUser("user id here", "jwt token here")`.
+  - Added `subscribeToSdkAuthenticationFailures()` which listens for SDK authentication failures.
+  - Added `setSdkAuthenticationSignature()` to set a Braze SDK Authentication signature JWT token.
+
+## 5.0.0
+
+##### Breaking
+- Updated these Feature Flag methods to return promises instead of using a callback parameter
+  - `getAllFeatureFlags()`
+  - `getFeatureFlag(id)`
+  - `getFeatureFlagBooleanProperty(id, key)`
+  - `getFeatureFlagStringProperty(id, key)`
+  - `getFeatureFlagNumberProperty(id, key)`
+  - To get a boolean property, for example, you can now use the following syntax:
+  ```
+  const booleanProperty = await BrazePlugin.getFeatureFlagBooleanProperty("feature-flag-id", "property-key");
+  ```
+- Changed `subscribeToFeatureFlagUpdates` to `subscribeToFeatureFlagsUpdates`.
+
+## 4.0.0
+
+##### Breaking
+- Renamed instances of `Appboy` to `Braze`.
+  - To ensure that your project is properly migrated to the new naming conventions, note and replace the following instances in your project:
+    - The plugin has been renamed from `cordova-plugin-appboy` to `cordova-plugin-braze`. 
+      - Ensure that you run `cordova plugin remove cordova-plugin-appboy` and then re-add the plugin using the instructions in the [README](./README.md).
+    - This GitHub repository has been moved to the URL `https://github.com/braze-inc/braze-cordova-sdk`.
+    - In your project's `config.xml` file, rename instances of `com.appboy` to `com.braze` for each of your configuration property keys.
+    - The JavaScript class interface `AppboyPlugin` has been renamed to `BrazePlugin`.
+- Updated to [Braze Android SDK 25.0.0](https://github.com/braze-inc/braze-android-sdk/blob/master/CHANGELOG.md#2500).
+- Updated to [Braze Swift SDK 5.13.0](https://github.com/braze-inc/braze-swift-sdk/releases/tag/5.13.0).
+  - This update fixes the iOS behavior introduced in version `2.33.0` when logging clicks for content cards. Calling `logContentCardClicked` now only sends a click event for metrics, instead of both sending a click event as well as redirecting to the associated `url` field.
+    - For instance, to log a content card click and redirect to a URL, you will need two commands:
+    ```
+    BrazePlugin.logContentCardClicked(contentCardId);
+
+    // Your own custom implementation
+    YourApp.openUrl(contentCard["url"]);
+    ```
+    - This brings the iOS behavior to match pre-`2.33.0` versions and bring parity with Android's behavior.
+
+##### Added
+- Added property methods for Feature Flags: `getFeatureFlagBooleanProperty(id, key)`, `getFeatureFlagStringProperty(id, key)`, `getFeatureFlagNumberProperty(id, key)`
+
+## 3.0.0
+
+##### Added
+- Added support for the upcoming Braze Feature Flags product with `getFeatureFlag()`, `getAllFeatureFlags()`, `refreshFeatureFlags()`, and `subscribeToFeatureFlagUpdates()`.
+
+##### Changed
+- Updated to [Braze Swift SDK 5.11.0](https://github.com/braze-inc/braze-swift-sdk/releases/tag/5.11.0).
+- Removed automatic requests for App Tracking Transparency permissions on iOS.
+
+## 2.33.0
+
+##### Breaking
+- Migrated the iOS plugin to use the new [Braze Swift SDK](https://github.com/braze-inc/braze-swift-sdk) (5.8.1).
+  - News Feed UI is no longer supported on iOS.
+
+## 2.32.0
+
+##### Breaking
+- Updated to [Braze Android SDK 24.1.0](https://github.com/Appboy/appboy-android-sdk/releases/tag/v24.1.0).
+- Updated the Android bridge to Kotlin.
+  - `<preference name="GradlePluginKotlinEnabled" value="true" />` is now required in your `config.xml`.
+- Removed `setAvatarImageUrl()`.
+
+##### Changed
+- Added an `main` value to `package.json`.
+
+##### Added
+- Added `setRegisteredPushToken()` which replaces the deprecated `registerAppboyPushMessages()` method.
+
 ## 2.31.0
 
 ##### Breaking

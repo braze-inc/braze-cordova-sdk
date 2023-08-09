@@ -1,4 +1,4 @@
-<img src="https://github.com/Appboy/appboy-cordova-sdk/blob/master/braze-logo.png" width="300" title="Braze Logo" />
+<img src="https://github.com/braze-inc/braze-cordova-sdk/blob/master/braze-logo.png" width="300" title="Braze Logo" />
 
 # Cordova SDK
 
@@ -9,8 +9,8 @@ See our [Technical Documentation for Android](https://www.braze.com/docs/develop
 # Running the sample application
 
 ```
-cordova plugin remove cordova-plugin-appboy
-cordova plugin add https://github.com/appboy/appboy-cordova-sdk#master
+cordova plugin remove cordova-plugin-braze
+cordova plugin add https://github.com/braze-inc/braze-cordova-sdk#master
 
 # To run android
 cordova run android

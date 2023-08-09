@@ -39,39 +39,70 @@
         <div class="app">
             <h1>Apache Cordova</h1>
             <div id="deviceready" class="blink">
-                <p class="event listening">Connecting to Device2</p>
+                <p class="event listening">Connecting to Device</p>
                 <p class="event received">Device is Ready</p>
             </div>
             <div id="test-container">
                 <button id="requestFlushBtn">Request Data Flush</button>
+                <br>
+                <input type="text" id="changeUserInputId" autocorrect="off" autocapitalize="off" placeholder="External ID" />
+                <input type="text" id="sdkAuthSignature" autocorrect="off" autocapitalize="off" placeholder="SDK Auth Signature" />
                 <button id="changeUserBtn">Change User</button>
-                <input type="text" id="changeUserInputId"/>
+                <button id="setSdkAuthBtn">Set SDK Auth Signature</button>
+                <br>
+                <input type="text" id="logCustomEventId" autocorrect="off" autocapitalize="off" placeholder="Event Name" />
                 <button id="logCustomEventBtn">Log Custom Event</button>
+                <br>
+                <input type="text" id="productId" autocorrect="off" autocapitalize="off" placeholder="Product ID" />
+                <input type="text" id="purchaseAmount" autocorrect="off" autocapitalize="off" placeholder="Purchase Amount" />
+                <input type="text" id="purchaseCurrency" autocorrect="off" autocapitalize="off" placeholder="Purchase Currency" />
+                <input type="text" id="purchaseQuantity" autocorrect="off" autocapitalize="off" placeholder="Purchase Quantity" />
                 <button id="logPurchaseBtn">Log Purchase</button>
+                <br>
                 <button id="setCustomUserAttributeBtn">Set Custom User Attribute</button>
                 <button id="setUserPropertiesBtn">Set User Properties</button>
-                <button id="launchNewsFeedBtn">Launch News Feed</button>
-                <button id="launchContentCardsBtn">Launch Content Cards</button>
                 <button id="unsetCustomUserAttributeBtn">Unset Custom User Attribute</button>
                 <button id="setCustomUserAttributeArrayBtn">Set Custom User Attribute Array</button>
                 <button id="incrementCustomUserAttributeBtn">Increment Custom User Attribute</button>
                 <button id="addToCustomUserAttributeArrayBtn">Add To Custom Attribute Array</button>
                 <button id="removeFromCustomUserAttributeArrayBtn">Remove From Custom Attribute Array</button>
                 <button id="setAttributionDataBtn">Set Attribution Data</button>
+                <br>
+                <button id="launchNewsFeedBtn">Launch News Feed (Deprecated)</button>
+                <button id="launchContentCardsBtn">Launch Content Cards</button>
+                <br>
                 <button id="getNewsFeedUnreadCountBtn">Get News Feed Unread Count</button>
                 <button id="getNewsFeedCardCountBtn">Get News Feed Card Count</button>
                 <button id="getCardCountForCategoriesBtn">Get News Feed Card Count for Category</button>
                 <button id="getUnreadCardCountForCategoriesBtn">Get Unread News Feed Card Count for Category</button>
                 <button id="getAllNewsFeedCardsBtn">Log all News Feed Cards</button>
+                <br>
                 <button id="getAllContentCardsBtn">Log all Content Cards</button>
                 <button id="logContentCardAnalyticsBtn">Log Content Cards Analytics for first Card</button>
+                <br>
+                <input type="text" id="aliasName" autocorrect="off" autocapitalize="off" placeholder="Alias Name" />
+                <input type="text" id="aliasLabel" autocorrect="off" autocapitalize="off" placeholder="Alias Label" />
                 <button id="addAliasBtn">Add Alias</button>
+                <input type="text" id="languageCode" autocorrect="off" autocapitalize="off" placeholder="Language Code" />
                 <button id="setLanguageBtn">Set Language</button>
                 <button id="wipeData">Clears all SDK data</button>
                 <button id="enableSdk">Enables the SDK</button>
                 <button id="disableSdk">Disables the SDK</button>
                 <button id="getDeviceId">Gets the Device ID</button>
-                <button id="requestPushPermission">requestPushPermission()</button>
+                <button id="requestPushPermission">Request Push Permission (Android Only)</button>
+                <br>
+                <input type="text" id="featureFlagInputId" autocorrect="off" autocapitalize="off" placeholder="Feature Flag ID" />
+                <button id="getFeatureFlagBtn">Get Feature Flag</button>
+                <button id="getAllFeatureFlagsBtn">Get All Feature Flags</button>
+                <button id="refreshFeatureFlagsBtn">Refresh Feature Flags</button>
+                <button id="subscribeToFeatureFlagsBtn">Subscribe to Feature Flag Updates</button>
+                <input type="text" id="featureFlagPropertyKey" autocorrect="off" autocapitalize="off" placeholder="Property Key" />
+                <select id="featureFlagPropertyType">
+                    <option value="boolean">Boolean</option>
+                    <option value="number">Number</option>
+                    <option value="string">String</option>
+                </select>
+                <button id="getFeatureFlagPropertyBtn">Get Feature Flag Property</button>
             </div>
             <!-- The snackbar to display messages -->
             <div id="snackbar"></div>
