@@ -1,3 +1,8 @@
+## 6.0.1
+
+##### Fixed
+- Updated the native Android version [from Braze Android SDK 26.3.1 to 26.3.2](https://github.com/braze-inc/braze-android-sdk/blob/master/CHANGELOG.md#2632).
+  
 ## 6.0.0
 
 ##### Breaking

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-  id="cordova-plugin-braze" version="6.0.0">
+  id="cordova-plugin-braze" version="6.0.1">
   <name>Device</name>
   <description>Braze Cordova SDK</description>
   <license>MIT</license>
