@@ -191,6 +191,16 @@ open class BrazePlugin : CordovaPlugin() {
                 runOnUser { it.setCustomAttributeArray(args.getString(0), attributes) }
                 return true
             }
+            "setCustomUserAttributeObjectArray" -> {
+                val attributes = parseJSONArraytoJsonObjectArray(args.getJSONArray(1))
+                runOnUser { it.setCustomAttribute(args.getString(0), attributes) }
+                return true
+            }
+            "setCustomUserAttributeObject" -> {
+                val attributes = args.getJSONObject(1)
+                runOnUser { it.setCustomAttribute(args.getString(0), attributes, args.getBoolean(2)) }
+                return true
+            }
             "addToCustomAttributeArray" -> {
                 runOnUser { it.addToCustomAttributeArray(args.getString(0), args.getString(1)) }
                 return true
@@ -344,6 +354,12 @@ open class BrazePlugin : CordovaPlugin() {
                     } else {
                         callbackContext.sendPluginResult(PluginResult(PluginResult.Status.OK, result.toFloat()))
                     }
+                }
+                return true
+            }
+            "logFeatureFlagImpression" -> {
+                runOnBraze {
+                    Braze.getInstance(applicationContext).logFeatureFlagImpression(args.getString(0))
                 }
                 return true
             }
@@ -680,6 +696,19 @@ open class BrazePlugin : CordovaPlugin() {
             val array = arrayOfNulls<String>(length)
             for (i in 0 until length) {
                 array[i] = jsonArray.getString(i)
+            }
+            return array
+        }
+
+        /**
+         * This takes the JSONArray of Any and creates a JSONArray of
+         * explicitly typed JSONObject
+         */
+        private fun parseJSONArraytoJsonObjectArray(jsonArray: JSONArray): JSONArray {
+            val length = jsonArray.length()
+            val array = JSONArray()
+            for (i in 0 until length) {
+                array.put(jsonArray.getJSONObject(i))
             }
             return array
         }

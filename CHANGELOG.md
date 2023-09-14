@@ -1,3 +1,18 @@
+## 7.0.0
+
+##### Breaking
+- Updated the native Android version [from Braze Android SDK 26.3.2 to 27.0.1](https://github.com/braze-inc/braze-android-sdk/blob/master/CHANGELOG.md#2701).
+
+##### Added
+- Added `logFeatureFlagImpression(id)`.
+- Updated the native iOS version [from Braze Swift SDK 6.5.0 to 6.6.0](https://github.com/braze-inc/braze-swift-sdk/compare/6.5.0...6.6.0#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+- Added support for nested custom user attributes.
+  - The `setCustomUserAttribute` method now accepts objects and arrays of objects.
+  - Added an optional `merge` parameter to the `setCustomUserAttribute` method. This is a non-breaking change.
+  - Please see our [public docs](https://www.braze.com/docs/user_guide/data_and_analytics/custom_data/custom_attributes/nested_custom_attribute_support/) for more information.
+- Exposed the `braze` instance as a convenience static property on iOS via `BrazePlugin.braze`.
+  - This makes it easier to work with tools such as Capacitor by Ionic.
+
 ## 6.0.1
 
 ##### Fixed

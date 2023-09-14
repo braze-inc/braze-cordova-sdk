@@ -8,6 +8,11 @@
 @property id<BrazeIDFADelegate> idfaDelegate;
 @property NSMutableArray<BRZCancellable *> *subscriptions;
 
+/// Static Braze instance provided as a convenience method for compatibility.
+///
+/// Accessing this property before initializing the Braze plugin will return a `nil` value.
++ (Braze *)braze;
+
 /*-------Braze-------*/
 - (void)changeUser:(CDVInvokedUrlCommand *)command;
 - (void)setSdkAuthenticationSignature:(CDVInvokedUrlCommand *)command;
@@ -71,5 +76,6 @@
 - (void)getFeatureFlagBooleanProperty:(CDVInvokedUrlCommand *)command;
 - (void)getFeatureFlagStringProperty:(CDVInvokedUrlCommand *)command;
 - (void)getFeatureFlagNumberProperty:(CDVInvokedUrlCommand *)command;
+- (void)logFeatureFlagImpression:(CDVInvokedUrlCommand *)command;
 
 @end

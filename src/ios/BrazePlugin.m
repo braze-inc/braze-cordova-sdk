@@ -20,7 +20,17 @@
   @property NSString *sdkAuthCallbackID;
 @end
 
+static Braze *_braze;
+
 @implementation BrazePlugin
+
++ (Braze *)braze {
+  return _braze;
+}
+
++ (void)setBraze:(Braze *)braze {
+  _braze = braze;
+}
 
 - (void)pluginInitialize {
   NSDictionary *settings = self.commandDelegate.settings;
@@ -58,7 +68,8 @@
   self.braze = [[Braze alloc] initWithConfiguration:configuration];
   self.braze.inAppMessagePresenter = [[BrazeInAppMessageUI alloc] init];
   self.subscriptions = [NSMutableArray array];
-  
+  [BrazePlugin setBraze:self.braze];
+
   // Set the IDFA delegate for the plugin
   if ([self.enableIDFACollection isEqualToString:@"YES"]) {
     NSLog(@"IDFA collection enabled. Setting values for ad tracking.");
@@ -293,7 +304,47 @@
   NSString *key = [command argumentAtIndex:0 withDefault:nil];
   id value = [command argumentAtIndex:1 withDefault:nil];
   if (key != nil && value != nil && [value isKindOfClass:[NSArray class]]) {
+    for (id item in value) {
+      if (![item isKindOfClass:[NSString class]]) {
+        NSLog(@"Custom attribute array contains element that is not of type string. Aborting.");
+        return;
+      }
+    }
     [self.braze.user setCustomAttributeArrayWithKey:key array:value];
+  }
+}
+
+- (void)setCustomUserAttributeObjectArray:(CDVInvokedUrlCommand *)command {
+  NSString *key = [command argumentAtIndex:0 withDefault:nil];
+  id value = [command argumentAtIndex:1 withDefault:nil];
+  if (key != nil && value != nil && [value isKindOfClass:[NSArray class]]) {
+    for (id item in value) {
+      if (![item isKindOfClass:[NSDictionary class]]) {
+        NSLog(@"Custom attribute array contains element that is not of type object. Aborting.");
+        return;
+      }
+    }
+    [self.braze.user setNestedCustomAttributeArrayWithKey:key value:value];
+  }
+}
+
+- (void)setCustomUserAttributeObject:(CDVInvokedUrlCommand *)command {
+  NSString *key = [command argumentAtIndex:0 withDefault:nil];
+  id value = [command argumentAtIndex:1 withDefault:nil];
+  id merge = [command argumentAtIndex:2 withDefault:nil];
+
+  if (key == nil || value == nil || ![value isKindOfClass:[NSDictionary class]]) {
+    return;
+  }
+
+  if (!merge) {
+    [self.braze.user setNestedCustomAttributeDictionaryWithKey:key value:value];
+  } else if ([merge isKindOfClass:[NSNumber class]]) {
+    BOOL mergeAsBool = [merge boolValue];
+    [self.braze.user setNestedCustomAttributeDictionaryWithKey:key value:value merge:mergeAsBool];
+  } else {
+    NSLog(@"Invalid value received for `merge` parameter. Aborting.");
+    return;
   }
 }
 
@@ -316,7 +367,7 @@
   NSString *key = [command argumentAtIndex:0 withDefault:nil];
   NSString *value = [command argumentAtIndex:1 withDefault:nil];
   if (key != nil && value != nil) {
-    [self.braze.user addToCustomAttributeArrayWithKey:key value:value];
+    [self.braze.user addToCustomAttributeStringArrayWithKey:key value:value];
   }
 }
 
@@ -324,7 +375,7 @@
   NSString *key = [command argumentAtIndex:0 withDefault:nil];
   NSString *value = [command argumentAtIndex:1 withDefault:nil];
   if (key != nil && value != nil) {
-    [self.braze.user removeFromCustomAttributeArrayWithKey:key value:value];
+    [self.braze.user removeFromCustomAttributeStringArrayWithKey:key value:value];
   }
 }
 
@@ -358,9 +409,8 @@
 }
 
 - (void)getDeviceId:(CDVInvokedUrlCommand *)command {
-  [self.braze deviceIdWithCompletion:^(NSString *deviceId) {
-    [self sendCordovaSuccessPluginResultWithString:deviceId andCommand:command];
-  }];
+  NSString *deviceId = self.braze.deviceId;
+  [self sendCordovaErrorPluginResultWithString:deviceId andCommand:command];
 }
 
 // MARK: - BrazeUI
@@ -687,6 +737,15 @@
     [self sendCordovaSuccessPluginResultWithDouble:[numberProperty doubleValue] andCommand:command];
   } else {
     [self sendCordovaSuccessPluginResultAsNull:command];
+  }
+}
+
+- (void)logFeatureFlagImpression:(CDVInvokedUrlCommand *)command {
+  NSString *featureFlagId = [command argumentAtIndex:0 withDefault:nil];
+  if (featureFlagId) {
+    [self.braze.featureFlags logFeatureFlagImpressionWithId:featureFlagId];
+  } else {
+    NSLog(@"No valid feature flag ID entered.");
   }
 }
 

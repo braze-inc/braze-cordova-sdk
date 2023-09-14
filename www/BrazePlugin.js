@@ -129,12 +129,20 @@ BrazePlugin.prototype.setUserAttributionData = function (network, campaign, adgr
  *    255 characters in length, cannot begin with a $, and can only contain alphanumeric characters and punctuation.
  *    Passing a null value will remove this custom attribute from the user.
  */
-BrazePlugin.prototype.setCustomUserAttribute = function (key, value) {
+BrazePlugin.prototype.setCustomUserAttribute = function (key, value, merge = false) {
 	var valueType = typeof(value);
 	if (value instanceof Date) {
   		cordova.exec(null, null, "BrazePlugin", "setDateCustomUserAttribute", [key, Math.floor(value.getTime() / 1000)]);
   	} else if (value instanceof Array) {
-  		cordova.exec(null, null, "BrazePlugin", "setCustomUserAttributeArray", [key, value]);
+		if (value.every(item => typeof(item) === "string")) {
+			cordova.exec(null, null, "BrazePlugin", "setCustomUserAttributeArray", [key, value]);
+		} else if (value.every(item => item instanceof Object)) {
+			cordova.exec(null, null, "BrazePlugin", "setCustomUserAttributeObjectArray", [key, value]);
+		} else {
+			console.log(`User attribute ${value} was not a valid array. Custom attribute arrays can only contain all strings or all objects.`);
+		}
+	} else if (value instanceof Object) {
+		cordova.exec(null, null, "BrazePlugin", "setCustomUserAttributeObject", [key, value, merge]);
   	} else if (valueType === "boolean") {
   		cordova.exec(null, null, "BrazePlugin", "setBoolCustomUserAttribute", [key, value]);
   	} else if (valueType === "string") {
@@ -145,7 +153,7 @@ BrazePlugin.prototype.setCustomUserAttribute = function (key, value) {
   		} else {
   			cordova.exec(null, null, "BrazePlugin", "setDoubleCustomUserAttribute", [key, value]);
   		}
-  	}
+ 	}
 }
 
 /**
@@ -536,6 +544,16 @@ BrazePlugin.prototype.getFeatureFlagNumberProperty = function(flagId, propertyKe
 			reject(error);
 		}, "BrazePlugin", "getFeatureFlagNumberProperty", [flagId, propertyKey]);
 	})	
+}
+
+/**
+ * Log a Feature Flag impression.
+ * An impression will only be logged if the feature flag is part of a Braze campaign.
+ * A feature flag impression can only be logged once per session for a given ID.
+ * @param {string} flagId - The identifier for the Feature Flag.
+ */
+BrazePlugin.prototype.logFeatureFlagImpression = function(flagId) {
+	cordova.exec(null, null, "BrazePlugin", "logFeatureFlagImpression", [flagId]);
 }
 
 /**
