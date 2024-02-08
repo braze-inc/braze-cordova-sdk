@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.braze.hellocordova" 
-    version="1.0.0" 
-    xmlns="http://www.w3.org/ns/widgets" 
-    xmlns:cdv="http://cordova.apache.org/ns/1.0" 
+<widget id="com.braze.hellocordova"
+    version="1.0.0"
+    xmlns="http://www.w3.org/ns/widgets"
+    xmlns:cdv="http://cordova.apache.org/ns/1.0"
     xmlns:android="schemas.android.com/apk/res/android">
-    
+
     <name>HelloCordova</name>
     <description>
         A sample Apache Cordova application for the Braze SDK.
@@ -40,6 +40,7 @@
         <preference name="com.braze.enable_location_collection" value="false" />
         <preference name="com.braze.geofences_enabled" value="false" />
         <preference name="com.braze.sdk_authentication_enabled" value="true" />
+        <preference name="com.braze.trigger_action_minimum_time_interval_seconds" value="30" />
 
         <edit-config
             file="app/src/main/AndroidManifest.xml"
@@ -61,5 +62,17 @@
         <preference name="com.braze.display_foreground_push_notifications" value="YES" />
         <preference name="deployment-target" value="11.0" />
         <preference name="com.braze.ios_disable_un_authorization_option_provisional" value="NO" />
+        <preference name="com.braze.trigger_action_minimum_time_interval_seconds" value="30" />
+        <preference name="com.braze.ios_push_app_group" value="group.com.braze.hellocordova.PushStories" />
+        <preference name="com.braze.ios_forward_universal_links" value="YES" />
+
+        <config-file parent="UIBackgroundModes" target="*-Info.plist">
+            <array>
+                <string>remote-notification</string>
+            </array>
+        </config-file>
+        <resource-file src="res/HelloCordova-Debug.entitlements" target="HelloCordova-Debug.entitlements" />
+        <resource-file src="res/HelloCordova-Release.entitlements" target="HelloCordova-Release.entitlements" />
+        <hook type="after_prepare" src="hooks/replace-entitlements.js" />
     </platform>
 </widget>

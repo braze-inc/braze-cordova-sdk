@@ -18,6 +18,9 @@
   @property NSString *sessionTimeout;
   @property NSString *enableSDKAuth;
   @property NSString *sdkAuthCallbackID;
+  @property NSString *triggerActionMinimumTimeInterval;
+  @property NSString *pushAppGroup;
+  @property NSString *forwardUniversalLinks;
 @end
 
 static Braze *_braze;
@@ -44,6 +47,9 @@ static Braze *_braze;
   self.disableUNAuthorizationOptionProvisional = settings[@"com.braze.ios_disable_un_authorization_option_provisional"];
   self.sessionTimeout = settings[@"com.braze.ios_session_timeout"];
   self.enableSDKAuth = settings[@"com.braze.sdk_authentication_enabled"];
+  self.triggerActionMinimumTimeInterval = settings[@"com.braze.trigger_action_minimum_time_interval_seconds"];
+  self.pushAppGroup = settings[@"com.braze.ios_push_app_group"];
+  self.forwardUniversalLinks = settings[@"com.braze.ios_forward_universal_links"];
 
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFinishLaunchingListener:) name:UIApplicationDidFinishLaunchingNotification object:nil];
 
@@ -61,10 +67,29 @@ static Braze *_braze;
   [configuration.location setGeofencesEnabled:self.enableGeofences];
   [configuration.location setAutomaticLocationCollection:self.enableLocationCollection];
 
+  // Set the minimum time interval between triggers (in seconds)
+  if ([self isStringPositiveNumeric:self.triggerActionMinimumTimeInterval]) {
+    NSTimeInterval intervalCast = [self.triggerActionMinimumTimeInterval doubleValue];
+    configuration.triggerMinimumTimeInterval = intervalCast;
+    NSLog(@"Setting \"trigger_action_minimum_time_interval_seconds\" to: %g", intervalCast);
+  } else {
+    NSLog(@"\"trigger_action_minimum_time_interval_seconds\" value not valid. Setting value to 30.");
+  }
+
+  // Set if the SDK should automatically recognize and forward universal links to the system methods
+  if ([self.forwardUniversalLinks isEqualToString:@"YES"]) {
+    configuration.forwardUniversalLinks = @YES;
+    NSLog(@"iOS universal link forwarding is enabled.");
+  }
+
   // Set the time interval for session time out (in seconds)
   NSNumber *timeout = [[[NSNumberFormatter alloc] init] numberFromString:self.sessionTimeout];
   [configuration setSessionTimeout:[timeout doubleValue]];
   [configuration.api addSDKMetadata:@[[BRZSDKMetadata cordova]]];
+
+  // Set the app group identifier for push stories.
+  [configuration.push setAppGroup:self.pushAppGroup];
+
   self.braze = [[Braze alloc] initWithConfiguration:configuration];
   self.braze.inAppMessagePresenter = [[BrazeInAppMessageUI alloc] init];
   self.subscriptions = [NSMutableArray array];
@@ -633,10 +658,10 @@ static Braze *_braze;
       formattedContentCardData[@"domain"] = card.domain ?: [NSNull null];
       formattedContentCardData[@"type"] = @"Classic";
       break;
-    case BRZContentCardRawTypeBanner:
+    case BRZContentCardRawTypeImageOnly:
       formattedContentCardData[@"image"] = [card.image absoluteString];
       formattedContentCardData[@"imageAspectRatio"] = @(card.imageAspectRatio);
-      formattedContentCardData[@"type"] = @"Banner";
+      formattedContentCardData[@"type"] = @"ImageOnly";
       break;
     case BRZContentCardRawTypeCaptionedImage:
       formattedContentCardData[@"image"] = [card.image absoluteString];
@@ -671,7 +696,10 @@ static Braze *_braze;
 - (void)getFeatureFlag:(CDVInvokedUrlCommand *)command {
   NSString *featureFlagId = [command argumentAtIndex:0 withDefault:nil];
   BRZFeatureFlag *featureFlag = [self.braze.featureFlags featureFlagWithId:featureFlagId];
-  
+  if (featureFlag == nil) {
+    [self sendCordovaSuccessPluginResultAsNull:command];
+    return;
+  }
   NSError* error = nil;
   id flagJSON = [NSJSONSerialization JSONObjectWithData:[featureFlag json]
                                                 options:NSJSONReadingMutableContainers
@@ -706,6 +734,11 @@ static Braze *_braze;
   NSString *propertyKey = [command argumentAtIndex:1 withDefault:nil];
 
   BRZFeatureFlag *featureFlag = [self.braze.featureFlags featureFlagWithId:featureFlagId];
+  if (!featureFlag) {
+    [self sendCordovaSuccessPluginResultAsNull:command];
+    return;
+  }
+
   NSNumber *boolProperty = [featureFlag boolPropertyForKey:propertyKey];
   if (boolProperty) {
     [self sendCordovaSuccessPluginResultWithBool:boolProperty andCommand:command];
@@ -719,6 +752,11 @@ static Braze *_braze;
   NSString *propertyKey = [command argumentAtIndex:1 withDefault:nil];
 
   BRZFeatureFlag *featureFlag = [self.braze.featureFlags featureFlagWithId:featureFlagId];
+  if (!featureFlag) {
+    [self sendCordovaSuccessPluginResultAsNull:command];
+    return;
+  }
+
   NSString *stringProperty = [featureFlag stringPropertyForKey:propertyKey];
   if (stringProperty) {
     [self sendCordovaSuccessPluginResultWithString:stringProperty andCommand:command];
@@ -732,6 +770,11 @@ static Braze *_braze;
   NSString *propertyKey = [command argumentAtIndex:1 withDefault:nil];
 
   BRZFeatureFlag *featureFlag = [self.braze.featureFlags featureFlagWithId:featureFlagId];
+  if (!featureFlag) {
+    [self sendCordovaSuccessPluginResultAsNull:command];
+    return;
+  }
+
   NSNumber *numberProperty = [featureFlag numberPropertyForKey:propertyKey];
   if (numberProperty) {
     [self sendCordovaSuccessPluginResultWithDouble:[numberProperty doubleValue] andCommand:command];
@@ -829,6 +872,22 @@ static Braze *_braze;
   CDVPluginResult *pluginResult = nil;
   pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:(NSString *)[NSNull null]];
   [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+// MARK: - Helper Methods
+/**
+*   Takes an input NSString and returns true if it is a valid positive number.
+*   If the string is not a valid number or is negative, returns false.
+**/
+- (BOOL)isStringPositiveNumeric:(NSString *)inputString {
+  if ([inputString length] > 0) {
+    // Check if the string is a valid number (only contains digits 0 through 9)
+    NSCharacterSet* notDigits = [[NSCharacterSet decimalDigitCharacterSet] invertedSet];
+    if (([inputString rangeOfCharacterFromSet:notDigits].location == NSNotFound) && [inputString doubleValue] >= 0) {
+      return true;
+    }
+  }
+  return false;
 }
 
 @end

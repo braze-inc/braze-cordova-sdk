@@ -72,7 +72,7 @@ open class BrazePlugin : CordovaPlugin() {
                 disableAutoStartSessions = false
                 return true
             }
-            "registerAppboyPushMessages", "setRegisteredPushToken" -> {
+            "setRegisteredPushToken" -> {
                 runOnBraze { it.registeredPushToken = args.getString(0) }
                 return true
             }
@@ -293,7 +293,14 @@ open class BrazePlugin : CordovaPlugin() {
                 return true
             }
             "getFeatureFlag" -> {
-                callbackContext.success(Braze.getInstance(applicationContext).getFeatureFlag(args.getString(0)).forJsonPut())
+                runOnBraze {
+                    val result = it.getFeatureFlag(args.getString(0))
+                    if (result == null) {
+                        callbackContext.sendCordovaSuccessPluginResultAsNull()
+                    } else {
+                        callbackContext.sendPluginResult(PluginResult(PluginResult.Status.OK, result.forJsonPut()))
+                    }
+                }
                 return true
             }
             "getAllFeatureFlags" -> {
@@ -322,7 +329,7 @@ open class BrazePlugin : CordovaPlugin() {
                 runOnBraze {
                     val flagId = args.getString(0)
                     val propKey = args.getString(1)
-                    val result = it.getFeatureFlag(flagId).getBooleanProperty(propKey)
+                    val result = it.getFeatureFlag(flagId)?.getBooleanProperty(propKey)
                     if (result == null) {
                         callbackContext.sendCordovaSuccessPluginResultAsNull()
                     } else {
@@ -335,7 +342,7 @@ open class BrazePlugin : CordovaPlugin() {
                 runOnBraze {
                     val flagId = args.getString(0)
                     val propKey = args.getString(1)
-                    val result = it.getFeatureFlag(flagId).getStringProperty(propKey)
+                    val result = it.getFeatureFlag(flagId)?.getStringProperty(propKey)
                     if (result == null) {
                         callbackContext.sendCordovaSuccessPluginResultAsNull()
                     } else {
@@ -348,7 +355,7 @@ open class BrazePlugin : CordovaPlugin() {
                 runOnBraze {
                     val flagId = args.getString(0)
                     val propKey = args.getString(1)
-                    val result = it.getFeatureFlag(flagId).getNumberProperty(propKey)
+                    val result = it.getFeatureFlag(flagId)?.getNumberProperty(propKey)
                     if (result == null) {
                         callbackContext.sendCordovaSuccessPluginResultAsNull()
                     } else {
@@ -504,6 +511,9 @@ open class BrazePlugin : CordovaPlugin() {
         if (cordovaPreferences.contains(SDK_AUTH_ENABLED_PREFERENCE)) {
             configBuilder.setIsSdkAuthenticationEnabled(cordovaPreferences.getBoolean(SDK_AUTH_ENABLED_PREFERENCE, false))
         }
+        if (cordovaPreferences.contains(TRIGGER_ACTION_MINIMUM_TIME_INTERVAL_SECONDS_PREFERENCE)) {
+            configBuilder.setTriggerActionMinimumTimeIntervalSeconds(parseNumericPreferenceAsInteger(cordovaPreferences.getString(TRIGGER_ACTION_MINIMUM_TIME_INTERVAL_SECONDS_PREFERENCE, "30")))
+        }
         Braze.configure(applicationContext, configBuilder.build())
     }
 
@@ -650,6 +660,7 @@ open class BrazePlugin : CordovaPlugin() {
         private const val ENABLE_GEOFENCES_PREFERENCE = "com.braze.geofences_enabled"
         private const val DISABLE_AUTO_START_SESSIONS_PREFERENCE = "com.braze.android_disable_auto_session_tracking"
         private const val SDK_AUTH_ENABLED_PREFERENCE = "com.braze.sdk_authentication_enabled"
+        private const val TRIGGER_ACTION_MINIMUM_TIME_INTERVAL_SECONDS_PREFERENCE = "com.braze.trigger_action_minimum_time_interval_seconds"
 
         /**
          * When applied, restricts the SDK from taking

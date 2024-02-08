@@ -43,7 +43,7 @@ object ContentCardUtils {
             put("extras", JSONObject(card.extras))
         }
         when (card.cardType) {
-            BANNER -> mapBannerImageCardFields(mappedCardJson, card as BannerImageCard)
+            IMAGE -> mapImageOnlyCardFields(mappedCardJson, card as ImageOnlyCard)
             CAPTIONED_IMAGE -> mapCaptionedImageCardFields(mappedCardJson, card as CaptionedImageCard)
             SHORT_NEWS -> mapShortNewsCardFields(mappedCardJson, card as ShortNewsCard)
             TEXT_ANNOUNCEMENT -> mapTextAnnouncementCardFields(mappedCardJson, card as TextAnnouncementCard)
@@ -82,12 +82,12 @@ object ContentCardUtils {
         }
     }
 
-    private fun mapBannerImageCardFields(mappedCard: JSONObject, card: BannerImageCard) {
+    private fun mapImageOnlyCardFields(mappedCard: JSONObject, card: ImageOnlyCard) {
         mappedCard.apply {
             put("image", card.imageUrl)
             put("imageAspectRatio", card.aspectRatio.toDouble())
             put("domain", card.domain)
-            put("type", "Banner")
+            put("type", "ImageOnly")
         }
     }
 }

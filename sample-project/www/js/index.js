@@ -116,7 +116,16 @@ function setSdkAuthenticationSignature() {
 
 async function getFeatureFlag() {
     try {
-        const featureFlag = await BrazePlugin.getFeatureFlag(document.getElementById("featureFlagInputId").value);
+        const featureFlagId = document.getElementById("featureFlagInputId").value;
+        if (!featureFlagId) {
+            showTextBubble('Feature Flag ID not entered.');
+            return;
+        }
+        const featureFlag = await BrazePlugin.getFeatureFlag(featureFlagId);
+        if (!featureFlag) {
+            showTextBubble(`No Feature Flag found for ID: ${featureFlagId}`);
+            return;
+        }
         showTextBubble(`Feature Flag: ${JSON.stringify(featureFlag)}`);
     } catch (error) {
         // This method can error out if the Feature Flag fails to serialize at the native layer.
