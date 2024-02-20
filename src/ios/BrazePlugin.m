@@ -435,7 +435,7 @@ static Braze *_braze;
 
 - (void)getDeviceId:(CDVInvokedUrlCommand *)command {
   NSString *deviceId = self.braze.deviceId;
-  [self sendCordovaErrorPluginResultWithString:deviceId andCommand:command];
+  [self sendCordovaSuccessPluginResultWithString:deviceId andCommand:command];
 }
 
 // MARK: - BrazeUI
