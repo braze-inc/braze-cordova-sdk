@@ -1,3 +1,47 @@
+## 8.1.0
+
+##### Added
+- Added new Android feature support that can be added in your `config.xml`:
+  - Ability to set the session timeout behavior to be based either on session start or session end events.
+    - `<preference name="com.braze.is_session_start_based_timeout_enabled" value="false" />`
+  - Ability to set the user-facing name as seen via `NotificationChannel.getName` for the Braze default `NotificationChannel`.
+    - `<preference name="com.braze.default_notification_channel_name" value="name" />`
+  - Ability to set the user-facing description as seen via `NotificationChannel.getDescription` for the Braze default `NotificationChannel`.
+    - `<preference name="com.braze.default_notification_channel_description" value="description" />`
+  - Ability to set whether a Push Story is automatically dismissed when clicked.
+    - `<preference name="com.braze.does_push_story_dismiss_on_click" value="true" />`
+  - Ability to set whether the use of a fallback Firebase Cloud Messaging Service is enabled.
+    - `<preference name="com.braze.is_fallback_firebase_messaging_service_enabled" value="true" />`
+  - Ability to set the classpath for the fallback Firebase Cloud Messaging Service.
+    - `<preference name="com.braze.fallback_firebase_messaging_service_classpath" value="your-classpath" />`
+  - Ability to set whether the Content Cards unread visual indication bar is enabled.
+    - `<preference name="com.braze.is_content_cards_unread_visual_indicator_enabled" value="true" />`
+  - Ability to set whether the Braze will automatically register tokens in `com.google.firebase.messaging.FirebaseMessagingService.onNewToken`.
+    - `<preference name="com.braze.is_firebase_messaging_service_on_new_token_registration_enabled" value="true" />`
+  - Ability to set whether Braze will add an activity to the back stack when automatically following deep links for push.
+    - `<preference name="com.braze.is_push_deep_link_back_stack_activity_enabled" value="true" />`
+  - Ability to set the activity that Braze will add to the back stack when automatically following deep links for push.
+    - `<preference name="com.braze.push_deep_link_back_stack_activity_class_name" value="your-class-name" />`
+  - Ability to set if Braze should automatically opt-in the user when push is authorized by Android.
+    - `<preference name="com.braze.should_opt_in_when_push_authorized" value="true" />`
+- Added new iOS feature support that can be added in your `config.xml`:
+  - Ability to set the minimum logging level for `Braze.Configuration.Logger`.
+    - `<preference name="com.braze.ios_log_level" value="2" />`
+  - Ability to set if a randomly generated UUID should be used as the device ID.
+    - `<preference name="com.braze.ios_use_uuid_as_device_id" value="YES" />`
+  - Ability to set the interval in seconds between automatic data flushes.
+    - `<preference name="com.braze.ios_flush_interval_seconds" value="10" />`
+  - Ability to set whether the request policy for `Braze.Configuration.Api` should be automatic or manual.
+    - `<preference name="com.braze.ios_use_automatic_request_policy" value="YES" />`
+  - Ability to set if a user’s notification subscription state should automatically be set to optedIn when push permissions are authorized.
+    - `<preference name="com.braze.should_opt_in_when_push_authorized" value="YES" />`
+- Added `BrazePlugin.setLastKnownLocation()` to set the last known location for the user.
+- Updated the native iOS bridge [from Braze Swift SDK 7.6.0 to 7.7.0](https://github.com/braze-inc/braze-swift-sdk/compare/7.6.0...7.7.0#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+- Updated the native Android bridge [from Braze Android SDK 30.0.0 to 30.1.1](https://github.com/braze-inc/braze-android-sdk/compare/v30.0.0...v30.1.1#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+
+##### Fixed
+- Fixed the `getDeviceId` method to return the value as a success instead of an error on iOS.
+
 ## 8.0.0
 
 ##### Breaking

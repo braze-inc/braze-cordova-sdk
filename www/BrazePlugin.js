@@ -226,6 +226,18 @@ BrazePlugin.prototype.setDateOfBirth = function (year, month, day) {
 }
 
 /**
+ * Sets the last known location for this user.
+ * @param {double} latitude
+ * @param {double} longitude
+ * @param {double} altitude (optional)
+ * @param {double} horizontalAccuracy (optional for Android)
+ * @param {double} verticalAccuracy (optional)
+ */
+BrazePlugin.prototype.setLastKnownLocation = function (latitude, longitude, altitude, horizontalAccuracy, verticalAccuracy) {
+	cordova.exec(null, null, "BrazePlugin", "setLastKnownLocation", [latitude, longitude, altitude, horizontalAccuracy, verticalAccuracy]);
+}
+
+/**
  * Sets whether the user should be sent push campaigns.
  * @param {NotificationSubscriptionTypes} notificationSubscriptionType - Notification setting (explicitly
  *    opted-in, subscribed, or unsubscribed).

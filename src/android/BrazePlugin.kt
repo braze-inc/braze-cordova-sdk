@@ -254,6 +254,26 @@ open class BrazePlugin : CordovaPlugin() {
                 runOnUser { it.setPhoneNumber(args.getString(0)) }
                 return true
             }
+            "setLastKnownLocation" -> {
+                runOnUser {
+                    val newArgs = parseJSONArraytoDoubleArray(args)
+                    val latitude = newArgs[0]
+                    val longitude = newArgs[1]
+                    val altitude = newArgs[2]
+                    val horizontalAccuracy = newArgs[3]
+                    val verticalAccuracy = newArgs[4]
+
+                    if (latitude == null || longitude == null) {
+                        brazelog (I) { "Invalid location information with the latitude: $latitude, longitude: $longitude" }
+                    } else if (!(latitude > -90 && latitude < 90 && longitude > -180 && longitude < 180)) {
+                        brazelog (I) { "Location information out of bounds. Latitude and longitude values are bounded by ±90 and ±180 respectively." }
+                    } else {
+                        it.setLastKnownLocation(latitude, longitude, altitude, horizontalAccuracy, verticalAccuracy)
+                        brazelog (I) { "Last known location manually set with values: [$latitude, $longitude, $altitude, $horizontalAccuracy, $verticalAccuracy]"}
+                    }
+                }
+                return true
+            }
             "setPushNotificationSubscriptionType" -> {
                 runOnUser { currentUser ->
                     NotificationSubscriptionType.fromValue(args.getString(0))?.let {
@@ -448,72 +468,220 @@ open class BrazePlugin : CordovaPlugin() {
     private fun configureFromCordovaPreferences(cordovaPreferences: CordovaPreferences) {
         brazelog { "Setting Cordova preferences: ${cordovaPreferences.all}" }
 
-        // Set the log level
+        // Set the log level.
         if (cordovaPreferences.contains(BRAZE_LOG_LEVEL_PREFERENCE)) {
-            logLevel = cordovaPreferences.getInteger(BRAZE_LOG_LEVEL_PREFERENCE, Log.INFO)
+            when (parseNumericPreferenceAsInteger(cordovaPreferences.getString(BRAZE_LOG_LEVEL_PREFERENCE, "4"))) {
+                2 -> logLevel = Log.VERBOSE
+                3 -> logLevel = Log.DEBUG
+                4 -> logLevel = Log.INFO
+                5 -> logLevel = Log.WARN
+                6 -> logLevel = Log.ERROR
+                7 -> logLevel = Log.ASSERT
+                else -> {
+                    brazelog(W) { "Invalid log level. Using default value: Log.INFO(4)." }
+                }
+            }
+            brazelog(I) { "Log level set to: $logLevel" }
         }
 
-        // Disable auto starting sessions
+        // Disable auto starting sessions.
         if (cordovaPreferences.getBoolean(DISABLE_AUTO_START_SESSIONS_PREFERENCE, false)) {
             brazelog { "Disabling session auto starts" }
             disableAutoStartSessions = true
         }
 
-        // Set the values used in the config builder
+        // Set the values used in the config builder.
         val configBuilder = BrazeConfig.Builder()
 
-        // Set the flavor
+        // Set the SDK flavor.
         configBuilder.setSdkFlavor(SdkFlavor.CORDOVA)
             .setSdkMetadata(EnumSet.of(BrazeSdkMetadata.CORDOVA))
+
+        // Set the API key.
         if (cordovaPreferences.contains(BRAZE_API_KEY_PREFERENCE)) {
-            configBuilder.setApiKey(cordovaPreferences.getString(BRAZE_API_KEY_PREFERENCE, null))
+            val apiKey = cordovaPreferences.getString(BRAZE_API_KEY_PREFERENCE, "")
+            if (apiKey.isNotBlank()) {
+                configBuilder.setApiKey(apiKey)
+            } else {
+                brazelog(W) { "Invalid Braze API key. API key field not set." }
+            }
         }
+
+        // Sets if Braze should automatically opt-in the user when push is authorized by Android.
+        if (cordovaPreferences.contains(OPT_IN_WHEN_PUSH_AUTHORIZED_PREFERENCE)) {
+            configBuilder.setOptInWhenPushAuthorized(cordovaPreferences.getBoolean(OPT_IN_WHEN_PUSH_AUTHORIZED_PREFERENCE, true))
+        }
+
+        // Set the small icon used in notifications using the name of the notification drawable.
         if (cordovaPreferences.contains(SMALL_NOTIFICATION_ICON_PREFERENCE)) {
-            configBuilder.setSmallNotificationIcon(cordovaPreferences.getString(SMALL_NOTIFICATION_ICON_PREFERENCE, null))
+            val smallNotificationIconName = cordovaPreferences.getString(SMALL_NOTIFICATION_ICON_PREFERENCE, "")
+            if (smallNotificationIconName.isNotBlank()) {
+                configBuilder.setSmallNotificationIcon(smallNotificationIconName)
+            } else {
+                brazelog(W) { "Invalid small icon name. Using the app icon as the small icon." }
+            }
         }
+
+        // Set the large icon used in notifications using the name of the notification drawable.
         if (cordovaPreferences.contains(LARGE_NOTIFICATION_ICON_PREFERENCE)) {
-            configBuilder.setLargeNotificationIcon(cordovaPreferences.getString(LARGE_NOTIFICATION_ICON_PREFERENCE, null))
+            val largeNotificationIconName = cordovaPreferences.getString(LARGE_NOTIFICATION_ICON_PREFERENCE, "")
+            if (largeNotificationIconName.isNotBlank()) {
+                configBuilder.setLargeNotificationIcon(largeNotificationIconName)
+            } else {
+                brazelog(W) { "Invalid large icon name. Large icon not set." }
+            }
         }
+
+        // Set the default accent color for push notifications on Android Lollipop and higher using the hexadecimal color value.
         if (cordovaPreferences.contains(DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE)) {
-            configBuilder.setDefaultNotificationAccentColor(parseNumericPreferenceAsInteger(cordovaPreferences.getString(DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE, "0")))
+            try {
+                configBuilder.setDefaultNotificationAccentColor(parseNumericPreferenceAsHexadecimalInteger(cordovaPreferences.getString(DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE, "0")))
+            } catch (e: NumberFormatException) {
+                brazelog(W) { "Invalid default notification accent color. Using default value: 0." }
+            }
         }
+
+        // Sets the [android.app.NotificationChannel] user facing name as seen via [NotificationChannel.getName] for the Braze default [NotificationChannel].
+        if (cordovaPreferences.contains(DEFAULT_NOTIFICATION_CHANNEL_NAME_PREFERENCE)) {
+            val notificationChannelName = cordovaPreferences.getString(DEFAULT_NOTIFICATION_CHANNEL_NAME_PREFERENCE, "")
+            if (notificationChannelName.isNotBlank()) {
+                configBuilder.setDefaultNotificationChannelName(notificationChannelName)
+            } else {
+                brazelog (W) { "Invalid default notification channel name. Default notification channel name not set." }
+            }
+        }
+
+        // Sets the [android.app.NotificationChannel] user facing description as seen via [NotificationChannel.getDescription] for the Braze default [NotificationChannel].
+        if (cordovaPreferences.contains(DEFAULT_NOTIFICATION_CHANNEL_DESCRIPTION_PREFERENCE)) {
+            val notificationChannelDescription = cordovaPreferences.getString(DEFAULT_NOTIFICATION_CHANNEL_DESCRIPTION_PREFERENCE, "")
+            if (notificationChannelDescription.isNotBlank()) {
+                configBuilder.setDefaultNotificationChannelDescription(notificationChannelDescription)
+            } else {
+             brazelog (W) { "Invalid default notification channel description. Default notification description not set." }
+            }
+        }
+
+        //  Set the length of time before a session times out in seconds.
         if (cordovaPreferences.contains(DEFAULT_SESSION_TIMEOUT_PREFERENCE)) {
-            configBuilder.setSessionTimeout(parseNumericPreferenceAsInteger(cordovaPreferences.getString(DEFAULT_SESSION_TIMEOUT_PREFERENCE, "10")))
+            val defaultSessionTimeout = parseNumericPreferenceAsInteger(cordovaPreferences.getString(DEFAULT_SESSION_TIMEOUT_PREFERENCE, "10"))
+            if (defaultSessionTimeout >= 0) {
+                configBuilder.setSessionTimeout(defaultSessionTimeout)
+            } else {
+                brazelog(W) { "Invalid default session timeout. Using default value: 10 seconds." }
+            }
         }
+
+        // Set whether Braze should automatically open your app and any deep links when a push notification is clicked.
         if (cordovaPreferences.contains(SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE)) {
-            configBuilder.setHandlePushDeepLinksAutomatically(cordovaPreferences.getBoolean(SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE, true))
+            configBuilder.setHandlePushDeepLinksAutomatically(cordovaPreferences.getBoolean(SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE, false))
         }
+
+        // Enables Braze to add an activity to the back stack when automatically following deep links for push.
+        if (cordovaPreferences.contains(PUSH_DEEP_LINK_BACK_STACK_ACTIVITY_ENABLED_PREFERENCE)) {
+            configBuilder.setPushDeepLinkBackStackActivityEnabled(cordovaPreferences.getBoolean(PUSH_DEEP_LINK_BACK_STACK_ACTIVITY_ENABLED_PREFERENCE, true))
+        }
+
+        // Sets the activity that Braze will add to the back stack when automatically following deep links for push.
+        if (cordovaPreferences.contains(PUSH_DEEP_LINK_BACK_STACK_ACTIVITY_CLASS_NAME_PREFERENCE)) {
+            val className = cordovaPreferences.getString(PUSH_DEEP_LINK_BACK_STACK_ACTIVITY_CLASS_NAME_PREFERENCE, "")
+            try {
+                val backStackActivityClass: Class<*> = Class.forName(className)
+                configBuilder.setPushDeepLinkBackStackActivityClass(backStackActivityClass)
+            } catch (e: ClassNotFoundException) {
+                brazelog (W) { "Class not found: $className" }
+            }
+        }
+
+        // Sets the session timeout behavior to be either session-start or session-end based.
+        if (cordovaPreferences.contains(SESSION_START_BASED_TIMEOUT_ENABLED_PREFERENCE)) {
+            configBuilder.setIsSessionStartBasedTimeoutEnabled(cordovaPreferences.getBoolean(SESSION_START_BASED_TIMEOUT_ENABLED_PREFERENCE, false))
+        }
+
+        // Set whether the SDK should automatically register for Firebase Cloud Messaging.
         if (cordovaPreferences.contains(AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE)) {
-            configBuilder.setIsFirebaseCloudMessagingRegistrationEnabled(cordovaPreferences.getBoolean(AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE, true))
+            configBuilder.setIsFirebaseCloudMessagingRegistrationEnabled(cordovaPreferences.getBoolean(AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE, false))
         }
+
+        // Sets whether a push story is automatically dismissed when clicked.
+        if (cordovaPreferences.contains(PUSH_STORY_DISMISS_ON_CLICK_PREFERENCE)) {
+            configBuilder.setDoesPushStoryDismissOnClick(cordovaPreferences.getBoolean(PUSH_STORY_DISMISS_ON_CLICK_PREFERENCE, true))
+        }
+
+        // Set the sender ID key used to register for Firebase Cloud Messaging.
         if (cordovaPreferences.contains(FCM_SENDER_ID_PREFERENCE)) {
-            parseNumericPreferenceAsString(cordovaPreferences.getString(FCM_SENDER_ID_PREFERENCE, null))?.let { firebaseSenderId ->
+            parseNumericPreferenceAsString(cordovaPreferences.getString(FCM_SENDER_ID_PREFERENCE, ""))?.let { firebaseSenderId ->
                 configBuilder.setFirebaseCloudMessagingSenderIdKey(firebaseSenderId)
             }
         }
+
+        // Sets whether the use of a fallback Firebase Cloud Messaging Service is enabled.
+        if (cordovaPreferences.contains(FALLBACK_FIREBASE_MESSAGING_SERVICE_ENABLED_PREFERENCE)) {
+            configBuilder.setFallbackFirebaseMessagingServiceEnabled(cordovaPreferences.getBoolean(FALLBACK_FIREBASE_MESSAGING_SERVICE_ENABLED_PREFERENCE, true))
+        }
+
+        // Sets the classpath for the fallback Firebase Cloud Messaging Service.
+        if (cordovaPreferences.contains(FALLBACK_FIREBASE_MESSAGING_SERVICE_CLASSPATH_PREFERENCE)) {
+            val fallbackFCMClasspath = cordovaPreferences.getString(FALLBACK_FIREBASE_MESSAGING_SERVICE_CLASSPATH_PREFERENCE, "")
+            if (fallbackFCMClasspath.isNotBlank()) {
+                configBuilder.setFallbackFirebaseMessagingServiceClasspath(fallbackFCMClasspath)
+            } else {
+                brazelog(W) { "Invalid classpath for the fallback Firebase Cloud Messaging Service. Classpath not set." }
+            }
+        }
+
+        // Determines whether the Braze will automatically register tokens in [com.google.firebase.messaging.FirebaseMessagingService.onNewToken].
+        if (cordovaPreferences.contains(FIREBASE_MESSAGING_SERVICE_ON_NEW_TOKEN_REGISTRATION_ENABLED_PREFERENCE)) {
+            configBuilder.setIsFirebaseMessagingServiceOnNewTokenRegistrationEnabled(cordovaPreferences.getBoolean(FIREBASE_MESSAGING_SERVICE_ON_NEW_TOKEN_REGISTRATION_ENABLED_PREFERENCE, true))
+        }
+
+        // Sets whether the Content Cards unread visual indication bar is enabled.
+        if (cordovaPreferences.contains(CONTENT_CARDS_UNREAD_VISUAL_INDICATOR_ENABLED_PREFERENCE)) {
+            configBuilder.setContentCardsUnreadVisualIndicatorEnabled(cordovaPreferences.getBoolean(CONTENT_CARDS_UNREAD_VISUAL_INDICATOR_ENABLED_PREFERENCE, true))
+        }
+
+        // Set whether Braze should automatically collect location (if the user permits).
         if (cordovaPreferences.contains(ENABLE_LOCATION_PREFERENCE)) {
             configBuilder.setIsLocationCollectionEnabled(cordovaPreferences.getBoolean(ENABLE_LOCATION_PREFERENCE, false))
         }
+
+        // Set whether the Braze Geofences feature should be enabled.
         if (cordovaPreferences.contains(ENABLE_GEOFENCES_PREFERENCE)) {
             configBuilder.setGeofencesEnabled(cordovaPreferences.getBoolean(ENABLE_GEOFENCES_PREFERENCE, false))
         }
+
+        // Set a custom API endpoint to point to when the Braze singleton is initialized.
         if (cordovaPreferences.contains(CUSTOM_API_ENDPOINT_PREFERENCE)) {
             val customApiEndpoint = cordovaPreferences.getString(CUSTOM_API_ENDPOINT_PREFERENCE, "")
-            if (customApiEndpoint != "") {
+            if (customApiEndpoint.isNotBlank()) {
                 configBuilder.setCustomEndpoint(customApiEndpoint)
+            } else {
+                brazelog(W) { "Invalid custom endpoint. Using the default Braze internal API endpoint." }
             }
         }
+
+        // Set whether CordovaInAppMessageViewWrapperFactory should be used to display an In App Message to the user.
         val enableRequestFocusFix = cordovaPreferences.getBoolean(ENABLE_CORDOVA_WEBVIEW_REQUEST_FOCUS_FIX_PREFERENCE, true)
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P && enableRequestFocusFix) {
             // Addresses Cordova bug in https://issuetracker.google.com/issues/36915710
             BrazeInAppMessageManager.getInstance().setCustomInAppMessageViewWrapperFactory(CordovaInAppMessageViewWrapperFactory())
         }
+
+        // Set whether SDK authentication should be enabled.
         if (cordovaPreferences.contains(SDK_AUTH_ENABLED_PREFERENCE)) {
             configBuilder.setIsSdkAuthenticationEnabled(cordovaPreferences.getBoolean(SDK_AUTH_ENABLED_PREFERENCE, false))
         }
+
+        // Set the minimum interval in seconds between trigger actions.
         if (cordovaPreferences.contains(TRIGGER_ACTION_MINIMUM_TIME_INTERVAL_SECONDS_PREFERENCE)) {
-            configBuilder.setTriggerActionMinimumTimeIntervalSeconds(parseNumericPreferenceAsInteger(cordovaPreferences.getString(TRIGGER_ACTION_MINIMUM_TIME_INTERVAL_SECONDS_PREFERENCE, "30")))
+            val minimumTimeInterval = parseNumericPreferenceAsInteger(cordovaPreferences.getString(TRIGGER_ACTION_MINIMUM_TIME_INTERVAL_SECONDS_PREFERENCE, "30"))
+            if (minimumTimeInterval >= 0) {
+                configBuilder.setTriggerActionMinimumTimeIntervalSeconds(minimumTimeInterval)
+            } else {
+                brazelog(W) { "Invalid minimum time interval between trigger actions. Using default value: 30 seconds." }
+            }
         }
+
+        // Configure Braze with the configurations in the builder.
         Braze.configure(applicationContext, configBuilder.build())
     }
 
@@ -661,6 +829,17 @@ open class BrazePlugin : CordovaPlugin() {
         private const val DISABLE_AUTO_START_SESSIONS_PREFERENCE = "com.braze.android_disable_auto_session_tracking"
         private const val SDK_AUTH_ENABLED_PREFERENCE = "com.braze.sdk_authentication_enabled"
         private const val TRIGGER_ACTION_MINIMUM_TIME_INTERVAL_SECONDS_PREFERENCE = "com.braze.trigger_action_minimum_time_interval_seconds"
+        private const val SESSION_START_BASED_TIMEOUT_ENABLED_PREFERENCE = "com.braze.is_session_start_based_timeout_enabled"
+        private const val DEFAULT_NOTIFICATION_CHANNEL_NAME_PREFERENCE = "com.braze.default_notification_channel_name"
+        private const val DEFAULT_NOTIFICATION_CHANNEL_DESCRIPTION_PREFERENCE = "com.braze.default_notification_channel_description"
+        private const val PUSH_STORY_DISMISS_ON_CLICK_PREFERENCE = "com.braze.does_push_story_dismiss_on_click"
+        private const val FALLBACK_FIREBASE_MESSAGING_SERVICE_ENABLED_PREFERENCE = "com.braze.is_fallback_firebase_messaging_service_enabled"
+        private const val FALLBACK_FIREBASE_MESSAGING_SERVICE_CLASSPATH_PREFERENCE = "com.braze.fallback_firebase_messaging_service_classpath"
+        private const val CONTENT_CARDS_UNREAD_VISUAL_INDICATOR_ENABLED_PREFERENCE = "com.braze.is_content_cards_unread_visual_indicator_enabled"
+        private const val FIREBASE_MESSAGING_SERVICE_ON_NEW_TOKEN_REGISTRATION_ENABLED_PREFERENCE = "com.braze.is_firebase_messaging_service_on_new_token_registration_enabled"
+        private const val PUSH_DEEP_LINK_BACK_STACK_ACTIVITY_ENABLED_PREFERENCE = "com.braze.is_push_deep_link_back_stack_activity_enabled"
+        private const val PUSH_DEEP_LINK_BACK_STACK_ACTIVITY_CLASS_NAME_PREFERENCE = "com.braze.push_deep_link_back_stack_activity_class_name"
+        private const val OPT_IN_WHEN_PUSH_AUTHORIZED_PREFERENCE = "com.braze.should_opt_in_when_push_authorized"
 
         /**
          * When applied, restricts the SDK from taking
@@ -702,56 +881,97 @@ open class BrazePlugin : CordovaPlugin() {
             return categories
         }
 
+        /**
+         * This takes the JSONArray of Any and returns an Array<String?>.
+         *
+         * Each value in the JSONArray is converted to a String if it has a string representation, otherwise it is set to null.
+         */
         private fun parseJSONArrayToStringArray(jsonArray: JSONArray): Array<String?> {
-            val length = jsonArray.length()
-            val array = arrayOfNulls<String>(length)
-            for (i in 0 until length) {
-                array[i] = jsonArray.getString(i)
-            }
-            return array
+            return Array(jsonArray.length()) { index -> jsonArray.optString(index) }
         }
 
         /**
          * This takes the JSONArray of Any and creates a JSONArray of
-         * explicitly typed JSONObject
+         * explicitly typed JSONObject.
          */
         private fun parseJSONArraytoJsonObjectArray(jsonArray: JSONArray): JSONArray {
-            val length = jsonArray.length()
-            val array = JSONArray()
-            for (i in 0 until length) {
-                array.put(jsonArray.getJSONObject(i))
+            return JSONArray().apply {
+                for (i in 0 until jsonArray.length()) {
+                    try {
+                        this.put(jsonArray.getJSONObject(i))
+                    } catch (e: JSONException) {
+                        brazelog (W) { "Error parsing JSON at index $i: ${e.message}" }
+                    }
+                }
             }
-            return array
+        }
+
+        /**
+         * This takes the JSONArray of Any type and returns a Double? array
+         *
+         * A value is converted to Double when it is a non-null number, otherwise it is set to null
+         */
+        private fun parseJSONArraytoDoubleArray(jsonArray: JSONArray): Array<Double?> {
+            return Array(jsonArray.length()) { index ->
+                jsonArray.opt(index)?.let { value ->
+                    if (isAnyNumeric(value)) value.toString().toDouble() else null
+                }
+            }
+        }
+
+        /**
+         * This takes an Any value and returns whether or not it is numeric
+         */
+        private fun isAnyNumeric(value: Any): Boolean {
+            return when (value) {
+                is Int, is Long, is Double -> true
+                is String -> value.toDoubleOrNull() != null || value.toLongOrNull() != null || value.toIntOrNull() != null
+                else -> false
+            }
         }
 
         /**
          * Parses the preference that is optionally prefixed with a constant.
+         * Converts the String to String without the prefix, otherwise returns original String.
          *
          * I.e. {"PREFIX-value", "value"} -> {"value"}
          */
         private fun parseNumericPreferenceAsString(preference: String?): String? {
-            if (preference != null && preference.startsWith(NUMERIC_PREFERENCE_PREFIX)) {
-                val preferenceValue = preference.substring(NUMERIC_PREFERENCE_PREFIX.length, preference.length)
-                brazelog { "Parsed numeric preference $preference into value: $preferenceValue" }
-                return preferenceValue
+            return preference?.removePrefix(NUMERIC_PREFERENCE_PREFIX)?.also {
+                brazelog { "Parsed numeric preference $preference into value: $it" }
             }
-            return preference
         }
 
         /**
          * Parses the preference that is optionally prefixed with a constant.
+         * Converts the String to Int if it is a valid number, otherwise returns -1.
          *
          * I.e. {"PREFIX-value", "value"} -> {"value"}
          */
         private fun parseNumericPreferenceAsInteger(preference: String?): Int {
-            var preferenceValue = preference
-            if (preference != null && preference.startsWith(NUMERIC_PREFERENCE_PREFIX)) {
-                preferenceValue = preference.substring(NUMERIC_PREFERENCE_PREFIX.length, preference.length)
-                brazelog { "Parsed numeric preference $preference into value: $preferenceValue" }
+            val preferenceValue = preference?.removePrefix(NUMERIC_PREFERENCE_PREFIX)?.also {
+                brazelog { "Parsed numeric preference $preference into value: $it" }
             }
+            // Parse the String as an Integer.
+            return try {
+                preferenceValue?.toInt() ?: -1
+            } catch (e: NumberFormatException) {
+                -1
+            }
+        }
 
-            // Parse the string as an integer.
-            return preferenceValue?.toInt() ?: -1
+        /**
+         * Parses the preference that is a hexadecimal representation.
+         * Converts the String to Int if it is a valid hexadecimal, otherwise throws NumberFormatException.
+         *
+         * I.e. {"0x0000"} -> {0}
+         */
+        private fun parseNumericPreferenceAsHexadecimalInteger(preference: String): Int {
+            val preferenceValue = preference.removePrefix("0x").also {
+                brazelog { "Parsed numeric preference $preference into value: $it" }
+            }
+            // Parse the String as an Integer.
+            return preferenceValue.toInt(16)
         }
 
         private fun CallbackContext.sendCordovaSuccessPluginResultAsNull() {

@@ -69,6 +69,7 @@ var app = {
         document.getElementById("disableSdk").addEventListener("click", disableSdk);
         document.getElementById("requestFlushBtn").addEventListener("click", requestDataFlush);
         document.getElementById("setLanguageBtn").addEventListener("click", setLanguage);
+        document.getElementById("setLastKnownLocationBtn").addEventListener("click", setLastKnownLocation);
         document.getElementById("getDeviceId").addEventListener("click", getDeviceId);
         document.getElementById("requestPushPermission").addEventListener("click", requestPushPermission);
         BrazePlugin.subscribeToSdkAuthenticationFailures(customPluginSuccessCallback(), customPluginErrorCallback);
@@ -428,6 +429,18 @@ function setLanguage() {
     const languageCode = document.getElementById("languageCode").value;
     BrazePlugin.setLanguage(languageCode);
     showTextBubble(`Language set to ${languageCode}`);
+}
+
+function setLastKnownLocation() {
+    const latitude = document.getElementById("latitude").value ? document.getElementById("latitude").value : null;
+    const longitude = document.getElementById("longitude").value ? document.getElementById("longitude").value : null;
+    const altitude = document.getElementById("altitude").value ? document.getElementById("altitude").value : null;
+    const horizontalAccuracy = document.getElementById("horizontalAccuracy").value ? document.getElementById("horizontalAccuracy").value : null;
+    const verticalAccuracy = document.getElementById("verticalAccuracy").value ? document.getElementById("verticalAccuracy").value : null;
+    BrazePlugin.setLastKnownLocation(latitude, longitude, altitude, horizontalAccuracy, verticalAccuracy);
+    if (latitude && longitude) {
+        showTextBubble(`Last Known Location set to ${latitude}, ${longitude}`);
+    }
 }
 
 function getDeviceId() {

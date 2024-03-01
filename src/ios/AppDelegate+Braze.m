@@ -140,7 +140,11 @@ static NSString *const PluginName = @"BrazePlugin";
     BrazePlugin *pluginInstance = [self.viewController getCommandInstance:PluginName];
     NSString *enableForegroundNotifications = pluginInstance.commandDelegate.settings[@"com.braze.display_foreground_push_notifications"];
     if ([enableForegroundNotifications isEqualToString:@"YES"]) {
-        completionHandler(UNNotificationPresentationOptionAlert);
+        if (@available(iOS 14.0, *)) {
+          completionHandler(UNNotificationPresentationOptionBanner | UNNotificationPresentationOptionList);
+        } else {
+          completionHandler(UNNotificationPresentationOptionAlert);
+        }
     }
 }
 @end

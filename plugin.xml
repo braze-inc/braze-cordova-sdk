@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-  id="cordova-plugin-braze" version="8.0.0">
-  <name>Device</name>
+  id="cordova-plugin-braze" version="8.1.0">
+  <name>Braze</name>
   <description>Braze Cordova SDK</description>
   <license>MIT</license>
   <keywords>cordova,appboy,braze</keywords>
@@ -54,9 +54,9 @@
         <source url="https://cdn.cocoapods.org/"/>
       </config>
       <pods use-frameworks="true">
-        <pod name="BrazeKit" spec="~> 7.6.0" />
-        <pod name="BrazeUI" spec="~> 7.6.0" />
-        <pod name="BrazeLocation" spec="~> 7.6.0" />
+        <pod name="BrazeKit" spec="~> 7.7.0" />
+        <pod name="BrazeUI" spec="~> 7.7.0" />
+        <pod name="BrazeLocation" spec="~> 7.7.0" />
       </pods>
     </podspec>
   </platform>
