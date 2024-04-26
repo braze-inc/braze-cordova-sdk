@@ -1,3 +1,5 @@
+⚠️ In version 2.33.0, we changed the iOS bridge from AppboyKit, which is written in Objective-C, to the new [Swift SDK](https://github.com/braze-inc/braze-swift-sdk). If you are upgrading from a version below 2.33.0 to a version above 2.33.0, please read [the instructions](https://github.com/braze-inc/braze-cordova-sdk/blob/master/CHANGELOG.md#2330) to ensure a smooth transition and backward compatibility.
+
 ## 8.1.0
 
 ##### Added
@@ -150,6 +152,7 @@
 ##### Breaking
 - Migrated the iOS plugin to use the new [Braze Swift SDK](https://github.com/braze-inc/braze-swift-sdk) (5.8.1).
   - News Feed UI is no longer supported on iOS.
+  - This migration requires re-identifying users. To do so, you must call the `changeUser` method on the Braze instance for non-anonymous users. You can read more about it [here](https://github.com/braze-inc/braze-swift-sdk).
 
 ## 2.32.0
 
