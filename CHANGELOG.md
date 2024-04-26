@@ -152,7 +152,7 @@
 ##### Breaking
 - Migrated the iOS plugin to use the new [Braze Swift SDK](https://github.com/braze-inc/braze-swift-sdk) (5.8.1).
   - News Feed UI is no longer supported on iOS.
-  - This migration requires re-identifying users. To do so, you must call the `changeUser` method on the Braze instance for non-anonymous users. You can read more about it [here](https://github.com/braze-inc/braze-swift-sdk).
+  - This migration requires re-identifying users. To do so, you must call the `changeUser` method on the Braze instance for non-anonymous users. You can read more about it [here](https://braze-inc.github.io/braze-swift-sdk/documentation/braze/appboy-migration-guide/#Re-identify-users).
 
 ## 2.32.0
 
