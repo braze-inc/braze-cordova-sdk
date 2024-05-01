@@ -72,6 +72,10 @@ var app = {
         document.getElementById("setLastKnownLocationBtn").addEventListener("click", setLastKnownLocation);
         document.getElementById("getDeviceId").addEventListener("click", getDeviceId);
         document.getElementById("requestPushPermission").addEventListener("click", requestPushPermission);
+        document.getElementById("updateTrackingPropertiesBtn").addEventListener("click", updateTrackingProperties);
+        document.getElementById("enableAdTrackingBtn").addEventListener("click", enableAdTracking);
+        document.getElementById("subscribeToInAppMessageBtn").addEventListener("click", subscribeToInAppMessage);
+        document.getElementById("hideCurrentInAppMessageBtn").addEventListener("click", hideCurrentInAppMessage);
         BrazePlugin.subscribeToSdkAuthenticationFailures(customPluginSuccessCallback(), customPluginErrorCallback);
     },
         // Update DOM on a Received Event
@@ -84,6 +88,15 @@ var app = {
         receivedElement.setAttribute('style', 'display:block;');
 
         console.log('Received Event: ' + id);
+    },
+        // In-App Message Received Event
+    inAppMessageReceived: function(message) {
+        console.log('Received in-app message and logging analytics: ' + message);
+
+        // Log In-App Message Events
+        BrazePlugin.logInAppMessageClicked(message);
+        BrazePlugin.logInAppMessageImpression(message);
+        BrazePlugin.logInAppMessageButtonClicked(message, 0);
     }
 };
 
@@ -418,6 +431,15 @@ function logContentCardAnalytics() {
     });
 }
 
+function subscribeToInAppMessage() {
+    BrazePlugin.subscribeToInAppMessage(true);
+    showTextBubble("Subscribed to In-App Messages");
+}
+
+function hideCurrentInAppMessage() {
+    BrazePlugin.hideCurrentInAppMessage();
+}
+
 function addAlias() {
     const aliasName = document.getElementById("aliasName").value;
     const aliasLabel = document.getElementById("aliasLabel").value;
@@ -450,6 +472,29 @@ function getDeviceId() {
 function requestPushPermission() {
     BrazePlugin.requestPushPermission();
     showTextBubble("requestPushPermission() called");
+}
+
+async function updateTrackingProperties() {
+    const allowList = {
+        adding: [
+            BrazePlugin.TrackingProperty.FIRST_NAME,
+            BrazePlugin.TrackingProperty.LAST_NAME,
+        ],
+        removing: [BrazePlugin.TrackingProperty.DEVICE_DATA],
+        addingCustomEvents: ['custom-event1', 'custom-event2'],
+        removingCustomAttributes: ['attr-1']
+    };
+    BrazePlugin.updateTrackingPropertyAllowList(allowList);
+    console.log(
+        `Update tracking allow list with: ${JSON.stringify(allowList)}`,
+    );
+    showTextBubble(`Updated tracking allow list: ${JSON.stringify(allowList)}`);
+}
+
+function enableAdTracking() {
+    const testAdvertisingID = '123';
+    BrazePlugin.setAdTrackingEnabled(true, testAdvertisingID);
+    showTextBubble(`Ad tracking enabled with ID: ${testAdvertisingID}`);
 }
 
 // Other helper functions

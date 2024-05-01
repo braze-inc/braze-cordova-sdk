@@ -17,6 +17,8 @@
 - (void)changeUser:(CDVInvokedUrlCommand *)command;
 - (void)setSdkAuthenticationSignature:(CDVInvokedUrlCommand *)command;
 - (void)subscribeToSdkAuthenticationFailures:(CDVInvokedUrlCommand *)command;
+- (void)subscribeToInAppMessage:(CDVInvokedUrlCommand *)command;
+- (void)hideCurrentInAppMessage:(CDVInvokedUrlCommand *)command;
 - (void)logCustomEvent:(CDVInvokedUrlCommand *)command;
 - (void)logPurchase:(CDVInvokedUrlCommand *)command;
 - (void)disableSdk:(CDVInvokedUrlCommand *)command;
@@ -24,6 +26,8 @@
 - (void)wipeData:(CDVInvokedUrlCommand *)command;
 - (void)requestImmediateDataFlush:(CDVInvokedUrlCommand *)command;
 - (void)getDeviceId:(CDVInvokedUrlCommand *)command;
+- (void)updateTrackingPropertyAllowList:(CDVInvokedUrlCommand *)command;
+- (void)setAdTrackingEnabled:(CDVInvokedUrlCommand *)command;
 
 /*-------Braze.User-------*/
 - (void)setFirstName:(CDVInvokedUrlCommand *)command;

@@ -44,7 +44,6 @@
         <preference name="com.braze.geofences_enabled" value="false" />
         <preference name="com.braze.android_disable_auto_session_tracking" value ="false" />
         <preference name="com.braze.sdk_authentication_enabled" value="true" />
-        <preference name="com.braze.trigger_action_minimum_time_interval_seconds" value="30" />
         <preference name="com.braze.is_session_start_based_timeout_enabled" value="false" />
         <preference name="com.braze.default_notification_channel_name" value="Braze Push" />
         <preference name="com.braze.default_notification_channel_description" value="Braze related push" />
@@ -56,7 +55,7 @@
         <preference name="com.braze.is_push_deep_link_back_stack_activity_enabled" value="true" />
         <preference name="com.braze.push_deep_link_back_stack_activity_class_name" value="java.lang.BackStackActivityClass" />
         <preference name="com.braze.should_opt_in_when_push_authorized" value="true" />
-        <preference name="com.braze.trigger_action_minimum_time_interval_seconds" value="str_30" />
+        <preference name="com.braze.trigger_action_minimum_time_interval_seconds" value="str_1" />
 
         <edit-config
             file="app/src/main/AndroidManifest.xml"
@@ -78,9 +77,9 @@
         <preference name="com.braze.ios_session_timeout" value="5" />
         <preference name="com.braze.sdk_authentication_enabled" value="YES" />
         <preference name="com.braze.display_foreground_push_notifications" value="YES" />
-        <preference name="deployment-target" value="11.0" />
+        <preference name="deployment-target" value="12.0" />
         <preference name="com.braze.ios_disable_un_authorization_option_provisional" value="NO" />
-        <preference name="com.braze.trigger_action_minimum_time_interval_seconds" value="30" />
+        <preference name="com.braze.trigger_action_minimum_time_interval_seconds" value="1" />
         <preference name="com.braze.ios_push_app_group" value="group.com.braze.hellocordova.PushStories" />
         <preference name="com.braze.ios_forward_universal_links" value="YES" />
         <preference name="com.braze.ios_log_level" value="2" />

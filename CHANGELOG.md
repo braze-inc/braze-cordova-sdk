@@ -1,5 +1,28 @@
 ⚠️ In version 2.33.0, we changed the iOS bridge from AppboyKit, which is written in Objective-C, to the new [Swift SDK](https://github.com/braze-inc/braze-swift-sdk). If you are upgrading from a version below 2.33.0 to a version above 2.33.0, please read [the instructions](https://github.com/braze-inc/braze-cordova-sdk/blob/master/CHANGELOG.md#2330) to ensure a smooth transition and backward compatibility.
 
+## 9.0.0
+
+##### Breaking
+- Updated the native iOS bridge [from Braze Swift SDK 7.7.0 to 9.0.0](https://github.com/braze-inc/braze-swift-sdk/compare/7.7.0...9.0.0#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+
+##### Added
+- Added support to modify the allow list for Braze tracking properties via the following JavaScript properties and methods:
+  - `TrackingProperty` string enum
+  - `TrackingPropertyAllowList` object interface
+  - `updateTrackingPropertyAllowList` method
+  - For details, refer to the [Braze iOS Privacy Manifest](https://www.braze.com/docs/developer_guide/platform_integration_guides/swift/privacy_manifest/) documentation.
+- Added the `setAdTrackingEnabled` method to set `adTrackingEnabled` flag on iOS and both the `adTrackingEnabled` flag and the Google Advertising ID on Android.
+- Added `BrazePlugin.subscribeToInAppMessage()` which allows you to listen for new in-app messages from the JavaScript plugin and choose whether or not to use the default Braze UI to display in-app messages.
+- Added support for logging analytics and functionality for in-app messages.
+  - `BrazePlugin.logInAppMessageImpression(message)`
+  - `BrazePlugin.logInAppMessageClicked(message)`
+  - `BrazePlugin.loginAppMessageButtonClicked(message, buttonId)`
+  - `BrazePlugin.hideCurrentInAppMessage()`
+- Added support for manually performing the action of an in-app message when using a custom UI.
+  - `BrazePlugin.performInAppMessageAction(message)`
+  - `BrazePlugin.performInAppMessageButtonAction(message, buttonId)`
+- Updated the native Android bridge [from Braze Android SDK 30.1.1 to 30.3.0](https://github.com/braze-inc/braze-android-sdk/compare/v30.1.1...v30.3.0#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+
 ## 8.1.0
 
 ##### Added

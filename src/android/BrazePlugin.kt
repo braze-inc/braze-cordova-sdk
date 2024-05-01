@@ -12,19 +12,30 @@ import com.braze.cordova.ContentCardUtils.mapContentCards
 import com.braze.cordova.CordovaInAppMessageViewWrapper.CordovaInAppMessageViewWrapperFactory
 import com.braze.cordova.FeatureFlagUtils.mapFeatureFlags
 import com.braze.enums.*
+import com.braze.enums.inappmessage.ClickAction
 import com.braze.events.ContentCardsUpdatedEvent
 import com.braze.events.FeatureFlagsUpdatedEvent
 import com.braze.events.FeedUpdatedEvent
 import com.braze.events.IEventSubscriber
 import com.braze.models.outgoing.AttributionData
 import com.braze.models.outgoing.BrazeProperties
+import com.braze.models.inappmessage.IInAppMessage
+import com.braze.models.inappmessage.IInAppMessageImmersive
+import com.braze.models.inappmessage.InAppMessageBase
+import com.braze.models.inappmessage.InAppMessageImmersiveBase
+import com.braze.models.inappmessage.MessageButton
 import com.braze.support.BrazeLogger.Priority.*
 import com.braze.support.BrazeLogger.brazelog
 import com.braze.support.BrazeLogger.logLevel
 import com.braze.support.requestPushPermissionPrompt
+import com.braze.support.toBundle
+import com.braze.ui.BrazeDeeplinkHandler
+import com.braze.ui.actions.NewsfeedAction
 import com.braze.ui.activities.BrazeFeedActivity
 import com.braze.ui.activities.ContentCardsActivity
 import com.braze.ui.inappmessage.BrazeInAppMessageManager
+import com.braze.ui.inappmessage.InAppMessageOperation
+import com.braze.ui.inappmessage.listeners.DefaultInAppMessageManagerListener
 import org.apache.cordova.CallbackContext
 import org.apache.cordova.CordovaPlugin
 import org.apache.cordova.CordovaPreferences
@@ -42,6 +53,7 @@ open class BrazePlugin : CordovaPlugin() {
     private var pluginInitializationFinished = false
     private var disableAutoStartSessions = false
     private val feedSubscriberMap: MutableMap<String, IEventSubscriber<FeedUpdatedEvent>> = ConcurrentHashMap()
+    private var inAppMessageDisplayOperation: InAppMessageOperation = InAppMessageOperation.DISPLAY_NOW
 
     override fun pluginInitialize() {
         applicationContext = cordova.activity.applicationContext
@@ -143,6 +155,13 @@ open class BrazePlugin : CordovaPlugin() {
             }
             "requestPushPermission" -> {
                 cordova.activity.requestPushPermissionPrompt()
+                return true
+            }
+            "updateTrackingPropertyAllowList" -> {
+                // iOS Only
+            }
+            "setAdTrackingEnabled" -> {
+                runOnBraze { it.setGoogleAdvertisingId(args.getString(1), args.getBoolean(0)) }
                 return true
             }
             "setUserAttributionData" -> {
@@ -310,6 +329,110 @@ open class BrazePlugin : CordovaPlugin() {
             "launchContentCards" -> {
                 val intent = Intent(applicationContext, ContentCardsActivity::class.java)
                 cordova.activity.startActivity(intent)
+                return true
+            }
+            "subscribeToInAppMessage" -> {
+                runOnBraze {
+                    val useBrazeUI = args.getBoolean(0)
+                    inAppMessageDisplayOperation = if (useBrazeUI) {
+                        InAppMessageOperation.DISPLAY_NOW
+                    } else {
+                        InAppMessageOperation.DISPLAY_LATER
+                    }
+                    setDefaultInAppMessageListener()
+                }
+            }
+            "hideCurrentInAppMessage" -> {
+                BrazeInAppMessageManager.getInstance().hideCurrentlyDisplayingInAppMessage(true)
+            }
+            "logInAppMessageImpression" -> {
+                runOnBraze {
+                    val inAppMessageString = args.getString(0)
+                    brazelog { "logInAppMessageImpression called with value $inAppMessageString" }
+                    it.deserializeInAppMessageString(inAppMessageString)?.logImpression()
+                }
+                return true
+            }
+            "logInAppMessageClicked" -> {
+                runOnBraze {
+                    val inAppMessageString = args.getString(0)
+                    brazelog { "logInAppMessageClicked called with value $inAppMessageString" }
+                    it.deserializeInAppMessageString(inAppMessageString)?.logClick()
+                }
+                return true
+            }
+            "logInAppMessageButtonClicked" -> {
+                runOnBraze { braze ->
+                    val inAppMessageString = args.getString(0)
+                    val buttonId = args.getInt(1)
+                    brazelog { "logInAppMessageButtonClicked called with value $inAppMessageString, and button: $buttonId" }
+                    val inAppMessage = braze.deserializeInAppMessageString(inAppMessageString)
+                    if (inAppMessage is IInAppMessageImmersive) {
+                        inAppMessage.messageButtons
+                            .firstOrNull { it.id == buttonId }
+                            ?.let { inAppMessage.logButtonClick(it) }
+                    }
+                }
+                return true
+            }
+            "performInAppMessageAction" -> {
+                val inAppMessageString = args.getString(0)
+                val buttonId = args.getInt(1)
+                runOnBraze { braze ->
+                    brazelog { "performInAppMessageAction called with value $inAppMessageString, and button: $buttonId" }
+                    braze.deserializeInAppMessageString(inAppMessageString)?.let { inAppMessage ->
+                        val activity = cordova.activity
+                        if (activity == null || inAppMessage !is InAppMessageBase) return@runOnBraze
+
+                        var button: MessageButton? = null
+                        if (buttonId >= 0 && inAppMessage is InAppMessageImmersiveBase) {
+                            button = inAppMessage.messageButtons.firstOrNull { it.id == buttonId }
+                        }
+                        val clickAction = if (buttonId < 0) {
+                            inAppMessage.clickAction
+                        } else {
+                            button?.clickAction
+                        }
+                        val clickUri = if (buttonId < 0) {
+                            inAppMessage.uri
+                        } else {
+                            button?.uri
+                        }
+                        val openUriInWebView = if (buttonId < 0) {
+                            inAppMessage.openUriInWebView
+                        } else {
+                            button?.openUriInWebview ?: false
+                        }
+                        brazelog { "got action: $clickUri, $openUriInWebView, $clickAction" }
+                        when (clickAction) {
+                            ClickAction.NEWS_FEED -> {
+                                val newsfeedAction = NewsfeedAction(
+                                    inAppMessage.extras.toBundle(),
+                                    Channel.INAPP_MESSAGE
+                                )
+                                BrazeDeeplinkHandler.getInstance()
+                                    .gotoNewsFeed(activity, newsfeedAction)
+                            }
+
+                            ClickAction.URI -> {
+                                if (clickUri != null) {
+                                    val uriAction =
+                                        BrazeDeeplinkHandler.getInstance().createUriActionFromUri(
+                                            clickUri, inAppMessage.extras.toBundle(),
+                                            openUriInWebView, Channel.INAPP_MESSAGE
+                                        )
+                                    brazelog { "Performing gotoUri $clickUri $openUriInWebView" }
+                                    BrazeDeeplinkHandler.getInstance()
+                                        .gotoUri(applicationContext, uriAction)
+                                }
+                            }
+
+                            else -> {
+                                brazelog { "Unhandled action $clickAction" }
+                            }
+                        }
+                    }
+                }
                 return true
             }
             "getFeatureFlag" -> {
@@ -557,7 +680,7 @@ open class BrazePlugin : CordovaPlugin() {
             if (notificationChannelDescription.isNotBlank()) {
                 configBuilder.setDefaultNotificationChannelDescription(notificationChannelDescription)
             } else {
-             brazelog (W) { "Invalid default notification channel description. Default notification description not set." }
+                brazelog (W) { "Invalid default notification channel description. Default notification description not set." }
             }
         }
 
@@ -810,6 +933,28 @@ open class BrazePlugin : CordovaPlugin() {
         // Return success to the callback
         callbackContext.success()
         return true
+    }
+
+    private fun setDefaultInAppMessageListener() {
+        BrazeInAppMessageManager.getInstance().setCustomInAppMessageManagerListener(
+            object : DefaultInAppMessageManagerListener() {
+                override fun beforeInAppMessageDisplayed(inAppMessage: IInAppMessage): InAppMessageOperation {
+                    super.beforeInAppMessageDisplayed(inAppMessage)
+
+                    // Convert in-app message to string
+                    val inAppMessageString = inAppMessage.forJsonPut().toString()
+                    brazelog { "In-app message received: $inAppMessageString" }
+
+                    // Send in-app message string back to JavaScript in an `inAppMessageReceived` event
+                    val jsStatement = "app.inAppMessageReceived('$inAppMessageString');"
+                    cordova.activity.runOnUiThread {
+                        webView.engine.evaluateJavascript(jsStatement, null)
+                    }
+
+                    return inAppMessageDisplayOperation
+                }
+            }
+        )
     }
 
     companion object {
