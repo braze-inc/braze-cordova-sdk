@@ -41,6 +41,8 @@ object ContentCardUtils {
             put("url", card.url)
             put("openURLInWebView", card.openUriInWebView)
             put("extras", JSONObject(card.extras))
+            put("isTest", card.isTest)
+            put("isControl", card.isControl)
         }
         when (card.cardType) {
             IMAGE -> mapImageOnlyCardFields(mappedCardJson, card as ImageOnlyCard)
