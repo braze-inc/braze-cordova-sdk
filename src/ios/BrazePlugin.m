@@ -92,6 +92,8 @@ bool isInAppMessageSubscribed;
     NSLog(@"Log level value not valid. Setting value to: error (2).");
   }
 
+  [configuration.location setBrazeLocationProvider:[[BrazeLocationProvider alloc] init]];
+  
   // Set location collection from preferences
   if ([[self sanitizeString:self.enableLocationCollection] isEqualToString:@"yes"]) {
     configuration.location.automaticLocationCollection = @YES;
