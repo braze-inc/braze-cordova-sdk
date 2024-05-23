@@ -1,12 +1,17 @@
 ⚠️ In version 2.33.0, we changed the iOS bridge from AppboyKit, which is written in Objective-C, to the new [Swift SDK](https://github.com/braze-inc/braze-swift-sdk). If you are upgrading from a version below 2.33.0 to a version above 2.33.0, please read [the instructions](https://github.com/braze-inc/braze-cordova-sdk/blob/master/CHANGELOG.md#2330) to ensure a smooth transition and backward compatibility.
 
+## 9.2.0
+
+##### Added
+- Updated the native iOS bridge [from Braze Swift SDK 9.1.0 to 9.2.0](https://github.com/braze-inc/braze-swift-sdk/compare/9.1.0...9.2.0#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+
 ## 9.1.0
 
 ##### Added
 - Added the following properties to the Content Card model:
   - `isTest`
   - `isControl` (Note: If you're implementing your own UI, Control Cards should not be rendered, but you should manually log analytics for them.)
-- - Updated the native iOS bridge [from Braze Swift SDK 9.0.0 to 9.1.0](https://github.com/braze-inc/braze-swift-sdk/compare/9.0.0...9.1.0#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+- Updated the native iOS bridge [from Braze Swift SDK 9.0.0 to 9.1.0](https://github.com/braze-inc/braze-swift-sdk/compare/9.0.0...9.1.0#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
 
 ## 9.0.0
 
