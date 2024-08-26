@@ -26,6 +26,9 @@
     <config-file target="AndroidManifest.xml" parent="/manifest">
       <uses-permission android:name="android.permission.INTERNET" />
       <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+      <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+      <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+      <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     </config-file>
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
       <service android:name="com.braze.push.BrazeFirebaseMessagingService" android:exported="false">
@@ -33,6 +36,11 @@
           <action android:name="com.google.firebase.MESSAGING_EVENT" />
         </intent-filter>
       </service>
+      <receiver android:name="com.braze.BrazeBootReceiver" android:exported="true">
+        <intent-filter>
+          <action android:name="android.intent.action.BOOT_COMPLETED" />
+        </intent-filter>
+      </receiver>
     </config-file>
   </platform>
 
@@ -49,6 +57,10 @@
     <header-file src="src/ios/AppDelegate+Braze.h" />
     <source-file src="src/ios/AppDelegate+Braze.m" />
     <header-file src="src/ios/BrazeIDFADelegate.h" />
+    <!-- Editing the plist for the location permission prompt -->
+    <config-file target="*-Info.plist" parent="NSLocationAlwaysUsageDescription">
+      <string>This app is requesting your location to better serve you content.</string>
+    </config-file>
     <podspec>
       <config>
         <source url="https://cdn.cocoapods.org/"/>
