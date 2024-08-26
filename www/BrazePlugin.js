@@ -41,6 +41,21 @@ BrazePlugin.prototype.changeUser = function (userId, sdkAuthenticationToken) {
 }
 
 /**
+ * Gets the unique ID stored for the user.
+ * 
+ * @return A promise containing a string of the user ID.
+ */
+BrazePlugin.prototype.getUserId = function () {
+    return new Promise((resolve, reject) => {
+        cordova.exec((userId) => {
+            resolve(userId);
+        }, (error) => {
+            reject(error);
+        }, "BrazePlugin", "getUserId");
+    });
+}
+
+/**
 * ** ANDROID ONLY**
 *
 * Registers the device as eligible to receive push notifications from Braze.
@@ -288,6 +303,17 @@ BrazePlugin.prototype.setLastKnownLocation = function (latitude, longitude, alti
 }
 
 /**
+ * Sets a custom location attribute for the user.
+ * @param {string} key - The identifier of the custom attribute. Limited to 255 characters in length, cannot begin with
+ *   a dollar sign (`$`), and can only contain alphanumeric characters and punctuation.
+ * @param {double} latitude - The latitude in degrees, must be included in `-90...90`.
+ * @param {double} longitude - The longitude in degrees, must be included in `-180...180`.
+ */
+BrazePlugin.prototype.setLocationCustomAttribute = function (key, latitude, longitude) {
+    cordova.exec(null, null, "BrazePlugin", "setLocationCustomAttribute", [key, latitude, longitude]);
+}
+
+/**
  * Sets whether the user should be sent push campaigns.
  * @param {NotificationSubscriptionTypes} notificationSubscriptionType - Notification setting (explicitly
  *    opted-in, subscribed, or unsubscribed).
@@ -363,79 +389,82 @@ BrazePlugin.prototype.getNewsFeed = function (successCallback, errorCallback) {
 // News Feed methods
 
 /**
-* Gets the number of unread News Feed Cards. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
-*/
+ * Gets the number of unread News Feed Cards. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
+ */
 BrazePlugin.prototype.getNewsFeedUnreadCount = function (successCallback, errorCallback) {
     cordova.exec(successCallback, errorCallback, "BrazePlugin", "getUnreadCardCountForCategories", ['all']);
 }
 
 /**
-* Gets the number of News Feed Cards. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
-**/
+ * Gets the number of News Feed Cards. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
+ */
 BrazePlugin.prototype.getNewsFeedCardCount = function (successCallback, errorCallback) {
     cordova.exec(successCallback, errorCallback, "BrazePlugin", "getCardCountForCategories", ['all']);
 }
 
 /**
-* Gets the number of News Feed Cards for a category. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
-**/
+ * Gets the number of News Feed Cards for a category. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
+ */
 BrazePlugin.prototype.getCardCountForCategories = function (successCallback, errorCallback, cardCategories) {
     cordova.exec(successCallback, errorCallback, "BrazePlugin", "getCardCountForCategories", cardCategories);
 }
 
 /**
-* Gets the number of unread News Feed Cards for a category. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
-*/
+ * Gets the number of unread News Feed Cards for a category. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
+ */
 BrazePlugin.prototype.getUnreadCardCountForCategories = function (successCallback, errorCallback, cardCategories) {
     cordova.exec(successCallback, errorCallback, "BrazePlugin", "getUnreadCardCountForCategories", cardCategories);
 }
 
 /**
-* Wipes Data on the Braze SDK. On iOS, the SDK will be disabled for the rest of the app run.
-*/
+ * Wipes Data on the Braze SDK. On iOS, the SDK will be disabled for the rest of the app run.
+ */
 BrazePlugin.prototype.wipeData = function () {
     cordova.exec(null, null, "BrazePlugin", "wipeData");
 }
 
 /**
-* Enables the Braze SDK after a previous call to disableSDK().
-* On iOS, the SDK will be enabled only after a subsequent call to startWithApiKey().
-*/
+ * Enables the Braze SDK after a previous call to disableSDK().
+ * On iOS, the SDK will be enabled only after a subsequent call to startWithApiKey().
+ */
 BrazePlugin.prototype.enableSdk = function () {
     cordova.exec(null, null, "BrazePlugin", "enableSdk");
 }
 
 /**
-* Disables the Braze SDK immediately.
-*/
+ * Disables the Braze SDK immediately.
+ */
 BrazePlugin.prototype.disableSdk = function () {
     cordova.exec(null, null, "BrazePlugin", "disableSdk");
 }
 
 /**
-* Requests that the Braze SDK immediately flush any pending data.
-*/
+ * Requests that the Braze SDK immediately flush any pending data.
+ */
 BrazePlugin.prototype.requestImmediateDataFlush = function () {
     cordova.exec(null, null, "BrazePlugin", "requestImmediateDataFlush");
 }
 
 /**
-* Requests the latest Content Cards from the Braze SDK server.
-*/
+ * Requests the latest Content Cards from the Braze SDK server.
+ */
 BrazePlugin.prototype.requestContentCardsRefresh = function () {
     cordova.exec(null, null, "BrazePlugin", "requestContentCardsRefresh");
 }
 
 /**
-* Retrieves Content Cards from the Braze SDK. This will return the latest list of cards from the server.
-*/
+ * Retrieves Content Cards from the Braze SDK. This will return the latest list of cards from the server.
+ *
+ * @param {function} successCallback - The function to call when the cards are successfully retrieved.
+ * @param {function} errorCallback - The function to call when an error occurs. No-op on Android.
+ */
 BrazePlugin.prototype.getContentCardsFromServer = function (successCallback, errorCallback) {
     cordova.exec(successCallback, errorCallback, "BrazePlugin", "getContentCardsFromServer");
 }
 
 /**
-* Retrieves Content Cards from the Braze SDK. This will return the latest list of cards from the cache.
-*/
+ * Retrieves Content Cards from the Braze SDK. This will return the latest list of cards from the cache.
+ */
 BrazePlugin.prototype.getContentCardsFromCache = function (successCallback, errorCallback) {
     cordova.exec(successCallback, errorCallback, "BrazePlugin", "getContentCardsFromCache");
 }
@@ -649,6 +678,57 @@ BrazePlugin.prototype.getFeatureFlagNumberProperty = function (flagId, propertyK
         }, (error) => {
             reject(error);
         }, "BrazePlugin", "getFeatureFlagNumberProperty", [flagId, propertyKey]);
+    })
+}
+
+/**
+ * Requests a timestamp property for a given Feature Flag ID and a property key.
+ * @param {string} flagId - The identifier for the Feature Flag.
+ * @param {string} propertyKey - The key for the timestamp property.
+ * 
+ * @return A promise containing the timestamp property requested. This will return null if there is no such property or Feature Flag.
+ */
+BrazePlugin.prototype.getFeatureFlagTimestampProperty = function (flagId, propertyKey) {
+    return new Promise((resolve, reject) => {
+        cordova.exec((timestampProperty) => {
+            resolve(timestampProperty);
+        }, (error) => {
+            reject(error);
+        }, "BrazePlugin", "getFeatureFlagTimestampProperty", [flagId, propertyKey]);
+    })
+}
+
+/**
+ * Requests a JSON property for a given Feature Flag ID and a property key.
+ * @param {string} flagId - The identifier for the Feature Flag.
+ * @param {string} propertyKey - The key for the JSON property.
+ * 
+ * @return A promise containing the JSON property requested. This will return null if there is no such property or Feature Flag.
+ */
+BrazePlugin.prototype.getFeatureFlagJSONProperty = function (flagId, propertyKey) {
+    return new Promise((resolve, reject) => {
+        cordova.exec((jsonProperty) => {
+            resolve(jsonProperty);
+        }, (error) => {
+            reject(error);
+        }, "BrazePlugin", "getFeatureFlagJSONProperty", [flagId, propertyKey]);
+    })
+}
+
+/**
+ * Requests an image property for a given Feature Flag ID and a property key.
+ * @param {string} flagId - The identifier for the Feature Flag.
+ * @param {string} propertyKey - The key for the image property.
+ * 
+ * @return A promise containing the image property requested. This will return null if there is no such property or Feature Flag.
+ */
+BrazePlugin.prototype.getFeatureFlagImageProperty = function (flagId, propertyKey) {
+    return new Promise((resolve, reject) => {
+        cordova.exec((imageProperty) => {
+            resolve(imageProperty);
+        }, (error) => {
+            reject(error);
+        }, "BrazePlugin", "getFeatureFlagImageProperty", [flagId, propertyKey]);
     })
 }
 

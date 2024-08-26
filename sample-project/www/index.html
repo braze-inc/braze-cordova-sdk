@@ -48,6 +48,7 @@
                 <input type="text" id="changeUserInputId" autocorrect="off" autocapitalize="off" placeholder="External ID" />
                 <input type="text" id="sdkAuthSignature" autocorrect="off" autocapitalize="off" placeholder="SDK Auth Signature" />
                 <button id="changeUserBtn">Change User</button>
+                <button id="getUserIdBtn">Get User ID</button>
                 <button id="setSdkAuthBtn">Set SDK Auth Signature</button>
                 <br>
                 <input type="text" id="logCustomEventId" autocorrect="off" autocapitalize="off" placeholder="Event Name" />
@@ -97,6 +98,7 @@
                 <input type="text" id="horizontalAccuracy" autocorrect="off" autocapitalize="off" placeholder="Horizontal Accuracy" />
                 <input type="text" id="verticalAccuracy" autocorrect="off" autocapitalize="off" placeholder="Vertical Accuracy (optional)" />
                 <button id="setLastKnownLocationBtn">Set Last Known Location</button>
+                <button id="setLocationCustomAttributeBtn">Set Location Custom Attribute</button>
                 <button id="wipeData">Clears all SDK data</button>
                 <button id="enableSdk">Enables the SDK</button>
                 <button id="disableSdk">Disables the SDK</button>
@@ -116,6 +118,9 @@
                     <option value="boolean">Boolean</option>
                     <option value="number">Number</option>
                     <option value="string">String</option>
+                    <option value="timestamp">Timestamp</option>
+                    <option value="jsonobject">JSON Object</option>
+                    <option value="image">Image</option>
                 </select>
                 <button id="getFeatureFlagPropertyBtn">Get Feature Flag Property</button>
             </div>

@@ -95,6 +95,16 @@ open class BrazePlugin : CordovaPlugin() {
                 runOnBraze { it.changeUser(userId, sdkAuthToken) }
                 return true
             }
+            "getUserId" -> {
+                runOnUser { 
+                    if (it.userId.isNullOrBlank()) {
+                        callbackContext.sendCordovaSuccessPluginResultAsNull()
+                    } else {
+                        callbackContext.success(it.userId)
+                    }
+                }
+                return true
+            }
             "logCustomEvent" -> {
                 var properties: BrazeProperties? = null
                 if (args[1] !== JSONObject.NULL) {
@@ -293,6 +303,22 @@ open class BrazePlugin : CordovaPlugin() {
                 }
                 return true
             }
+            "setLocationCustomAttribute" -> {
+                runOnUser {
+                    val newArgs = parseJSONArraytoDoubleArray(args)
+                    val key = args.getString(0)
+                    val latitude = newArgs[1]
+                    val longitude = newArgs[2]
+
+                    if (latitude == null || longitude == null) {
+                        brazelog (I) { "Invalid location information with the latitude: $latitude, longitude: $longitude" }
+                    } else {
+                        it.setLocationCustomAttribute(key, latitude, longitude)
+                        brazelog (I) { "Location custom attribute set with key: $key, latitude: $latitude, longitude: $longitude"}
+                    }
+                }
+                return true
+            }
             "setPushNotificationSubscriptionType" -> {
                 runOnUser { currentUser ->
                     NotificationSubscriptionType.fromValue(args.getString(0))?.let {
@@ -337,7 +363,7 @@ open class BrazePlugin : CordovaPlugin() {
                     inAppMessageDisplayOperation = if (useBrazeUI) {
                         InAppMessageOperation.DISPLAY_NOW
                     } else {
-                        InAppMessageOperation.DISPLAY_LATER
+                        InAppMessageOperation.DISCARD
                     }
                     setDefaultInAppMessageListener()
                 }
@@ -503,6 +529,45 @@ open class BrazePlugin : CordovaPlugin() {
                         callbackContext.sendCordovaSuccessPluginResultAsNull()
                     } else {
                         callbackContext.sendPluginResult(PluginResult(PluginResult.Status.OK, result.toFloat()))
+                    }
+                }
+                return true
+            }
+            "getFeatureFlagTimestampProperty" -> {
+                runOnBraze {
+                    val flagId = args.getString(0)
+                    val propKey = args.getString(1)
+                    val result = it.getFeatureFlag(flagId)?.getTimestampProperty(propKey)
+                    if (result == null) {
+                        callbackContext.sendCordovaSuccessPluginResultAsNull()
+                    } else {
+                        callbackContext.sendPluginResult(PluginResult(PluginResult.Status.OK, result.toFloat()))
+                    }
+                }
+                return true
+            }
+            "getFeatureFlagJSONProperty" -> {
+                runOnBraze {
+                    val flagId = args.getString(0)
+                    val propKey = args.getString(1)
+                    val result = it.getFeatureFlag(flagId)?.getJSONProperty(propKey)
+                    if (result == null) {
+                        callbackContext.sendCordovaSuccessPluginResultAsNull()
+                    } else {
+                        callbackContext.sendPluginResult(PluginResult(PluginResult.Status.OK, result))
+                    }
+                }
+                return true
+            }
+            "getFeatureFlagImageProperty" -> {
+                runOnBraze {
+                    val flagId = args.getString(0)
+                    val propKey = args.getString(1)
+                    val result = it.getFeatureFlag(flagId)?.getImageProperty(propKey)
+                    if (result == null) {
+                        callbackContext.sendCordovaSuccessPluginResultAsNull()
+                    } else {
+                        callbackContext.sendPluginResult(PluginResult(PluginResult.Status.OK, result))
                     }
                 }
                 return true
@@ -942,7 +1007,7 @@ open class BrazePlugin : CordovaPlugin() {
                     super.beforeInAppMessageDisplayed(inAppMessage)
 
                     // Convert in-app message to string
-                    val inAppMessageString = inAppMessage.forJsonPut().toString()
+                    val inAppMessageString = escapeStringForJavaScript(inAppMessage.forJsonPut().toString())
                     brazelog { "In-app message received: $inAppMessageString" }
 
                     // Send in-app message string back to JavaScript in an `inAppMessageReceived` event
@@ -1024,6 +1089,20 @@ open class BrazePlugin : CordovaPlugin() {
                 }
             }
             return categories
+        }
+
+        /**
+         * Map a Kotlin string to a JavaScript-representable version.
+         * Escape characters are lost in translation, so we need to manually insert them back in.
+         */
+        fun escapeStringForJavaScript(input: String): String {
+            return input
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\'", "\\\'")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t")
         }
 
         /**

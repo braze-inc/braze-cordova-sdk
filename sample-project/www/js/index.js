@@ -41,6 +41,7 @@ var app = {
         document.getElementById("getFeatureFlagPropertyBtn").addEventListener("click", getFeatureFlagProperty);
         document.getElementById("logFeatureFlagImpressionBtn").addEventListener("click", logFeatureFlagImpression);
         document.getElementById("changeUserBtn").addEventListener("click", changeUser);
+        document.getElementById("getUserIdBtn").addEventListener("click", getUserId);
         document.getElementById("setSdkAuthBtn").addEventListener("click", setSdkAuthenticationSignature);
         document.getElementById("logCustomEventBtn").addEventListener("click", logCustomEvent);
         document.getElementById("logPurchaseBtn").addEventListener("click", logPurchase);
@@ -70,6 +71,7 @@ var app = {
         document.getElementById("requestFlushBtn").addEventListener("click", requestDataFlush);
         document.getElementById("setLanguageBtn").addEventListener("click", setLanguage);
         document.getElementById("setLastKnownLocationBtn").addEventListener("click", setLastKnownLocation);
+        document.getElementById("setLocationCustomAttributeBtn").addEventListener("click", setLocationCustomAttribute);
         document.getElementById("getDeviceId").addEventListener("click", getDeviceId);
         document.getElementById("requestPushPermission").addEventListener("click", requestPushPermission);
         document.getElementById("updateTrackingPropertiesBtn").addEventListener("click", updateTrackingProperties);
@@ -116,6 +118,16 @@ function changeUser() {
         BrazePlugin.changeUser(userId, sdkAuthSignature);
     }
     showTextBubble(`User changed to ${userId} with auth signature ${sdkAuthSignature}`);
+}
+
+async function getUserId() {
+    BrazePlugin.getUserId(customPluginSuccessCallback("User ID: "), customPluginErrorCallback);
+    const userId = await BrazePlugin.getUserId();
+    if (!userId) {
+        showTextBubble("User ID not found.");
+    } else {
+        showTextBubble(`User ID: ${userId}`);
+    }
 }
 
 function setSdkAuthenticationSignature() {
@@ -186,6 +198,18 @@ async function getFeatureFlagProperty() {
         case 'string':
             const stringProperty = await BrazePlugin.getFeatureFlagStringProperty(featureFlagId, propertyKey);
             showTextBubble(`Got string property: ${stringProperty}`);
+            break;
+        case 'timestamp':
+            const timestampProperty = await BrazePlugin.getFeatureFlagTimestampProperty(featureFlagId, propertyKey);
+            showTextBubble(`Got timestamp property: ${timestampProperty}`);
+            break;
+        case 'jsonobject':
+            const jsonProperty = await BrazePlugin.getFeatureFlagJSONProperty(featureFlagId, propertyKey);
+            showTextBubble(`Got JSON property: ${JSON.stringify(jsonProperty)}`);
+            break;
+        case 'image':
+            const imageProperty = await BrazePlugin.getFeatureFlagImageProperty(featureFlagId, propertyKey);
+            showTextBubble(`Got image property: ${imageProperty}`);
             break;
         default:
             showTextBubble("No property type selected.");
@@ -463,6 +487,11 @@ function setLastKnownLocation() {
     if (latitude && longitude) {
         showTextBubble(`Last Known Location set to ${latitude}, ${longitude}`);
     }
+}
+
+function setLocationCustomAttribute() {
+    BrazePlugin.setLocationCustomAttribute("work", 40.7128, 74.006);
+    showTextBubble("Location custom attribute set.");
 }
 
 function getDeviceId() {

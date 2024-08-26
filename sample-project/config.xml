@@ -25,10 +25,10 @@
         <allow-intent href="market:*" />
         <preference name="GradlePluginKotlinEnabled" value="true" />
         <preference name="GradlePluginKotlinCodeStyle" value="official" />
-        <preference name="GradlePluginKotlinVersion" value="1.7.0" />
-        <preference name="android-targetSdkVersion" value="33" />
-        <preference name="android-compileSdkVersion" value="33" />
-        <preference name="GradleVersion" value="7.3.3" />
+        <preference name="GradlePluginKotlinVersion" value="1.9.24" />
+        <preference name="android-targetSdkVersion" value="35" />
+        <preference name="android-compileSdkVersion" value="35" />
+        <preference name="GradleVersion" value="8.7" />
         <preference name="AndroidXEnabled" value="true" />
         <preference name="com.braze.api_key" value="ec67377e-c490-4959-8c58-c045a254a65a" />
         <preference name="com.braze.android_api_endpoint" value="sondheim.braze.com" />

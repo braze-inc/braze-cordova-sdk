@@ -33,6 +33,7 @@ static Braze *_braze;
 @implementation BrazePlugin
 
 bool isInAppMessageSubscribed;
+bool useBrazeUIForInAppMessages;
 
 + (Braze *)braze {
   return _braze;
@@ -63,6 +64,7 @@ bool isInAppMessageSubscribed;
   self.useAutomaticRequestPolicy = settings[@"com.braze.ios_use_automatic_request_policy"];
   self.optInWhenPushAuthorized = settings[@"com.braze.should_opt_in_when_push_authorized"];
   isInAppMessageSubscribed = NO;
+  useBrazeUIForInAppMessages = YES;
 
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFinishLaunchingListener:) name:UIApplicationDidFinishLaunchingNotification object:nil];
 
@@ -246,6 +248,16 @@ bool isInAppMessageSubscribed;
   }
 }
 
+- (void)getUserId:(CDVInvokedUrlCommand *)command {
+  [self.braze.user idWithCompletion:^(NSString * _Nullable userId) {
+    if (!userId) {
+      [self sendCordovaSuccessPluginResultAsNull:command];
+    } else {
+      [self sendCordovaSuccessPluginResultWithString:userId andCommand:command];
+    }
+  }];
+}
+
 - (void)setSdkAuthenticationSignature:(CDVInvokedUrlCommand *)command {
   NSString *sdkAuthSignature = [command argumentAtIndex:0 withDefault:nil];
   if (sdkAuthSignature) {
@@ -379,6 +391,23 @@ bool isInAppMessageSubscribed;
                                              altitude:[altitude doubleValue]
                                    horizontalAccuracy:[horizontalAccuracy doubleValue]
                                      verticalAccuracy:[verticalAccuracy doubleValue]];
+  }
+}
+
+- (void)setLocationCustomAttribute:(CDVInvokedUrlCommand *)command {
+  NSString *key = [command argumentAtIndex:0 withDefault:nil];
+  NSNumber *latitude = [command argumentAtIndex:1 withDefault:nil];
+  NSNumber *longitude = [command argumentAtIndex:2 withDefault:nil];
+  
+  if (!latitude || !longitude) {
+    NSLog(@"Invalid location information with the latitude: %@, longitude: %@",
+          latitude ? latitude : @"nil",
+          longitude ? longitude : @"nil");
+  } else {
+    [self.braze.user setLocationCustomAttributeWithKey:key
+                                              latitude:[latitude doubleValue]
+                                             longitude:[longitude doubleValue]];
+    NSLog(@"Location custom attribute set with key: %@, latitude: %@, longitude: %@", key, latitude, longitude);
   }
 }
 
@@ -795,6 +824,7 @@ bool isInAppMessageSubscribed;
   [self.braze.contentCards requestRefreshWithCompletion:^(NSArray<BRZContentCardRaw *> * _Nullable cards, NSError * _Nullable error) {
     if (error) {
       NSLog(@"%@", error.debugDescription);
+      [self sendCordovaErrorPluginResultWithString:error.debugDescription andCommand:command];
     } else {
       NSLog(@"Got Content Cards from server callback");
       [self getContentCardsFromCache:command];
@@ -894,10 +924,7 @@ bool isInAppMessageSubscribed;
 /// Subscribes to in-app message updates.
 - (void)subscribeToInAppMessage:(CDVInvokedUrlCommand *)command {
   bool useBrazeUI = [command argumentAtIndex:0 withDefault:nil];
-  if (!useBrazeUI) {
-    // A custom delegate is being used. Do nothing.
-    return;
-  }
+  useBrazeUIForInAppMessages = useBrazeUI;
   isInAppMessageSubscribed = YES;
 }
 
@@ -1078,6 +1105,60 @@ bool isInAppMessageSubscribed;
   }
 }
 
+- (void)getFeatureFlagTimestampProperty:(CDVInvokedUrlCommand *)command {
+  NSString *featureFlagId = [command argumentAtIndex:0 withDefault:nil];
+  NSString *propertyKey = [command argumentAtIndex:1 withDefault:nil];
+
+  BRZFeatureFlag *featureFlag = [self.braze.featureFlags featureFlagWithId:featureFlagId];
+  if (!featureFlag) {
+    [self sendCordovaSuccessPluginResultAsNull:command];
+    return;
+  }
+
+  NSNumber *timestampProperty = [featureFlag timestampPropertyForKey:propertyKey];
+  if (timestampProperty) {
+    [self sendCordovaSuccessPluginResultWithDouble:[timestampProperty doubleValue] andCommand:command];
+  } else {
+    [self sendCordovaSuccessPluginResultAsNull:command];
+  }
+}
+
+- (void)getFeatureFlagJSONProperty:(CDVInvokedUrlCommand *)command {
+  NSString *featureFlagId = [command argumentAtIndex:0 withDefault:nil];
+  NSString *propertyKey = [command argumentAtIndex:1 withDefault:nil];
+
+  BRZFeatureFlag *featureFlag = [self.braze.featureFlags featureFlagWithId:featureFlagId];
+  if (!featureFlag) {
+    [self sendCordovaSuccessPluginResultAsNull:command];
+    return;
+  }
+
+  NSDictionary *jsonProperty = [featureFlag jsonObjectPropertyForKey:propertyKey];
+  if (jsonProperty) {
+    [self sendCordovaSuccessPluginResultWithDictionary:jsonProperty andCommand:command];
+  } else {
+    [self sendCordovaSuccessPluginResultAsNull:command];
+  }
+}
+
+- (void)getFeatureFlagImageProperty:(CDVInvokedUrlCommand *)command {
+  NSString *featureFlagId = [command argumentAtIndex:0 withDefault:nil];
+  NSString *propertyKey = [command argumentAtIndex:1 withDefault:nil];
+
+  BRZFeatureFlag *featureFlag = [self.braze.featureFlags featureFlagWithId:featureFlagId];
+  if (!featureFlag) {
+    [self sendCordovaSuccessPluginResultAsNull:command];
+    return;
+  }
+
+  NSString *imageProperty = [featureFlag imagePropertyForKey:propertyKey];
+  if (imageProperty) {
+    [self sendCordovaSuccessPluginResultWithString:imageProperty andCommand:command];
+  } else {
+    [self sendCordovaSuccessPluginResultAsNull:command];
+  }
+}
+
 - (void)logFeatureFlagImpression:(CDVInvokedUrlCommand *)command {
   NSString *featureFlagId = [command argumentAtIndex:0 withDefault:nil];
   if (featureFlagId) {
@@ -1172,11 +1253,51 @@ bool isInAppMessageSubscribed;
 // MARK: - Helper Methods
 
 /**
-    Takes an NSString, trim whitespaces, and return the sanitized NSString converted to lowercase.
- **/
+ * Takes an NSString, trim whitespaces, and return the sanitized NSString converted to lowercase.
+ */
 - (NSString *)sanitizeString:(NSString *)inputString {
   NSString *trimmedString = [inputString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
   return ([trimmedString lowercaseString]);
+}
+
+/**
+ * Map an `NSString` to a JavaScript-representable version.
+ * Escape characters are lost in translation, so we need to manually insert them back in.
+ */
+- (NSString *)escapeStringForJavaScript:(NSString *)input {
+  NSMutableString *escapedString = [NSMutableString stringWithString:input];
+
+  [escapedString replaceOccurrencesOfString:@"\\"
+                                 withString:@"\\\\"
+                                    options:NSLiteralSearch
+                                      range:NSMakeRange(0, [escapedString length])];
+
+  [escapedString replaceOccurrencesOfString:@"\""
+                                 withString:@"\\\""
+                                    options:NSLiteralSearch
+                                      range:NSMakeRange(0, [escapedString length])];
+
+  [escapedString replaceOccurrencesOfString:@"\'"
+                                 withString:@"\\\'"
+                                    options:NSLiteralSearch
+                                      range:NSMakeRange(0, [escapedString length])];
+
+  [escapedString replaceOccurrencesOfString:@"\n"
+                                 withString:@"\\n"
+                                    options:NSLiteralSearch
+                                      range:NSMakeRange(0, [escapedString length])];
+
+  [escapedString replaceOccurrencesOfString:@"\r"
+                                 withString:@"\\r"
+                                    options:NSLiteralSearch
+                                      range:NSMakeRange(0, [escapedString length])];
+
+  [escapedString replaceOccurrencesOfString:@"\t"
+                                 withString:@"\\t"
+                                    options:NSLiteralSearch
+                                      range:NSMakeRange(0, [escapedString length])];
+
+  return escapedString;
 }
 
 - (BRZTrackingProperty *)convertTrackingProperty:(NSString *)propertyString {
@@ -1224,20 +1345,24 @@ bool isInAppMessageSubscribed;
 
 // MARK: - BrazeInAppMessageUIDelegate
 
-- (void)inAppMessage:(BrazeInAppMessageUI *)ui
-          didPresent:(BRZInAppMessageRaw *)message
-                  view:(UIView *)view {
-  if (!isInAppMessageSubscribed) {
-    return;
-  }
+- (enum BRZInAppMessageUIDisplayChoice)inAppMessage:(BrazeInAppMessageUI *)ui displayChoiceForMessage:(BRZInAppMessageRaw *)message {
   // Convert in-app message to string
-  NSData *inAppMessageData = [message json];
-  NSString *inAppMessageString = [[NSString alloc] initWithData:inAppMessageData encoding:NSUTF8StringEncoding];
-  NSLog(@"In-app message received: %@", inAppMessageString);
+  if (isInAppMessageSubscribed) {
+    NSData *inAppMessageData = [message json];
+    NSString *inAppMessageString = [[NSString alloc] initWithData:inAppMessageData encoding:NSUTF8StringEncoding];
+    inAppMessageString = [self escapeStringForJavaScript:inAppMessageString];
+    NSLog(@"In-app message received: %@", inAppMessageString);
 
-  // Send in-app message string back to JavaScript in an `inAppMessageReceived` event
-  NSString* jsStatement = [NSString stringWithFormat:@"app.inAppMessageReceived('%@');", inAppMessageString];
-  [self.commandDelegate evalJs:jsStatement];
+    // Send in-app message string back to JavaScript in an `inAppMessageReceived` event
+    NSString* jsStatement = [NSString stringWithFormat:@"app.inAppMessageReceived('%@');", inAppMessageString];
+    [self.commandDelegate evalJs:jsStatement];
+  }
+
+  if (useBrazeUIForInAppMessages) {
+    return BRZInAppMessageUIDisplayChoiceNow;
+  } else {
+    return BRZInAppMessageUIDisplayChoiceDiscard;
+  }
 }
 
 @end

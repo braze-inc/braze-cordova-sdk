@@ -1,5 +1,27 @@
 ⚠️ In version 2.33.0, we changed the iOS bridge from AppboyKit, which is written in Objective-C, to the new [Swift SDK](https://github.com/braze-inc/braze-swift-sdk). If you are upgrading from a version below 2.33.0 to a version above 2.33.0, please read [the instructions](https://github.com/braze-inc/braze-cordova-sdk/blob/master/CHANGELOG.md#2330) to ensure a smooth transition and backward compatibility.
 
+## 10.0.0
+
+##### Breaking
+- ⚠️ This version now requires Cordova Android 13.0.0. ⚠️
+  - Refer to the [Cordova release announcement](https://cordova.apache.org/announcements/2024/05/23/cordova-android-13.0.0.html) for a full list of project dependency requirements.
+- Updated the native Android bridge [from Braze Android SDK 30.3.0 to 32.1.0](https://github.com/braze-inc/braze-android-sdk/compare/v30.3.0...v32.1.0#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+- Updated the native iOS bridge [from Braze Swift SDK 9.2.0 to 10.1.0](https://github.com/braze-inc/braze-swift-sdk/compare/9.2.0...10.1.0#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+
+##### Fixed
+- Fixed the native-to-JavaScript translation of in-app message strings, where nested escape characters were previously being removed.
+- Fixed the `subscribeToInAppMessage` method on iOS to respect the `useBrazeUI` setting.
+  - Updated the Android implementation to match iOS by using the `DISCARD` option instead of `DISPLAY_LATER` if the default Braze UI is not used.
+- Fixed the `getContentCardsFromServer` method to trigger an error callback on iOS when cards have failed to refresh.
+
+##### Added
+- Added the `getUserId()` method to get the ID of the current user. This method will return `null` if the current user is anonymous.
+- Added support for new Feature Flag property types and APIs for accessing them:
+  - `getFeatureFlagTimestampProperty(id, key)` for accessing Int Unix UTC millisecond timestamps as `number`s.
+  - `getFeatureFlagImageProperty(id, key)` for accessing image URLs as `string`s.
+  - `getFeatureFlagJSONProperty(id, key)` for accessing JSON objects as `object` types.
+- Added `setLocationCustomAttribute(key, latitude, longitude)` to set a location custom attribute.
+
 ## 9.2.0
 
 ##### Added
