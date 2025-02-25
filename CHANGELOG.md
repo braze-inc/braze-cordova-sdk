@@ -187,6 +187,8 @@
   const booleanProperty = await BrazePlugin.getFeatureFlagBooleanProperty("feature-flag-id", "property-key");
   ```
 - Changed `subscribeToFeatureFlagUpdates` to `subscribeToFeatureFlagsUpdates`.
+- Updated `feature/geofence-branch` with the latest releases, including the Swift SDK, introduced in `2.33.0`.
+  - Note the required location permission settings for the Swift SDK [here](https://braze-inc.github.io/braze-swift-sdk/documentation/brazekit/braze/configuration-swift.class/location-swift.class/geofencesenabled/).
 
 ## 4.0.0
 

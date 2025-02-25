@@ -4,7 +4,9 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.braze:android-sdk-ui:35.0.0'
+    def braze_sdk_version = "35.0.0"
+    implementation "com.braze:android-sdk-ui:${braze_sdk_version}"
+    implementation "com.braze:android-sdk-location:${braze_sdk_version}"
     implementation 'com.google.firebase:firebase-messaging:23.0.0'
 }
 

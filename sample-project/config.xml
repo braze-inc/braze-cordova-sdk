@@ -41,9 +41,9 @@
         <preference name="com.braze.android_small_notification_icon" value="" />
         <preference name="com.braze.android_large_notification_icon" value="" />
         <preference name="com.braze.android_notification_accent_color" value ="0x0000" />
-        <preference name="com.braze.enable_location_collection" value="false" />
-        <preference name="com.braze.geofences_enabled" value="false" />
         <preference name="com.braze.android_disable_auto_session_tracking" value ="false" />
+        <preference name="com.braze.enable_location_collection" value="true" />
+        <preference name="com.braze.geofences_enabled" value="true" />
         <preference name="com.braze.sdk_authentication_enabled" value="true" />
         <preference name="com.braze.is_session_start_based_timeout_enabled" value="false" />
         <preference name="com.braze.default_notification_channel_name" value="Braze Push" />
@@ -73,9 +73,9 @@
         <preference name="com.braze.ios_disable_automatic_push_registration" value="NO" />
         <preference name="com.braze.ios_disable_automatic_push_handling" value="NO" />
         <preference name="com.braze.ios_enable_idfa_automatic_collection" value="YES" />
-        <preference name="com.braze.enable_location_collection" value="NO" />
-        <preference name="com.braze.geofences_enabled" value="NO" />
         <preference name="com.braze.ios_session_timeout" value="5" />
+        <preference name="com.braze.enable_location_collection" value="YES" />
+        <preference name="com.braze.geofences_enabled" value="YES" />
         <preference name="com.braze.sdk_authentication_enabled" value="YES" />
         <preference name="com.braze.display_foreground_push_notifications" value="YES" />
         <preference name="deployment-target" value="12.0" />

@@ -2,6 +2,7 @@ package com.braze.cordova
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import com.braze.Braze
@@ -17,13 +18,13 @@ import com.braze.events.ContentCardsUpdatedEvent
 import com.braze.events.FeatureFlagsUpdatedEvent
 import com.braze.events.FeedUpdatedEvent
 import com.braze.events.IEventSubscriber
-import com.braze.models.outgoing.AttributionData
-import com.braze.models.outgoing.BrazeProperties
 import com.braze.models.inappmessage.IInAppMessage
 import com.braze.models.inappmessage.IInAppMessageImmersive
 import com.braze.models.inappmessage.InAppMessageBase
 import com.braze.models.inappmessage.InAppMessageImmersiveBase
 import com.braze.models.inappmessage.MessageButton
+import com.braze.models.outgoing.AttributionData
+import com.braze.models.outgoing.BrazeProperties
 import com.braze.support.BrazeLogger.Priority.*
 import com.braze.support.BrazeLogger.brazelog
 import com.braze.support.BrazeLogger.logLevel
@@ -36,6 +37,9 @@ import com.braze.ui.activities.ContentCardsActivity
 import com.braze.ui.inappmessage.BrazeInAppMessageManager
 import com.braze.ui.inappmessage.InAppMessageOperation
 import com.braze.ui.inappmessage.listeners.DefaultInAppMessageManagerListener
+import java.math.BigDecimal
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import org.apache.cordova.CallbackContext
 import org.apache.cordova.CordovaPlugin
 import org.apache.cordova.CordovaPreferences
@@ -43,17 +47,16 @@ import org.apache.cordova.PluginResult
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.math.BigDecimal
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
 @Suppress("TooManyFunctions", "MaxLineLength", "WildcardImport")
 open class BrazePlugin : CordovaPlugin() {
     private lateinit var applicationContext: Context
     private var pluginInitializationFinished = false
     private var disableAutoStartSessions = false
-    private val feedSubscriberMap: MutableMap<String, IEventSubscriber<FeedUpdatedEvent>> = ConcurrentHashMap()
-    private var inAppMessageDisplayOperation: InAppMessageOperation = InAppMessageOperation.DISPLAY_NOW
+    private val feedSubscriberMap: MutableMap<String, IEventSubscriber<FeedUpdatedEvent>> =
+            ConcurrentHashMap()
+    private var inAppMessageDisplayOperation: InAppMessageOperation =
+            InAppMessageOperation.DISPLAY_NOW
 
     override fun pluginInitialize() {
         applicationContext = cordova.activity.applicationContext
@@ -61,7 +64,9 @@ open class BrazePlugin : CordovaPlugin() {
         // Configure Braze using the preferences from the config.xml file passed to our plugin
         configureFromCordovaPreferences(preferences)
 
-        // Since we've likely passed the first Application.onCreate() (due to the plugin lifecycle), lets call the
+        initializeGeofences()
+        // Since we've likely passed the first Application.onCreate() (due to the plugin lifecycle),
+        // lets call the
         // in-app message manager and session handling now
         BrazeInAppMessageManager.getInstance().registerInAppMessageManager(cordova.activity)
         pluginInitializationFinished = true
@@ -76,7 +81,11 @@ open class BrazePlugin : CordovaPlugin() {
     }
 
     @Suppress("ComplexMethod", "LongMethod", "MagicNumber", "ReturnCount")
-    override fun execute(action: String, args: JSONArray, callbackContext: CallbackContext): Boolean {
+    override fun execute(
+            action: String,
+            args: JSONArray,
+            callbackContext: CallbackContext
+    ): Boolean {
         initializePluginIfAppropriate()
         brazelog(I) { "Received $action with the following arguments: $args" }
         when (action) {
@@ -128,11 +137,11 @@ open class BrazePlugin : CordovaPlugin() {
                 }
                 runOnBraze {
                     it.logPurchase(
-                        productId = args.getString(0),
-                        currencyCode = currencyCode,
-                        price = BigDecimal(args.getDouble(1)),
-                        quantity = quantity,
-                        properties = properties
+                            productId = args.getString(0),
+                            currencyCode = currencyCode,
+                            price = BigDecimal(args.getDouble(1)),
+                            quantity = quantity,
+                            properties = properties
                     )
                 }
                 return true
@@ -177,12 +186,12 @@ open class BrazePlugin : CordovaPlugin() {
             "setUserAttributionData" -> {
                 runOnUser {
                     it.setAttributionData(
-                        AttributionData(
-                            args.getString(0),
-                            args.getString(1),
-                            args.getString(2),
-                            args.getString(3)
-                        )
+                            AttributionData(
+                                    args.getString(0),
+                                    args.getString(1),
+                                    args.getString(2),
+                                    args.getString(3)
+                            )
                     )
                 }
                 return true
@@ -204,11 +213,15 @@ open class BrazePlugin : CordovaPlugin() {
                 return true
             }
             "setDoubleCustomUserAttribute" -> {
-                runOnUser { it.setCustomUserAttribute(args.getString(0), args.getDouble(1).toFloat()) }
+                runOnUser {
+                    it.setCustomUserAttribute(args.getString(0), args.getDouble(1).toFloat())
+                }
                 return true
             }
             "setDateCustomUserAttribute" -> {
-                runOnUser { it.setCustomUserAttributeToSecondsFromEpoch(args.getString(0), args.getLong(1)) }
+                runOnUser {
+                    it.setCustomUserAttributeToSecondsFromEpoch(args.getString(0), args.getLong(1))
+                }
                 return true
             }
             "incrementCustomUserAttribute" -> {
@@ -227,7 +240,9 @@ open class BrazePlugin : CordovaPlugin() {
             }
             "setCustomUserAttributeObject" -> {
                 val attributes = args.getJSONObject(1)
-                runOnUser { it.setCustomAttribute(args.getString(0), attributes, args.getBoolean(2)) }
+                runOnUser {
+                    it.setCustomAttribute(args.getString(0), attributes, args.getBoolean(2))
+                }
                 return true
             }
             "addToCustomAttributeArray" -> {
@@ -235,7 +250,9 @@ open class BrazePlugin : CordovaPlugin() {
                 return true
             }
             "removeFromCustomAttributeArray" -> {
-                runOnUser { it.removeFromCustomAttributeArray(args.getString(0), args.getString(1)) }
+                runOnUser {
+                    it.removeFromCustomAttributeArray(args.getString(0), args.getString(1))
+                }
                 return true
             }
             "setFirstName" -> {
@@ -253,9 +270,7 @@ open class BrazePlugin : CordovaPlugin() {
             "setGender" -> {
                 val genderString = args.getString(0).lowercase(Locale.US)
                 runOnUser { currentUser ->
-                    Gender.getGender(genderString)?.let {
-                        currentUser.setGender(it)
-                    }
+                    Gender.getGender(genderString)?.let { currentUser.setGender(it) }
                 }
                 return true
             }
@@ -293,12 +308,28 @@ open class BrazePlugin : CordovaPlugin() {
                     val verticalAccuracy = newArgs[4]
 
                     if (latitude == null || longitude == null) {
-                        brazelog (I) { "Invalid location information with the latitude: $latitude, longitude: $longitude" }
-                    } else if (!(latitude > -90 && latitude < 90 && longitude > -180 && longitude < 180)) {
-                        brazelog (I) { "Location information out of bounds. Latitude and longitude values are bounded by ±90 and ±180 respectively." }
+                        brazelog(I) {
+                            "Invalid location information with the latitude: $latitude, longitude: $longitude"
+                        }
+                    } else if (!(latitude > -90 &&
+                                    latitude < 90 &&
+                                    longitude > -180 &&
+                                    longitude < 180)
+                    ) {
+                        brazelog(I) {
+                            "Location information out of bounds. Latitude and longitude values are bounded by ±90 and ±180 respectively."
+                        }
                     } else {
-                        it.setLastKnownLocation(latitude, longitude, altitude, horizontalAccuracy, verticalAccuracy)
-                        brazelog (I) { "Last known location manually set with values: [$latitude, $longitude, $altitude, $horizontalAccuracy, $verticalAccuracy]"}
+                        it.setLastKnownLocation(
+                                latitude,
+                                longitude,
+                                altitude,
+                                horizontalAccuracy,
+                                verticalAccuracy
+                        )
+                        brazelog(I) {
+                            "Last known location manually set with values: [$latitude, $longitude, $altitude, $horizontalAccuracy, $verticalAccuracy]"
+                        }
                     }
                 }
                 return true
@@ -391,12 +422,14 @@ open class BrazePlugin : CordovaPlugin() {
                 runOnBraze { braze ->
                     val inAppMessageString = args.getString(0)
                     val buttonId = args.getInt(1)
-                    brazelog { "logInAppMessageButtonClicked called with value $inAppMessageString, and button: $buttonId" }
+                    brazelog {
+                        "logInAppMessageButtonClicked called with value $inAppMessageString, and button: $buttonId"
+                    }
                     val inAppMessage = braze.deserializeInAppMessageString(inAppMessageString)
                     if (inAppMessage is IInAppMessageImmersive) {
-                        inAppMessage.messageButtons
-                            .firstOrNull { it.id == buttonId }
-                            ?.let { inAppMessage.logButtonClick(it) }
+                        inAppMessage.messageButtons.firstOrNull { it.id == buttonId }?.let {
+                            inAppMessage.logButtonClick(it)
+                        }
                     }
                 }
                 return true
@@ -405,7 +438,9 @@ open class BrazePlugin : CordovaPlugin() {
                 val inAppMessageString = args.getString(0)
                 val buttonId = args.getInt(1)
                 runOnBraze { braze ->
-                    brazelog { "performInAppMessageAction called with value $inAppMessageString, and button: $buttonId" }
+                    brazelog {
+                        "performInAppMessageAction called with value $inAppMessageString, and button: $buttonId"
+                    }
                     braze.deserializeInAppMessageString(inAppMessageString)?.let { inAppMessage ->
                         val activity = cordova.activity
                         if (activity == null || inAppMessage !is InAppMessageBase) return@runOnBraze
@@ -414,45 +449,50 @@ open class BrazePlugin : CordovaPlugin() {
                         if (buttonId >= 0 && inAppMessage is InAppMessageImmersiveBase) {
                             button = inAppMessage.messageButtons.firstOrNull { it.id == buttonId }
                         }
-                        val clickAction = if (buttonId < 0) {
-                            inAppMessage.clickAction
-                        } else {
-                            button?.clickAction
-                        }
-                        val clickUri = if (buttonId < 0) {
-                            inAppMessage.uri
-                        } else {
-                            button?.uri
-                        }
-                        val openUriInWebView = if (buttonId < 0) {
-                            inAppMessage.openUriInWebView
-                        } else {
-                            button?.openUriInWebview ?: false
-                        }
+                        val clickAction =
+                                if (buttonId < 0) {
+                                    inAppMessage.clickAction
+                                } else {
+                                    button?.clickAction
+                                }
+                        val clickUri =
+                                if (buttonId < 0) {
+                                    inAppMessage.uri
+                                } else {
+                                    button?.uri
+                                }
+                        val openUriInWebView =
+                                if (buttonId < 0) {
+                                    inAppMessage.openUriInWebView
+                                } else {
+                                    button?.openUriInWebview ?: false
+                                }
                         brazelog { "got action: $clickUri, $openUriInWebView, $clickAction" }
                         when (clickAction) {
                             ClickAction.NEWS_FEED -> {
-                                val newsfeedAction = NewsfeedAction(
-                                    inAppMessage.extras.toBundle(),
-                                    Channel.INAPP_MESSAGE
-                                )
+                                val newsfeedAction =
+                                        NewsfeedAction(
+                                                inAppMessage.extras.toBundle(),
+                                                Channel.INAPP_MESSAGE
+                                        )
                                 BrazeDeeplinkHandler.getInstance()
-                                    .gotoNewsFeed(activity, newsfeedAction)
+                                        .gotoNewsFeed(activity, newsfeedAction)
                             }
-
                             ClickAction.URI -> {
                                 if (clickUri != null) {
                                     val uriAction =
-                                        BrazeDeeplinkHandler.getInstance().createUriActionFromUri(
-                                            clickUri, inAppMessage.extras.toBundle(),
-                                            openUriInWebView, Channel.INAPP_MESSAGE
-                                        )
+                                            BrazeDeeplinkHandler.getInstance()
+                                                    .createUriActionFromUri(
+                                                            clickUri,
+                                                            inAppMessage.extras.toBundle(),
+                                                            openUriInWebView,
+                                                            Channel.INAPP_MESSAGE
+                                                    )
                                     brazelog { "Performing gotoUri $clickUri $openUriInWebView" }
                                     BrazeDeeplinkHandler.getInstance()
-                                        .gotoUri(applicationContext, uriAction)
+                                            .gotoUri(applicationContext, uriAction)
                                 }
                             }
-
                             else -> {
                                 brazelog { "Unhandled action $clickAction" }
                             }
@@ -467,16 +507,16 @@ open class BrazePlugin : CordovaPlugin() {
                     if (result == null) {
                         callbackContext.sendCordovaSuccessPluginResultAsNull()
                     } else {
-                        callbackContext.sendPluginResult(PluginResult(PluginResult.Status.OK, result.forJsonPut()))
+                        callbackContext.sendPluginResult(
+                                PluginResult(PluginResult.Status.OK, result.forJsonPut())
+                        )
                     }
                 }
                 return true
             }
             "getAllFeatureFlags" -> {
                 callbackContext.success(
-                    mapFeatureFlags(
-                        Braze.getInstance(applicationContext).getAllFeatureFlags()
-                    )
+                        mapFeatureFlags(Braze.getInstance(applicationContext).getAllFeatureFlags())
                 )
                 return true
             }
@@ -487,7 +527,11 @@ open class BrazePlugin : CordovaPlugin() {
             "subscribeToFeatureFlagUpdates" -> {
                 runOnBraze {
                     it.subscribeToFeatureFlagsUpdates { event: FeatureFlagsUpdatedEvent ->
-                        val result = PluginResult(PluginResult.Status.OK, mapFeatureFlags(event.featureFlags))
+                        val result =
+                                PluginResult(
+                                        PluginResult.Status.OK,
+                                        mapFeatureFlags(event.featureFlags)
+                                )
                         result.keepCallback = true
                         callbackContext.sendPluginResult(result)
                     }
@@ -502,7 +546,9 @@ open class BrazePlugin : CordovaPlugin() {
                     if (result == null) {
                         callbackContext.sendCordovaSuccessPluginResultAsNull()
                     } else {
-                        callbackContext.sendPluginResult(PluginResult(PluginResult.Status.OK, result))
+                        callbackContext.sendPluginResult(
+                                PluginResult(PluginResult.Status.OK, result)
+                        )
                     }
                 }
                 return true
@@ -515,7 +561,9 @@ open class BrazePlugin : CordovaPlugin() {
                     if (result == null) {
                         callbackContext.sendCordovaSuccessPluginResultAsNull()
                     } else {
-                        callbackContext.sendPluginResult(PluginResult(PluginResult.Status.OK, result))
+                        callbackContext.sendPluginResult(
+                                PluginResult(PluginResult.Status.OK, result)
+                        )
                     }
                 }
                 return true
@@ -528,7 +576,9 @@ open class BrazePlugin : CordovaPlugin() {
                     if (result == null) {
                         callbackContext.sendCordovaSuccessPluginResultAsNull()
                     } else {
-                        callbackContext.sendPluginResult(PluginResult(PluginResult.Status.OK, result.toFloat()))
+                        callbackContext.sendPluginResult(
+                                PluginResult(PluginResult.Status.OK, result.toFloat())
+                        )
                     }
                 }
                 return true
@@ -574,20 +624,25 @@ open class BrazePlugin : CordovaPlugin() {
             }
             "logFeatureFlagImpression" -> {
                 runOnBraze {
-                    Braze.getInstance(applicationContext).logFeatureFlagImpression(args.getString(0))
+                    Braze.getInstance(applicationContext)
+                            .logFeatureFlagImpression(args.getString(0))
                 }
                 return true
             }
             "subscribeToSdkAuthenticationFailures" -> {
                 runOnBraze {
                     it.subscribeToSdkAuthenticationFailures { sdkAuthErrorEvent ->
-                        val jsonResult = JSONObject().apply {
-                            put("signature", sdkAuthErrorEvent.signature)
-                            put("errorCode", sdkAuthErrorEvent.errorCode)
-                            put("errorReason", sdkAuthErrorEvent.errorReason)
-                            put("userId", sdkAuthErrorEvent.userId)
-                            put("requestInitiationTime", sdkAuthErrorEvent.requestInitiationTime)
-                        }
+                        val jsonResult =
+                                JSONObject().apply {
+                                    put("signature", sdkAuthErrorEvent.signature)
+                                    put("errorCode", sdkAuthErrorEvent.errorCode)
+                                    put("errorReason", sdkAuthErrorEvent.errorReason)
+                                    put("userId", sdkAuthErrorEvent.userId)
+                                    put(
+                                            "requestInitiationTime",
+                                            sdkAuthErrorEvent.requestInitiationTime
+                                    )
+                                }
                         val result = PluginResult(PluginResult.Status.OK, jsonResult)
                         result.keepCallback = true
                         callbackContext.sendPluginResult(result)
@@ -597,12 +652,14 @@ open class BrazePlugin : CordovaPlugin() {
             }
             GET_NEWS_FEED_METHOD,
             GET_CARD_COUNT_FOR_CATEGORIES_METHOD,
-            GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD -> return handleNewsFeedGetters(action, args, callbackContext)
-            GET_CONTENT_CARDS_FROM_SERVER_METHOD,
-            GET_CONTENT_CARDS_FROM_CACHE_METHOD -> return handleContentCardsUpdateGetters(action, callbackContext)
+            GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD ->
+                    return handleNewsFeedGetters(action, args, callbackContext)
+            GET_CONTENT_CARDS_FROM_SERVER_METHOD, GET_CONTENT_CARDS_FROM_CACHE_METHOD ->
+                    return handleContentCardsUpdateGetters(action, callbackContext)
             LOG_CONTENT_CARDS_CLICKED_METHOD,
             LOG_CONTENT_CARDS_DISMISSED_METHOD,
-            LOG_CONTENT_CARDS_IMPRESSION_METHOD -> return handleContentCardsLogMethods(action, args, callbackContext)
+            LOG_CONTENT_CARDS_IMPRESSION_METHOD ->
+                    return handleContentCardsLogMethods(action, args, callbackContext)
         }
         brazelog(D) { "Failed to execute for action: $action" }
         return false
@@ -617,7 +674,8 @@ open class BrazePlugin : CordovaPlugin() {
     override fun onResume(multitasking: Boolean) {
         super.onResume(multitasking)
         initializePluginIfAppropriate()
-        // Registers the BrazeInAppMessageManager for the current Activity. This Activity will now listen for
+        // Registers the BrazeInAppMessageManager for the current Activity. This Activity will now
+        // listen for
         // in-app messages from Braze.
         BrazeInAppMessageManager.getInstance().registerInAppMessageManager(cordova.activity)
     }
@@ -635,6 +693,23 @@ open class BrazePlugin : CordovaPlugin() {
         initializePluginIfAppropriate()
         if (!disableAutoStartSessions) {
             Braze.getInstance(applicationContext).closeSession(cordova.activity)
+        }
+    }
+
+    override fun onRequestPermissionResult(
+            requestCode: Int,
+            permissions: Array<String?>?,
+            grantResults: IntArray
+    ) {
+        when (requestCode) {
+            LOCATION_REQUEST_CODE ->
+                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        brazelog(I) { "Fine location permission granted." }
+                        Braze.getInstance(applicationContext).requestLocationInitialization()
+                    } else {
+                        brazelog(I) { "Fine location permission NOT granted." }
+                    }
+            else -> {}
         }
     }
 
@@ -658,7 +733,10 @@ open class BrazePlugin : CordovaPlugin() {
 
         // Set the log level.
         if (cordovaPreferences.contains(BRAZE_LOG_LEVEL_PREFERENCE)) {
-            when (parseNumericPreferenceAsInteger(cordovaPreferences.getString(BRAZE_LOG_LEVEL_PREFERENCE, "4"))) {
+            when (parseNumericPreferenceAsInteger(
+                            cordovaPreferences.getString(BRAZE_LOG_LEVEL_PREFERENCE, "4")
+                    )
+            ) {
                 2 -> logLevel = Log.VERBOSE
                 3 -> logLevel = Log.DEBUG
                 4 -> logLevel = Log.INFO
@@ -682,8 +760,9 @@ open class BrazePlugin : CordovaPlugin() {
         val configBuilder = BrazeConfig.Builder()
 
         // Set the SDK flavor.
-        configBuilder.setSdkFlavor(SdkFlavor.CORDOVA)
-            .setSdkMetadata(EnumSet.of(BrazeSdkMetadata.CORDOVA))
+        configBuilder
+                .setSdkFlavor(SdkFlavor.CORDOVA)
+                .setSdkMetadata(EnumSet.of(BrazeSdkMetadata.CORDOVA))
 
         // Set the API key.
         if (cordovaPreferences.contains(BRAZE_API_KEY_PREFERENCE) || cordovaPreferences.contains(
@@ -702,12 +781,15 @@ open class BrazePlugin : CordovaPlugin() {
 
         // Sets if Braze should automatically opt-in the user when push is authorized by Android.
         if (cordovaPreferences.contains(OPT_IN_WHEN_PUSH_AUTHORIZED_PREFERENCE)) {
-            configBuilder.setOptInWhenPushAuthorized(cordovaPreferences.getBoolean(OPT_IN_WHEN_PUSH_AUTHORIZED_PREFERENCE, true))
+            configBuilder.setOptInWhenPushAuthorized(
+                    cordovaPreferences.getBoolean(OPT_IN_WHEN_PUSH_AUTHORIZED_PREFERENCE, true)
+            )
         }
 
         // Set the small icon used in notifications using the name of the notification drawable.
         if (cordovaPreferences.contains(SMALL_NOTIFICATION_ICON_PREFERENCE)) {
-            val smallNotificationIconName = cordovaPreferences.getString(SMALL_NOTIFICATION_ICON_PREFERENCE, "")
+            val smallNotificationIconName =
+                    cordovaPreferences.getString(SMALL_NOTIFICATION_ICON_PREFERENCE, "")
             if (smallNotificationIconName.isNotBlank()) {
                 configBuilder.setSmallNotificationIcon(smallNotificationIconName)
             } else {
@@ -717,7 +799,8 @@ open class BrazePlugin : CordovaPlugin() {
 
         // Set the large icon used in notifications using the name of the notification drawable.
         if (cordovaPreferences.contains(LARGE_NOTIFICATION_ICON_PREFERENCE)) {
-            val largeNotificationIconName = cordovaPreferences.getString(LARGE_NOTIFICATION_ICON_PREFERENCE, "")
+            val largeNotificationIconName =
+                    cordovaPreferences.getString(LARGE_NOTIFICATION_ICON_PREFERENCE, "")
             if (largeNotificationIconName.isNotBlank()) {
                 configBuilder.setLargeNotificationIcon(largeNotificationIconName)
             } else {
@@ -725,38 +808,62 @@ open class BrazePlugin : CordovaPlugin() {
             }
         }
 
-        // Set the default accent color for push notifications on Android Lollipop and higher using the hexadecimal color value.
+        // Set the default accent color for push notifications on Android Lollipop and higher using
+        // the hexadecimal color value.
         if (cordovaPreferences.contains(DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE)) {
             try {
-                configBuilder.setDefaultNotificationAccentColor(parseNumericPreferenceAsHexadecimalInteger(cordovaPreferences.getString(DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE, "0")))
+                configBuilder.setDefaultNotificationAccentColor(
+                        parseNumericPreferenceAsHexadecimalInteger(
+                                cordovaPreferences.getString(
+                                        DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE,
+                                        "0"
+                                )
+                        )
+                )
             } catch (e: NumberFormatException) {
                 brazelog(W) { "Invalid default notification accent color. Using default value: 0." }
             }
         }
 
-        // Sets the [android.app.NotificationChannel] user facing name as seen via [NotificationChannel.getName] for the Braze default [NotificationChannel].
+        // Sets the [android.app.NotificationChannel] user facing name as seen via
+        // [NotificationChannel.getName] for the Braze default [NotificationChannel].
         if (cordovaPreferences.contains(DEFAULT_NOTIFICATION_CHANNEL_NAME_PREFERENCE)) {
-            val notificationChannelName = cordovaPreferences.getString(DEFAULT_NOTIFICATION_CHANNEL_NAME_PREFERENCE, "")
+            val notificationChannelName =
+                    cordovaPreferences.getString(DEFAULT_NOTIFICATION_CHANNEL_NAME_PREFERENCE, "")
             if (notificationChannelName.isNotBlank()) {
                 configBuilder.setDefaultNotificationChannelName(notificationChannelName)
             } else {
-                brazelog (W) { "Invalid default notification channel name. Default notification channel name not set." }
+                brazelog(W) {
+                    "Invalid default notification channel name. Default notification channel name not set."
+                }
             }
         }
 
-        // Sets the [android.app.NotificationChannel] user facing description as seen via [NotificationChannel.getDescription] for the Braze default [NotificationChannel].
+        // Sets the [android.app.NotificationChannel] user facing description as seen via
+        // [NotificationChannel.getDescription] for the Braze default [NotificationChannel].
         if (cordovaPreferences.contains(DEFAULT_NOTIFICATION_CHANNEL_DESCRIPTION_PREFERENCE)) {
-            val notificationChannelDescription = cordovaPreferences.getString(DEFAULT_NOTIFICATION_CHANNEL_DESCRIPTION_PREFERENCE, "")
+            val notificationChannelDescription =
+                    cordovaPreferences.getString(
+                            DEFAULT_NOTIFICATION_CHANNEL_DESCRIPTION_PREFERENCE,
+                            ""
+                    )
             if (notificationChannelDescription.isNotBlank()) {
-                configBuilder.setDefaultNotificationChannelDescription(notificationChannelDescription)
+                configBuilder.setDefaultNotificationChannelDescription(
+                        notificationChannelDescription
+                )
             } else {
-                brazelog (W) { "Invalid default notification channel description. Default notification description not set." }
+                brazelog(W) {
+                    "Invalid default notification channel description. Default notification description not set."
+                }
             }
         }
 
         //  Set the length of time before a session times out in seconds.
         if (cordovaPreferences.contains(DEFAULT_SESSION_TIMEOUT_PREFERENCE)) {
-            val defaultSessionTimeout = parseNumericPreferenceAsInteger(cordovaPreferences.getString(DEFAULT_SESSION_TIMEOUT_PREFERENCE, "10"))
+            val defaultSessionTimeout =
+                    parseNumericPreferenceAsInteger(
+                            cordovaPreferences.getString(DEFAULT_SESSION_TIMEOUT_PREFERENCE, "10")
+                    )
             if (defaultSessionTimeout >= 0) {
                 configBuilder.setSessionTimeout(defaultSessionTimeout)
             } else {
@@ -764,82 +871,143 @@ open class BrazePlugin : CordovaPlugin() {
             }
         }
 
-        // Set whether Braze should automatically open your app and any deep links when a push notification is clicked.
+        // Set whether Braze should automatically open your app and any deep links when a push
+        // notification is clicked.
         if (cordovaPreferences.contains(SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE)) {
-            configBuilder.setHandlePushDeepLinksAutomatically(cordovaPreferences.getBoolean(SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE, false))
+            configBuilder.setHandlePushDeepLinksAutomatically(
+                    cordovaPreferences.getBoolean(
+                            SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE,
+                            false
+                    )
+            )
         }
 
-        // Enables Braze to add an activity to the back stack when automatically following deep links for push.
+        // Enables Braze to add an activity to the back stack when automatically following deep
+        // links for push.
         if (cordovaPreferences.contains(PUSH_DEEP_LINK_BACK_STACK_ACTIVITY_ENABLED_PREFERENCE)) {
-            configBuilder.setPushDeepLinkBackStackActivityEnabled(cordovaPreferences.getBoolean(PUSH_DEEP_LINK_BACK_STACK_ACTIVITY_ENABLED_PREFERENCE, true))
+            configBuilder.setPushDeepLinkBackStackActivityEnabled(
+                    cordovaPreferences.getBoolean(
+                            PUSH_DEEP_LINK_BACK_STACK_ACTIVITY_ENABLED_PREFERENCE,
+                            true
+                    )
+            )
         }
 
-        // Sets the activity that Braze will add to the back stack when automatically following deep links for push.
+        // Sets the activity that Braze will add to the back stack when automatically following deep
+        // links for push.
         if (cordovaPreferences.contains(PUSH_DEEP_LINK_BACK_STACK_ACTIVITY_CLASS_NAME_PREFERENCE)) {
-            val className = cordovaPreferences.getString(PUSH_DEEP_LINK_BACK_STACK_ACTIVITY_CLASS_NAME_PREFERENCE, "")
+            val className =
+                    cordovaPreferences.getString(
+                            PUSH_DEEP_LINK_BACK_STACK_ACTIVITY_CLASS_NAME_PREFERENCE,
+                            ""
+                    )
             try {
                 val backStackActivityClass: Class<*> = Class.forName(className)
                 configBuilder.setPushDeepLinkBackStackActivityClass(backStackActivityClass)
             } catch (e: ClassNotFoundException) {
-                brazelog (W) { "Class not found: $className" }
+                brazelog(W) { "Class not found: $className" }
             }
         }
 
         // Sets the session timeout behavior to be either session-start or session-end based.
         if (cordovaPreferences.contains(SESSION_START_BASED_TIMEOUT_ENABLED_PREFERENCE)) {
-            configBuilder.setIsSessionStartBasedTimeoutEnabled(cordovaPreferences.getBoolean(SESSION_START_BASED_TIMEOUT_ENABLED_PREFERENCE, false))
+            configBuilder.setIsSessionStartBasedTimeoutEnabled(
+                    cordovaPreferences.getBoolean(
+                            SESSION_START_BASED_TIMEOUT_ENABLED_PREFERENCE,
+                            false
+                    )
+            )
         }
 
         // Set whether the SDK should automatically register for Firebase Cloud Messaging.
         if (cordovaPreferences.contains(AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE)) {
-            configBuilder.setIsFirebaseCloudMessagingRegistrationEnabled(cordovaPreferences.getBoolean(AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE, false))
+            configBuilder.setIsFirebaseCloudMessagingRegistrationEnabled(
+                    cordovaPreferences.getBoolean(
+                            AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE,
+                            false
+                    )
+            )
         }
 
         // Sets whether a push story is automatically dismissed when clicked.
         if (cordovaPreferences.contains(PUSH_STORY_DISMISS_ON_CLICK_PREFERENCE)) {
-            configBuilder.setDoesPushStoryDismissOnClick(cordovaPreferences.getBoolean(PUSH_STORY_DISMISS_ON_CLICK_PREFERENCE, true))
+            configBuilder.setDoesPushStoryDismissOnClick(
+                    cordovaPreferences.getBoolean(PUSH_STORY_DISMISS_ON_CLICK_PREFERENCE, true)
+            )
         }
 
         // Set the sender ID key used to register for Firebase Cloud Messaging.
         if (cordovaPreferences.contains(FCM_SENDER_ID_PREFERENCE)) {
-            parseNumericPreferenceAsString(cordovaPreferences.getString(FCM_SENDER_ID_PREFERENCE, ""))?.let { firebaseSenderId ->
-                configBuilder.setFirebaseCloudMessagingSenderIdKey(firebaseSenderId)
-            }
+            parseNumericPreferenceAsString(
+                            cordovaPreferences.getString(FCM_SENDER_ID_PREFERENCE, "")
+                    )
+                    ?.let { firebaseSenderId ->
+                        configBuilder.setFirebaseCloudMessagingSenderIdKey(firebaseSenderId)
+                    }
         }
 
         // Sets whether the use of a fallback Firebase Cloud Messaging Service is enabled.
         if (cordovaPreferences.contains(FALLBACK_FIREBASE_MESSAGING_SERVICE_ENABLED_PREFERENCE)) {
-            configBuilder.setFallbackFirebaseMessagingServiceEnabled(cordovaPreferences.getBoolean(FALLBACK_FIREBASE_MESSAGING_SERVICE_ENABLED_PREFERENCE, true))
+            configBuilder.setFallbackFirebaseMessagingServiceEnabled(
+                    cordovaPreferences.getBoolean(
+                            FALLBACK_FIREBASE_MESSAGING_SERVICE_ENABLED_PREFERENCE,
+                            true
+                    )
+            )
         }
 
         // Sets the classpath for the fallback Firebase Cloud Messaging Service.
         if (cordovaPreferences.contains(FALLBACK_FIREBASE_MESSAGING_SERVICE_CLASSPATH_PREFERENCE)) {
-            val fallbackFCMClasspath = cordovaPreferences.getString(FALLBACK_FIREBASE_MESSAGING_SERVICE_CLASSPATH_PREFERENCE, "")
+            val fallbackFCMClasspath =
+                    cordovaPreferences.getString(
+                            FALLBACK_FIREBASE_MESSAGING_SERVICE_CLASSPATH_PREFERENCE,
+                            ""
+                    )
             if (fallbackFCMClasspath.isNotBlank()) {
                 configBuilder.setFallbackFirebaseMessagingServiceClasspath(fallbackFCMClasspath)
             } else {
-                brazelog(W) { "Invalid classpath for the fallback Firebase Cloud Messaging Service. Classpath not set." }
+                brazelog(W) {
+                    "Invalid classpath for the fallback Firebase Cloud Messaging Service. Classpath not set."
+                }
             }
         }
 
-        // Determines whether the Braze will automatically register tokens in [com.google.firebase.messaging.FirebaseMessagingService.onNewToken].
-        if (cordovaPreferences.contains(FIREBASE_MESSAGING_SERVICE_ON_NEW_TOKEN_REGISTRATION_ENABLED_PREFERENCE)) {
-            configBuilder.setIsFirebaseMessagingServiceOnNewTokenRegistrationEnabled(cordovaPreferences.getBoolean(FIREBASE_MESSAGING_SERVICE_ON_NEW_TOKEN_REGISTRATION_ENABLED_PREFERENCE, true))
+        // Determines whether the Braze will automatically register tokens in
+        // [com.google.firebase.messaging.FirebaseMessagingService.onNewToken].
+        if (cordovaPreferences.contains(
+                        FIREBASE_MESSAGING_SERVICE_ON_NEW_TOKEN_REGISTRATION_ENABLED_PREFERENCE
+                )
+        ) {
+            configBuilder.setIsFirebaseMessagingServiceOnNewTokenRegistrationEnabled(
+                    cordovaPreferences.getBoolean(
+                            FIREBASE_MESSAGING_SERVICE_ON_NEW_TOKEN_REGISTRATION_ENABLED_PREFERENCE,
+                            true
+                    )
+            )
         }
 
         // Sets whether the Content Cards unread visual indication bar is enabled.
         if (cordovaPreferences.contains(CONTENT_CARDS_UNREAD_VISUAL_INDICATOR_ENABLED_PREFERENCE)) {
-            configBuilder.setContentCardsUnreadVisualIndicatorEnabled(cordovaPreferences.getBoolean(CONTENT_CARDS_UNREAD_VISUAL_INDICATOR_ENABLED_PREFERENCE, true))
+            configBuilder.setContentCardsUnreadVisualIndicatorEnabled(
+                    cordovaPreferences.getBoolean(
+                            CONTENT_CARDS_UNREAD_VISUAL_INDICATOR_ENABLED_PREFERENCE,
+                            true
+                    )
+            )
         }
 
         // Set whether Braze should automatically collect location (if the user permits).
         if (cordovaPreferences.contains(ENABLE_LOCATION_PREFERENCE)) {
-            configBuilder.setIsLocationCollectionEnabled(cordovaPreferences.getBoolean(ENABLE_LOCATION_PREFERENCE, false))
+            configBuilder.setIsLocationCollectionEnabled(
+                    cordovaPreferences.getBoolean(ENABLE_LOCATION_PREFERENCE, false)
+            )
         }
 
         // Set whether the Braze Geofences feature should be enabled.
         if (cordovaPreferences.contains(ENABLE_GEOFENCES_PREFERENCE)) {
-            configBuilder.setGeofencesEnabled(cordovaPreferences.getBoolean(ENABLE_GEOFENCES_PREFERENCE, false))
+            configBuilder.setGeofencesEnabled(
+                    cordovaPreferences.getBoolean(ENABLE_GEOFENCES_PREFERENCE, false)
+            )
         }
 
         // Set a custom API endpoint to point to when the Braze singleton is initialized.
@@ -848,29 +1016,49 @@ open class BrazePlugin : CordovaPlugin() {
             if (customApiEndpoint.isNotBlank()) {
                 configBuilder.setCustomEndpoint(customApiEndpoint)
             } else {
-                brazelog(W) { "Invalid custom endpoint. Using the default Braze internal API endpoint." }
+                brazelog(W) {
+                    "Invalid custom endpoint. Using the default Braze internal API endpoint."
+                }
             }
         }
 
-        // Set whether CordovaInAppMessageViewWrapperFactory should be used to display an In App Message to the user.
-        val enableRequestFocusFix = cordovaPreferences.getBoolean(ENABLE_CORDOVA_WEBVIEW_REQUEST_FOCUS_FIX_PREFERENCE, true)
+        // Set whether CordovaInAppMessageViewWrapperFactory should be used to display an In App
+        // Message to the user.
+        val enableRequestFocusFix =
+                cordovaPreferences.getBoolean(
+                        ENABLE_CORDOVA_WEBVIEW_REQUEST_FOCUS_FIX_PREFERENCE,
+                        true
+                )
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P && enableRequestFocusFix) {
             // Addresses Cordova bug in https://issuetracker.google.com/issues/36915710
-            BrazeInAppMessageManager.getInstance().setCustomInAppMessageViewWrapperFactory(CordovaInAppMessageViewWrapperFactory())
+            BrazeInAppMessageManager.getInstance()
+                    .setCustomInAppMessageViewWrapperFactory(
+                            CordovaInAppMessageViewWrapperFactory()
+                    )
         }
 
         // Set whether SDK authentication should be enabled.
         if (cordovaPreferences.contains(SDK_AUTH_ENABLED_PREFERENCE)) {
-            configBuilder.setIsSdkAuthenticationEnabled(cordovaPreferences.getBoolean(SDK_AUTH_ENABLED_PREFERENCE, false))
+            configBuilder.setIsSdkAuthenticationEnabled(
+                    cordovaPreferences.getBoolean(SDK_AUTH_ENABLED_PREFERENCE, false)
+            )
         }
 
         // Set the minimum interval in seconds between trigger actions.
         if (cordovaPreferences.contains(TRIGGER_ACTION_MINIMUM_TIME_INTERVAL_SECONDS_PREFERENCE)) {
-            val minimumTimeInterval = parseNumericPreferenceAsInteger(cordovaPreferences.getString(TRIGGER_ACTION_MINIMUM_TIME_INTERVAL_SECONDS_PREFERENCE, "30"))
+            val minimumTimeInterval =
+                    parseNumericPreferenceAsInteger(
+                            cordovaPreferences.getString(
+                                    TRIGGER_ACTION_MINIMUM_TIME_INTERVAL_SECONDS_PREFERENCE,
+                                    "30"
+                            )
+                    )
             if (minimumTimeInterval >= 0) {
                 configBuilder.setTriggerActionMinimumTimeIntervalSeconds(minimumTimeInterval)
             } else {
-                brazelog(W) { "Invalid minimum time interval between trigger actions. Using default value: 30 seconds." }
+                brazelog(W) {
+                    "Invalid minimum time interval between trigger actions. Using default value: 30 seconds."
+                }
             }
         }
 
@@ -878,7 +1066,11 @@ open class BrazePlugin : CordovaPlugin() {
         Braze.configure(applicationContext, configBuilder.build())
     }
 
-    private fun handleNewsFeedGetters(action: String, args: JSONArray, callbackContext: CallbackContext): Boolean {
+    private fun handleNewsFeedGetters(
+            action: String,
+            args: JSONArray,
+            callbackContext: CallbackContext
+    ): Boolean {
         var feedUpdatedSubscriber: IEventSubscriber<FeedUpdatedEvent>? = null
         var requestingFeedUpdateFromCache = false
         val braze = Braze.getInstance(applicationContext)
@@ -887,15 +1079,20 @@ open class BrazePlugin : CordovaPlugin() {
             GET_CARD_COUNT_FOR_CATEGORIES_METHOD -> {
                 val categories = getCategoriesFromJSONArray(args)
                 feedUpdatedSubscriber = IEventSubscriber { event: FeedUpdatedEvent ->
-                    // Each callback context is by default made to only be called once and is afterwards "finished". We want to ensure
-                    // that we never try to call the same callback twice. This could happen since we don't know the ordering of the feed
+                    // Each callback context is by default made to only be called once and is
+                    // afterwards "finished". We want to ensure
+                    // that we never try to call the same callback twice. This could happen since we
+                    // don't know the ordering of the feed
                     // subscription callbacks from the cache.
                     if (!callbackContext.isFinished) {
                         callbackContext.success(event.getCardCount(categories))
                     }
 
                     // Remove this listener from the map
-                    braze.removeSingleSubscription(feedSubscriberMap[callbackId], FeedUpdatedEvent::class.java)
+                    braze.removeSingleSubscription(
+                            feedSubscriberMap[callbackId],
+                            FeedUpdatedEvent::class.java
+                    )
                     feedSubscriberMap.remove(callbackId)
                 }
                 requestingFeedUpdateFromCache = true
@@ -908,7 +1105,10 @@ open class BrazePlugin : CordovaPlugin() {
                     }
 
                     // Remove this listener from the map
-                    braze.removeSingleSubscription(feedSubscriberMap[callbackId], FeedUpdatedEvent::class.java)
+                    braze.removeSingleSubscription(
+                            feedSubscriberMap[callbackId],
+                            FeedUpdatedEvent::class.java
+                    )
                     feedSubscriberMap.remove(callbackId)
                 }
                 requestingFeedUpdateFromCache = true
@@ -928,7 +1128,10 @@ open class BrazePlugin : CordovaPlugin() {
                     }
 
                     // Remove this listener from the map
-                    braze.removeSingleSubscription(feedSubscriberMap[callbackId], FeedUpdatedEvent::class.java)
+                    braze.removeSingleSubscription(
+                            feedSubscriberMap[callbackId],
+                            FeedUpdatedEvent::class.java
+                    )
                     feedSubscriberMap.remove(callbackId)
                 }
                 requestingFeedUpdateFromCache = false
@@ -947,39 +1150,53 @@ open class BrazePlugin : CordovaPlugin() {
         return true
     }
 
-    private fun handleContentCardsUpdateGetters(action: String, callbackContext: CallbackContext): Boolean {
+    private fun handleContentCardsUpdateGetters(
+            action: String,
+            callbackContext: CallbackContext
+    ): Boolean {
         // Setup a one-time subscriber for the update event
-        val subscriber: IEventSubscriber<ContentCardsUpdatedEvent> = object : IEventSubscriber<ContentCardsUpdatedEvent> {
-            override fun trigger(message: ContentCardsUpdatedEvent) {
-                runOnBraze { it.removeSingleSubscription(this, ContentCardsUpdatedEvent::class.java) }
+        val subscriber: IEventSubscriber<ContentCardsUpdatedEvent> =
+                object : IEventSubscriber<ContentCardsUpdatedEvent> {
+                    override fun trigger(message: ContentCardsUpdatedEvent) {
+                        runOnBraze {
+                            it.removeSingleSubscription(this, ContentCardsUpdatedEvent::class.java)
+                        }
 
-                // Map the content cards to JSON and return to the client
-                callbackContext.success(mapContentCards(message.allCards))
-            }
-        }
+                        // Map the content cards to JSON and return to the client
+                        callbackContext.success(mapContentCards(message.allCards))
+                    }
+                }
 
         Braze.getInstance(applicationContext).subscribeToContentCardsUpdates(subscriber)
-        Braze.getInstance(applicationContext).requestContentCardsRefresh(
-            fromCache = action == GET_CONTENT_CARDS_FROM_CACHE_METHOD
-        )
+        Braze.getInstance(applicationContext)
+                .requestContentCardsRefresh(
+                        fromCache = action == GET_CONTENT_CARDS_FROM_CACHE_METHOD
+                )
         return true
     }
 
     @Suppress("ReturnCount")
-    private fun handleContentCardsLogMethods(action: String, args: JSONArray, callbackContext: CallbackContext): Boolean {
+    private fun handleContentCardsLogMethods(
+            action: String,
+            args: JSONArray,
+            callbackContext: CallbackContext
+    ): Boolean {
         val braze = Braze.getInstance(applicationContext)
         if (args.length() != 1) {
-            brazelog { "Cannot handle logging method for $action due to improper number of arguments. Args: $args" }
+            brazelog {
+                "Cannot handle logging method for $action due to improper number of arguments. Args: $args"
+            }
             callbackContext.error("Failed for action $action")
             return false
         }
-        val cardId: String = try {
-            args.getString(0)
-        } catch (e: JSONException) {
-            brazelog(E, e) { "Failed to parse card id from args: $args" }
-            callbackContext.error("Failed for action $action")
-            return false
-        }
+        val cardId: String =
+                try {
+                    args.getString(0)
+                } catch (e: JSONException) {
+                    brazelog(E, e) { "Failed to parse card id from args: $args" }
+                    callbackContext.error("Failed for action $action")
+                    return false
+                }
 
         // Get the list of cards
         // Only obtaining the current list of cached cards is ok since
@@ -1005,26 +1222,58 @@ open class BrazePlugin : CordovaPlugin() {
         return true
     }
 
-    private fun setDefaultInAppMessageListener() {
-        BrazeInAppMessageManager.getInstance().setCustomInAppMessageManagerListener(
-            object : DefaultInAppMessageManagerListener() {
-                override fun beforeInAppMessageDisplayed(inAppMessage: IInAppMessage): InAppMessageOperation {
-                    super.beforeInAppMessageDisplayed(inAppMessage)
-
-                    // Convert in-app message to string
-                    val inAppMessageString = escapeStringForJavaScript(inAppMessage.forJsonPut().toString())
-                    brazelog { "In-app message received: $inAppMessageString" }
-
-                    // Send in-app message string back to JavaScript in an `inAppMessageReceived` event
-                    val jsStatement = "app.inAppMessageReceived('$inAppMessageString');"
-                    cordova.activity.runOnUiThread {
-                        webView.engine.evaluateJavascript(jsStatement, null)
-                    }
-
-                    return inAppMessageDisplayOperation
-                }
+    private fun initializeGeofences() {
+        val fineLocationPermission = "android.permission.ACCESS_FINE_LOCATION"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val accessBackgroundPermission = "android.permission.ACCESS_BACKGROUND_LOCATION"
+            // Get location permissions, if we need them
+            if (cordova.hasPermission(fineLocationPermission) &&
+                cordova.hasPermission(accessBackgroundPermission)
+            ) {
+                Braze.getInstance(applicationContext).requestLocationInitialization()
+            } else {
+                // Request the permission
+                cordova.requestPermissions(
+                    this,
+                    LOCATION_REQUEST_CODE,
+                    arrayOf(fineLocationPermission, accessBackgroundPermission)
+                )
             }
-        )
+        } else {
+            // Get location permissions, if we need them
+            if (cordova.hasPermission(fineLocationPermission)) {
+                Braze.getInstance(applicationContext).requestLocationInitialization()
+            } else {
+                // Request the permission
+                cordova.requestPermission(this, LOCATION_REQUEST_CODE, fineLocationPermission)
+            }
+        }
+    }
+
+    private fun setDefaultInAppMessageListener() {
+        BrazeInAppMessageManager.getInstance()
+            .setCustomInAppMessageManagerListener(
+                object : DefaultInAppMessageManagerListener() {
+                    override fun beforeInAppMessageDisplayed(
+                        inAppMessage: IInAppMessage
+                    ): InAppMessageOperation {
+                        super.beforeInAppMessageDisplayed(inAppMessage)
+
+                        // Convert in-app message to string
+                        val inAppMessageString = inAppMessage.forJsonPut().toString()
+                        brazelog { "In-app message received: $inAppMessageString" }
+
+                        // Send in-app message string back to JavaScript in an
+                        // `inAppMessageReceived` event
+                        val jsStatement = "app.inAppMessageReceived('$inAppMessageString');"
+                        cordova.activity.runOnUiThread {
+                            webView.engine.evaluateJavascript(jsStatement, null)
+                        }
+
+                        return inAppMessageDisplayOperation
+                    }
+                }
+            )
     }
 
     companion object {
@@ -1034,34 +1283,53 @@ open class BrazePlugin : CordovaPlugin() {
         private const val AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE = "com.braze.firebase_cloud_messaging_registration_enabled"
         private const val FCM_SENDER_ID_PREFERENCE = "com.braze.android_fcm_sender_id"
         private const val BRAZE_LOG_LEVEL_PREFERENCE = "com.braze.android_log_level"
-        private const val SMALL_NOTIFICATION_ICON_PREFERENCE = "com.braze.android_small_notification_icon"
-        private const val LARGE_NOTIFICATION_ICON_PREFERENCE = "com.braze.android_large_notification_icon"
-        private const val DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE = "com.braze.android_notification_accent_color"
-        private const val DEFAULT_SESSION_TIMEOUT_PREFERENCE = "com.braze.android_default_session_timeout"
-        private const val SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE = "com.braze.android_handle_push_deep_links_automatically"
+        private const val SMALL_NOTIFICATION_ICON_PREFERENCE =
+                "com.braze.android_small_notification_icon"
+        private const val LARGE_NOTIFICATION_ICON_PREFERENCE =
+                "com.braze.android_large_notification_icon"
+        private const val DEFAULT_NOTIFICATION_ACCENT_COLOR_PREFERENCE =
+                "com.braze.android_notification_accent_color"
+        private const val DEFAULT_SESSION_TIMEOUT_PREFERENCE =
+                "com.braze.android_default_session_timeout"
+        private const val SET_HANDLE_PUSH_DEEP_LINKS_AUTOMATICALLY_PREFERENCE =
+                "com.braze.android_handle_push_deep_links_automatically"
         private const val CUSTOM_API_ENDPOINT_PREFERENCE = "com.braze.android_api_endpoint"
         private const val ENABLE_LOCATION_PREFERENCE = "com.braze.enable_location_collection"
         private const val ENABLE_GEOFENCES_PREFERENCE = "com.braze.geofences_enabled"
-        private const val DISABLE_AUTO_START_SESSIONS_PREFERENCE = "com.braze.android_disable_auto_session_tracking"
+        private const val DISABLE_AUTO_START_SESSIONS_PREFERENCE =
+                "com.braze.android_disable_auto_session_tracking"
         private const val SDK_AUTH_ENABLED_PREFERENCE = "com.braze.sdk_authentication_enabled"
-        private const val TRIGGER_ACTION_MINIMUM_TIME_INTERVAL_SECONDS_PREFERENCE = "com.braze.trigger_action_minimum_time_interval_seconds"
-        private const val SESSION_START_BASED_TIMEOUT_ENABLED_PREFERENCE = "com.braze.is_session_start_based_timeout_enabled"
-        private const val DEFAULT_NOTIFICATION_CHANNEL_NAME_PREFERENCE = "com.braze.default_notification_channel_name"
-        private const val DEFAULT_NOTIFICATION_CHANNEL_DESCRIPTION_PREFERENCE = "com.braze.default_notification_channel_description"
-        private const val PUSH_STORY_DISMISS_ON_CLICK_PREFERENCE = "com.braze.does_push_story_dismiss_on_click"
-        private const val FALLBACK_FIREBASE_MESSAGING_SERVICE_ENABLED_PREFERENCE = "com.braze.is_fallback_firebase_messaging_service_enabled"
-        private const val FALLBACK_FIREBASE_MESSAGING_SERVICE_CLASSPATH_PREFERENCE = "com.braze.fallback_firebase_messaging_service_classpath"
-        private const val CONTENT_CARDS_UNREAD_VISUAL_INDICATOR_ENABLED_PREFERENCE = "com.braze.is_content_cards_unread_visual_indicator_enabled"
-        private const val FIREBASE_MESSAGING_SERVICE_ON_NEW_TOKEN_REGISTRATION_ENABLED_PREFERENCE = "com.braze.is_firebase_messaging_service_on_new_token_registration_enabled"
-        private const val PUSH_DEEP_LINK_BACK_STACK_ACTIVITY_ENABLED_PREFERENCE = "com.braze.is_push_deep_link_back_stack_activity_enabled"
-        private const val PUSH_DEEP_LINK_BACK_STACK_ACTIVITY_CLASS_NAME_PREFERENCE = "com.braze.push_deep_link_back_stack_activity_class_name"
-        private const val OPT_IN_WHEN_PUSH_AUTHORIZED_PREFERENCE = "com.braze.should_opt_in_when_push_authorized"
+        private const val TRIGGER_ACTION_MINIMUM_TIME_INTERVAL_SECONDS_PREFERENCE =
+                "com.braze.trigger_action_minimum_time_interval_seconds"
+        private const val SESSION_START_BASED_TIMEOUT_ENABLED_PREFERENCE =
+                "com.braze.is_session_start_based_timeout_enabled"
+        private const val DEFAULT_NOTIFICATION_CHANNEL_NAME_PREFERENCE =
+                "com.braze.default_notification_channel_name"
+        private const val DEFAULT_NOTIFICATION_CHANNEL_DESCRIPTION_PREFERENCE =
+                "com.braze.default_notification_channel_description"
+        private const val PUSH_STORY_DISMISS_ON_CLICK_PREFERENCE =
+                "com.braze.does_push_story_dismiss_on_click"
+        private const val FALLBACK_FIREBASE_MESSAGING_SERVICE_ENABLED_PREFERENCE =
+                "com.braze.is_fallback_firebase_messaging_service_enabled"
+        private const val FALLBACK_FIREBASE_MESSAGING_SERVICE_CLASSPATH_PREFERENCE =
+                "com.braze.fallback_firebase_messaging_service_classpath"
+        private const val CONTENT_CARDS_UNREAD_VISUAL_INDICATOR_ENABLED_PREFERENCE =
+                "com.braze.is_content_cards_unread_visual_indicator_enabled"
+        private const val FIREBASE_MESSAGING_SERVICE_ON_NEW_TOKEN_REGISTRATION_ENABLED_PREFERENCE =
+                "com.braze.is_firebase_messaging_service_on_new_token_registration_enabled"
+        private const val PUSH_DEEP_LINK_BACK_STACK_ACTIVITY_ENABLED_PREFERENCE =
+                "com.braze.is_push_deep_link_back_stack_activity_enabled"
+        private const val PUSH_DEEP_LINK_BACK_STACK_ACTIVITY_CLASS_NAME_PREFERENCE =
+                "com.braze.push_deep_link_back_stack_activity_class_name"
+        private const val OPT_IN_WHEN_PUSH_AUTHORIZED_PREFERENCE =
+                "com.braze.should_opt_in_when_push_authorized"
 
         /**
-         * When applied, restricts the SDK from taking
-         * focus away from the Cordova WebView on affected API versions.
+         * When applied, restricts the SDK from taking focus away from the Cordova WebView on
+         * affected API versions.
          */
-        private const val ENABLE_CORDOVA_WEBVIEW_REQUEST_FOCUS_FIX_PREFERENCE = "com.braze.android_apply_cordova_webview_focus_request_fix"
+        private const val ENABLE_CORDOVA_WEBVIEW_REQUEST_FOCUS_FIX_PREFERENCE =
+                "com.braze.android_apply_cordova_webview_focus_request_fix"
 
         // Numeric preference prefix
         private const val NUMERIC_PREFERENCE_PREFIX = "str_"
@@ -1069,7 +1337,8 @@ open class BrazePlugin : CordovaPlugin() {
         // News Feed method names
         private const val GET_NEWS_FEED_METHOD = "getNewsFeed"
         private const val GET_CARD_COUNT_FOR_CATEGORIES_METHOD = "getCardCountForCategories"
-        private const val GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD = "getUnreadCardCountForCategories"
+        private const val GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD =
+                "getUnreadCardCountForCategories"
 
         // Content Card method names
         private const val GET_CONTENT_CARDS_FROM_SERVER_METHOD = "getContentCardsFromServer"
@@ -1078,16 +1347,21 @@ open class BrazePlugin : CordovaPlugin() {
         private const val LOG_CONTENT_CARDS_IMPRESSION_METHOD = "logContentCardImpression"
         private const val LOG_CONTENT_CARDS_DISMISSED_METHOD = "logContentCardDismissed"
 
+        // Geofences
+        private const val LOCATION_REQUEST_CODE = 271
+
         private fun getCategoriesFromJSONArray(jsonArray: JSONArray): EnumSet<CardCategory> {
             val categories = EnumSet.noneOf(CardCategory::class.java)
             for (i in 0 until jsonArray.length()) {
                 val category = jsonArray.getString(i)
-                val categoryArgument: CardCategory? = if (category == "all") {
-                    // "All categories" maps to a enumset and not a specific enum so we have to return that here
-                    return CardCategory.getAllCategories()
-                } else {
-                    CardCategory.get(category)
-                }
+                val categoryArgument: CardCategory? =
+                        if (category == "all") {
+                            // "All categories" maps to a enumset and not a specific enum so we have
+                            // to return that here
+                            return CardCategory.getAllCategories()
+                        } else {
+                            CardCategory.get(category)
+                        }
                 if (categoryArgument != null) {
                     categories.add(categoryArgument)
                 } else {
@@ -1114,15 +1388,15 @@ open class BrazePlugin : CordovaPlugin() {
         /**
          * This takes the JSONArray of Any and returns an Array<String?>.
          *
-         * Each value in the JSONArray is converted to a String if it has a string representation, otherwise it is set to null.
+         * Each value in the JSONArray is converted to a String if it has a string representation,
+         * otherwise it is set to null.
          */
         private fun parseJSONArrayToStringArray(jsonArray: JSONArray): Array<String?> {
             return Array(jsonArray.length()) { index -> jsonArray.optString(index) }
         }
 
         /**
-         * This takes the JSONArray of Any and creates a JSONArray of
-         * explicitly typed JSONObject.
+         * This takes the JSONArray of Any and creates a JSONArray of explicitly typed JSONObject.
          */
         private fun parseJSONArraytoJsonObjectArray(jsonArray: JSONArray): JSONArray {
             return JSONArray().apply {
@@ -1130,7 +1404,7 @@ open class BrazePlugin : CordovaPlugin() {
                     try {
                         this.put(jsonArray.getJSONObject(i))
                     } catch (e: JSONException) {
-                        brazelog (W) { "Error parsing JSON at index $i: ${e.message}" }
+                        brazelog(W) { "Error parsing JSON at index $i: ${e.message}" }
                     }
                 }
             }
@@ -1149,20 +1423,21 @@ open class BrazePlugin : CordovaPlugin() {
             }
         }
 
-        /**
-         * This takes an Any value and returns whether or not it is numeric
-         */
+        /** This takes an Any value and returns whether or not it is numeric */
         private fun isAnyNumeric(value: Any): Boolean {
             return when (value) {
                 is Int, is Long, is Double -> true
-                is String -> value.toDoubleOrNull() != null || value.toLongOrNull() != null || value.toIntOrNull() != null
+                is String ->
+                        value.toDoubleOrNull() != null ||
+                                value.toLongOrNull() != null ||
+                                value.toIntOrNull() != null
                 else -> false
             }
         }
 
         /**
-         * Parses the preference that is optionally prefixed with a constant.
-         * Converts the String to String without the prefix, otherwise returns original String.
+         * Parses the preference that is optionally prefixed with a constant. Converts the String to
+         * String without the prefix, otherwise returns original String.
          *
          * I.e. {"PREFIX-value", "value"} -> {"value"}
          */
@@ -1173,15 +1448,16 @@ open class BrazePlugin : CordovaPlugin() {
         }
 
         /**
-         * Parses the preference that is optionally prefixed with a constant.
-         * Converts the String to Int if it is a valid number, otherwise returns -1.
+         * Parses the preference that is optionally prefixed with a constant. Converts the String to
+         * Int if it is a valid number, otherwise returns -1.
          *
          * I.e. {"PREFIX-value", "value"} -> {"value"}
          */
         private fun parseNumericPreferenceAsInteger(preference: String?): Int {
-            val preferenceValue = preference?.removePrefix(NUMERIC_PREFERENCE_PREFIX)?.also {
-                brazelog { "Parsed numeric preference $preference into value: $it" }
-            }
+            val preferenceValue =
+                    preference?.removePrefix(NUMERIC_PREFERENCE_PREFIX)?.also {
+                        brazelog { "Parsed numeric preference $preference into value: $it" }
+                    }
             // Parse the String as an Integer.
             return try {
                 preferenceValue?.toInt() ?: -1
@@ -1191,15 +1467,16 @@ open class BrazePlugin : CordovaPlugin() {
         }
 
         /**
-         * Parses the preference that is a hexadecimal representation.
-         * Converts the String to Int if it is a valid hexadecimal, otherwise throws NumberFormatException.
+         * Parses the preference that is a hexadecimal representation. Converts the String to Int if
+         * it is a valid hexadecimal, otherwise throws NumberFormatException.
          *
          * I.e. {"0x0000"} -> {0}
          */
         private fun parseNumericPreferenceAsHexadecimalInteger(preference: String): Int {
-            val preferenceValue = preference.removePrefix("0x").also {
-                brazelog { "Parsed numeric preference $preference into value: $it" }
-            }
+            val preferenceValue =
+                    preference.removePrefix("0x").also {
+                        brazelog { "Parsed numeric preference $preference into value: $it" }
+                    }
             // Parse the String as an Integer.
             return preferenceValue.toInt(16)
         }
