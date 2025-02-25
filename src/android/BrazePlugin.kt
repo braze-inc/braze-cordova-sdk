@@ -686,8 +686,13 @@ open class BrazePlugin : CordovaPlugin() {
             .setSdkMetadata(EnumSet.of(BrazeSdkMetadata.CORDOVA))
 
         // Set the API key.
-        if (cordovaPreferences.contains(BRAZE_API_KEY_PREFERENCE)) {
-            val apiKey = cordovaPreferences.getString(BRAZE_API_KEY_PREFERENCE, "")
+        if (cordovaPreferences.contains(BRAZE_API_KEY_PREFERENCE) || cordovaPreferences.contains(
+                BRAZE_API_KEY_DEPRECATED_PREFERENCE)) {
+            var apiKey = cordovaPreferences.getString(BRAZE_API_KEY_PREFERENCE, "")
+            if (apiKey.isBlank()) {
+                // Fallback to the deprecated API key setting.
+                apiKey = cordovaPreferences.getString(BRAZE_API_KEY_DEPRECATED_PREFERENCE, "")
+            }
             if (apiKey.isNotBlank()) {
                 configBuilder.setApiKey(apiKey)
             } else {
@@ -1024,7 +1029,8 @@ open class BrazePlugin : CordovaPlugin() {
 
     companion object {
         // Preference keys found in the config.xml
-        private const val BRAZE_API_KEY_PREFERENCE = "com.braze.api_key"
+        private const val BRAZE_API_KEY_PREFERENCE = "com.braze.android_api_key"
+        private const val BRAZE_API_KEY_DEPRECATED_PREFERENCE = "com.braze.api_key"
         private const val AUTOMATIC_FIREBASE_PUSH_REGISTRATION_ENABLED_PREFERENCE = "com.braze.firebase_cloud_messaging_registration_enabled"
         private const val FCM_SENDER_ID_PREFERENCE = "com.braze.android_fcm_sender_id"
         private const val BRAZE_LOG_LEVEL_PREFERENCE = "com.braze.android_log_level"

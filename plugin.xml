@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-  id="cordova-plugin-braze" version="10.0.0">
+  id="cordova-plugin-braze" version="11.0.0">
   <name>Braze</name>
   <description>Braze Cordova SDK</description>
   <license>MIT</license>
@@ -46,17 +46,16 @@
     </config-file>
     <header-file src="src/ios/BrazePlugin.h" />
     <source-file src="src/ios/BrazePlugin.m" />
-    <header-file src="src/ios/AppDelegate+Braze.h" />
-    <source-file src="src/ios/AppDelegate+Braze.m" />
     <header-file src="src/ios/BrazeIDFADelegate.h" />
+    <source-file src="src/ios/BrazeRuntimeCheck.m" compiler-flags="-DBRZ_SWIFT_VERSION=$(SWIFT_VERSION)" />
     <podspec>
       <config>
         <source url="https://cdn.cocoapods.org/"/>
       </config>
       <pods use-frameworks="true">
-        <pod name="BrazeKit" spec="~> 10.1.0" />
-        <pod name="BrazeUI" spec="~> 10.1.0" />
-        <pod name="BrazeLocation" spec="~> 10.1.0" />
+        <pod name="BrazeKit" spec="~> 11.6.1" />
+        <pod name="BrazeUI" spec="~> 11.6.1" />
+        <pod name="BrazeLocation" spec="~> 11.6.1" />
       </pods>
     </podspec>
   </platform>

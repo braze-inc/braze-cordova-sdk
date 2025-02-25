@@ -24,6 +24,6 @@
   "devDependencies": {
     "braze-cordova-sdk": "file:../local",
     "cordova-android": "^13.0.0",
-    "cordova-ios": "^6.2.0"
+    "cordova-ios": "^7.1.1"
   }
 }

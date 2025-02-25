@@ -1,5 +1,4 @@
 #import "BrazePlugin.h"
-#import "AppDelegate+Braze.h"
 
 @import BrazeKit;
 @import BrazeLocation;
@@ -7,25 +6,37 @@
 @import UserNotifications;
 
 @interface BrazePlugin() <BrazeSDKAuthDelegate, BrazeInAppMessageUIDelegate>
+  // Api
   @property NSString *APIKey;
-  @property NSString *disableAutomaticPushRegistration;
-  @property NSString *disableAutomaticPushHandling;
   @property NSString *apiEndpoint;
-  @property NSString *enableIDFACollection;
+  @property NSString *useAutomaticRequestPolicy;
+  @property NSString *flushInterval;
+  @property NSString *enableSDKAuth;
+
+  // Push
+  @property NSString *pushAppGroup;
+  @property NSString *disableAutomaticPushHandling;
+  @property NSString *disableAutomaticPushRegistration;
+  @property NSString *disableUNAuthorizationOptionProvisional;
+  @property NSString *displayForegroundPushNotifications;
+
+  // Location
   @property NSString *enableLocationCollection;
   @property NSString *enableGeofences;
-  @property NSString *disableUNAuthorizationOptionProvisional;
-  @property NSString *sessionTimeout;
-  @property NSString *enableSDKAuth;
-  @property NSString *sdkAuthCallbackID;
-  @property NSString *triggerActionMinimumTimeInterval;
-  @property NSString *pushAppGroup;
-  @property NSString *forwardUniversalLinks;
+
+  // Logger
   @property NSString *logLevel;
+
+  // General
+  @property NSString *sessionTimeout;
+  @property NSString *triggerActionMinimumTimeInterval;
   @property NSString *useUUIDAsDeviceId;
-  @property NSString *flushInterval;
-  @property NSString *useAutomaticRequestPolicy;
+  @property NSString *forwardUniversalLinks;
   @property NSString *optInWhenPushAuthorized;
+  @property NSString *enableIDFACollection;
+
+  // Others
+  @property NSString *sdkAuthCallbackID;
 @end
 
 static Braze *_braze;
@@ -45,36 +56,44 @@ bool useBrazeUIForInAppMessages;
 
 - (void)pluginInitialize {
   NSDictionary *settings = self.commandDelegate.settings;
-  self.APIKey = settings[@"com.braze.api_key"];
-  self.disableAutomaticPushRegistration = settings[@"com.braze.ios_disable_automatic_push_registration"];
-  self.disableAutomaticPushHandling = settings[@"com.braze.ios_disable_automatic_push_handling"];
+  
+  // Api
+  self.APIKey = settings[@"com.braze.ios_api_key"];
+  if (self.APIKey == nil) {
+    // Fallback to the deprecated API key setting
+    self.APIKey = settings[@"com.braze.api_key"];
+  }
   self.apiEndpoint = settings[@"com.braze.ios_api_endpoint"];
-  self.enableIDFACollection = settings[@"com.braze.ios_enable_idfa_automatic_collection"];
+  self.useAutomaticRequestPolicy = settings[@"com.braze.ios_use_automatic_request_policy"];
+  self.flushInterval = settings[@"com.braze.ios_flush_interval_seconds"];
+  self.enableSDKAuth = settings[@"com.braze.sdk_authentication_enabled"];
+  
+  // Push
+  self.pushAppGroup = settings[@"com.braze.ios_push_app_group"];
+  self.disableAutomaticPushHandling = settings[@"com.braze.ios_disable_automatic_push_handling"];
+  self.disableAutomaticPushRegistration = settings[@"com.braze.ios_disable_automatic_push_registration"];
+  self.disableUNAuthorizationOptionProvisional = settings[@"com.braze.ios_disable_un_authorization_option_provisional"];
+  self.displayForegroundPushNotifications = settings[@"com.braze.display_foreground_push_notifications"];
+  
+  // Location
   self.enableLocationCollection = settings[@"com.braze.enable_location_collection"];
   self.enableGeofences = settings[@"com.braze.geofences_enabled"];
-  self.disableUNAuthorizationOptionProvisional = settings[@"com.braze.ios_disable_un_authorization_option_provisional"];
-  self.sessionTimeout = settings[@"com.braze.ios_session_timeout"];
-  self.enableSDKAuth = settings[@"com.braze.sdk_authentication_enabled"];
-  self.triggerActionMinimumTimeInterval = settings[@"com.braze.trigger_action_minimum_time_interval_seconds"];
-  self.pushAppGroup = settings[@"com.braze.ios_push_app_group"];
-  self.forwardUniversalLinks = settings[@"com.braze.ios_forward_universal_links"];
+  
+  // Logger
   self.logLevel = settings[@"com.braze.ios_log_level"];
+  
+  // General
+  self.sessionTimeout = settings[@"com.braze.ios_session_timeout"];
+  self.triggerActionMinimumTimeInterval = settings[@"com.braze.trigger_action_minimum_time_interval_seconds"];
   self.useUUIDAsDeviceId = settings[@"com.braze.ios_use_uuid_as_device_id"];
-  self.flushInterval = settings[@"com.braze.ios_flush_interval_seconds"];
-  self.useAutomaticRequestPolicy = settings[@"com.braze.ios_use_automatic_request_policy"];
+  self.forwardUniversalLinks = settings[@"com.braze.ios_forward_universal_links"];
   self.optInWhenPushAuthorized = settings[@"com.braze.should_opt_in_when_push_authorized"];
+  self.enableIDFACollection = settings[@"com.braze.ios_enable_idfa_automatic_collection"];
+
   isInAppMessageSubscribed = NO;
   useBrazeUIForInAppMessages = YES;
 
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFinishLaunchingListener:) name:UIApplicationDidFinishLaunchingNotification object:nil];
-
-  // Set automatic push handling
-  if (![[self sanitizeString:self.disableAutomaticPushHandling] isEqualToString:@"yes"]) {
-    [AppDelegate swizzleHostAppDelegate];
-    NSLog(@"Automatic push handling enabled.");
-  } else {
-    NSLog(@"Automatic push handling disabled.");
-  }
 }
 
 - (void)didFinishLaunchingListener:(NSNotification *)notification {
@@ -92,6 +111,52 @@ bool useBrazeUIForInAppMessages;
     NSLog(@"Log level set to: %hhu", (BRZLoggerLevel)levelCast);
   } else {
     NSLog(@"Log level value not valid. Setting value to: error (2).");
+  }
+  
+  // ---- Push Notifications configuration
+  
+  // Set push automation from preferences
+  if (![[self sanitizeString:self.disableAutomaticPushHandling] isEqualToString:@"yes"]) {
+    // Enables all push automation
+    configuration.push.automation = [[BRZConfigurationPushAutomation alloc] initEnablingAllAutomations:YES];
+    // - Disable `willPresentNotification`, this is configured below from the
+    //   `displayForegroundPushNotifications` setting
+    configuration.push.automation.willPresentNotification = NO;
+    // - Disable `requestAuthorizationAtLaunch`, this is configured below from the
+    //   `disableAutomaticPushRegistration` setting
+    configuration.push.automation.requestAuthorizationAtLaunch = NO;
+    NSLog(@"Automatic push handling enabled.");
+  } else {
+    NSLog(@"Automatic push handling disabled.");
+  }
+
+  // Set display foreground push notifications
+  if ([[self sanitizeString:self.displayForegroundPushNotifications] isEqualToString:@"yes"]) {
+    configuration.push.automation.willPresentNotification = YES;
+    NSLog(@"Foreground push notifications enabled.");
+  } else {
+    NSLog(@"Foreground push notifications disabled.");
+  }
+  
+  // Set automatic request notification authorization
+  if (![[self sanitizeString:self.disableAutomaticPushRegistration] isEqualToString:@"yes"]) {
+    // Enable automatic push registration and device token registration
+    configuration.push.automation.automaticSetup = YES;
+    configuration.push.automation.registerDeviceToken = YES;
+    // Enable request notification authorization
+    configuration.push.automation.requestAuthorizationAtLaunch = YES;
+    NSLog(@"Automatic push registration enabled.");
+    // Set provisional notification authorization
+    if (@available(iOS 12.0, *)) {
+      if (![[self sanitizeString:self.disableUNAuthorizationOptionProvisional] isEqualToString:@"yes"]) {
+        configuration.push.automation.authorizationOptions |= UNAuthorizationOptionProvisional;
+        NSLog(@"Provisional push authorization enabled.");
+      } else {
+        NSLog(@"Provisional push authorization disabled.");
+      }
+    }
+  } else {
+    NSLog(@"Automatic push registration disabled.");
   }
 
   // Set location collection from preferences
@@ -206,34 +271,6 @@ bool useBrazeUIForInAppMessages;
     self.braze.sdkAuthDelegate = self;
   } else {
     NSLog(@"SDK authentication disabled.");
-  }
-
-  // Set automatic push registration and request notification authorization
-  if (![[self sanitizeString:self.disableAutomaticPushRegistration] isEqualToString:@"yes"]) {
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-    // If the delegate hasn't been set yet, set it here in the plugin
-    if (center.delegate == nil) {
-      center.delegate = [UIApplication sharedApplication].delegate;
-    }
-    UNAuthorizationOptions options = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
-    if (@available(iOS 12.0, *)) {
-      if (![[self sanitizeString:self.disableUNAuthorizationOptionProvisional] isEqualToString:@"yes"]) {
-        options = options | UNAuthorizationOptionProvisional;
-      }
-    }
-    [center requestAuthorizationWithOptions:options
-                          completionHandler:^(BOOL granted, NSError *_Nullable error) {
-      // Braze automatically retrieves the push notification authorization settings after the user interacts with the permission prompt.
-      if (error) {
-        NSLog(@"%@", error.debugDescription);
-      } else {
-        NSLog(@"Notification authorization successfully requested.");
-      }
-    }];
-    [[UIApplication sharedApplication] registerForRemoteNotifications];
-    NSLog(@"Automatic push registration enabled.");
-  } else {
-    NSLog(@"Automatic push registration disabled.");
   }
 }
 

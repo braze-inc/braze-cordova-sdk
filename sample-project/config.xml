@@ -28,9 +28,10 @@
         <preference name="GradlePluginKotlinVersion" value="1.9.24" />
         <preference name="android-targetSdkVersion" value="35" />
         <preference name="android-compileSdkVersion" value="35" />
+        <preference name="android-minSdkVersion" value="25" />
         <preference name="GradleVersion" value="8.7" />
         <preference name="AndroidXEnabled" value="true" />
-        <preference name="com.braze.api_key" value="ec67377e-c490-4959-8c58-c045a254a65a" />
+        <preference name="com.braze.android_api_key" value="ec67377e-c490-4959-8c58-c045a254a65a" />
         <preference name="com.braze.android_api_endpoint" value="sondheim.braze.com" />
         <preference name="com.braze.firebase_cloud_messaging_registration_enabled" value="true" />
         <preference name="com.braze.android_fcm_sender_id" value="str_900857597716" />
@@ -68,7 +69,7 @@
         <allow-intent href="itms:*" />
         <allow-intent href="itms-apps:*" />
         <preference name="com.braze.ios_api_endpoint" value="sondheim.braze.com" />
-        <preference name="com.braze.api_key" value="56614add-1d2c-4bd3-a22d-023164fca958" />
+        <preference name="com.braze.ios_api_key" value="56614add-1d2c-4bd3-a22d-023164fca958" />
         <preference name="com.braze.ios_disable_automatic_push_registration" value="NO" />
         <preference name="com.braze.ios_disable_automatic_push_handling" value="NO" />
         <preference name="com.braze.ios_enable_idfa_automatic_collection" value="YES" />
@@ -93,8 +94,7 @@
                 <string>remote-notification</string>
             </array>
         </config-file>
-        <resource-file src="res/HelloCordova-Debug.entitlements" target="HelloCordova-Debug.entitlements" />
-        <resource-file src="res/HelloCordova-Release.entitlements" target="HelloCordova-Release.entitlements" />
-        <hook type="after_prepare" src="hooks/replace-entitlements.js" />
+        <resource-file src="res/HelloCordova-Debug.entitlements" target="../Entitlements-Debug.plist" />
+        <resource-file src="res/HelloCordova-Release.entitlements" target="../Entitlements-Release.plist" />
     </platform>
 </widget>
