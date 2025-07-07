@@ -330,7 +330,7 @@ bool useBrazeUIForInAppMessages;
 }
 
 - (void)enableSdk:(CDVInvokedUrlCommand *)command {
-  [self.braze _requestEnableSDKOnNextAppRun];
+  [self.braze setEnabled:YES];
 }
 
 - (void)wipeData:(CDVInvokedUrlCommand *)command {
