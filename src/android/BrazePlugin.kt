@@ -965,15 +965,26 @@ open class BrazePlugin : CordovaPlugin() {
         // Setup a one-time subscriber for the update event
         val subscriber: IEventSubscriber<ContentCardsUpdatedEvent> = object : IEventSubscriber<ContentCardsUpdatedEvent> {
             override fun trigger(message: ContentCardsUpdatedEvent) {
-                runOnBraze { it.removeSingleSubscription(this, ContentCardsUpdatedEvent::class.java) }
+                // WORKAROUND: Only send current user messages to cordova layer
+                runOnUser {
+                  if (it.userId == message.userId) {
+                    runOnBraze { it.removeSingleSubscription(this, ContentCardsUpdatedEvent::class.java) }
 
-                // Map the content cards to JSON and return to the client
-                callbackContext.success(mapContentCards(message.allCards))
+                    // Map the content cards to JSON and return to the client
+                    callbackContext.success(mapContentCards(message.allCards))
+                  }
+                }
             }
         }
 
         Braze.getInstance(applicationContext).subscribeToContentCardsUpdates(subscriber)
-        Braze.getInstance(applicationContext).requestContentCardsRefreshFromCache()
+
+        if (action == GET_CONTENT_CARDS_FROM_SERVER_METHOD) {
+            Braze.getInstance(applicationContext).requestContentCardsRefresh()
+        } else {
+            Braze.getInstance(applicationContext).requestContentCardsRefreshFromCache()
+        }
+     
         return true
     }
 
