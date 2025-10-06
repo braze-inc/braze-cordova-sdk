@@ -88,7 +88,6 @@ object ContentCardUtils {
         mappedCard.apply {
             put("image", card.imageUrl)
             put("imageAspectRatio", card.aspectRatio.toDouble())
-            put("domain", card.domain)
             put("type", "ImageOnly")
         }
     }

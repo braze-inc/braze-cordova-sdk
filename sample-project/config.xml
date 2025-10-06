@@ -25,7 +25,7 @@
         <allow-intent href="market:*" />
         <preference name="GradlePluginKotlinEnabled" value="true" />
         <preference name="GradlePluginKotlinCodeStyle" value="official" />
-        <preference name="GradlePluginKotlinVersion" value="1.9.24" />
+        <preference name="GradlePluginKotlinVersion" value="2.1.0" />
         <preference name="android-targetSdkVersion" value="36" />
         <preference name="android-compileSdkVersion" value="36" />
         <preference name="GradleVersion" value="8.7" />

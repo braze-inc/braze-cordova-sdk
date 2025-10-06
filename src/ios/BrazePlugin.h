@@ -57,13 +57,7 @@
 - (void)addAlias:(CDVInvokedUrlCommand *)command;
 
 /*-------BrazeUI-------*/
-- (void)launchNewsFeed:(CDVInvokedUrlCommand *)command;
 - (void)launchContentCards:(CDVInvokedUrlCommand *)command;
-
-/*-------News Feed-------*/
-- (void)getCardCountForCategories:(CDVInvokedUrlCommand *)command;
-- (void)getUnreadCardCountForCategories:(CDVInvokedUrlCommand *)command;
-- (void)getNewsFeed:(CDVInvokedUrlCommand *)command;
 
 /*-------Content Cards-------*/
 - (void)requestContentCardsRefresh:(CDVInvokedUrlCommand *)command;

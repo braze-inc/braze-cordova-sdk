@@ -372,60 +372,18 @@ BrazePlugin.prototype.addAlias = function (alias, label) {
 }
 
 // Other
-/**
- * Launches the News Feed UI element.
- */
-BrazePlugin.prototype.launchNewsFeed = function () {
-    cordova.exec(null, null, "BrazePlugin", "launchNewsFeed", []);
-}
 
 /**
- * Returns array of serialized card items
- */
-BrazePlugin.prototype.getNewsFeed = function (successCallback, errorCallback) {
-    cordova.exec(successCallback, errorCallback, "BrazePlugin", "getNewsFeed", ['all']);
-}
-
-// News Feed methods
-
-/**
- * Gets the number of unread News Feed Cards. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
- */
-BrazePlugin.prototype.getNewsFeedUnreadCount = function (successCallback, errorCallback) {
-    cordova.exec(successCallback, errorCallback, "BrazePlugin", "getUnreadCardCountForCategories", ['all']);
-}
-
-/**
- * Gets the number of News Feed Cards. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
- */
-BrazePlugin.prototype.getNewsFeedCardCount = function (successCallback, errorCallback) {
-    cordova.exec(successCallback, errorCallback, "BrazePlugin", "getCardCountForCategories", ['all']);
-}
-
-/**
- * Gets the number of News Feed Cards for a category. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
- */
-BrazePlugin.prototype.getCardCountForCategories = function (successCallback, errorCallback, cardCategories) {
-    cordova.exec(successCallback, errorCallback, "BrazePlugin", "getCardCountForCategories", cardCategories);
-}
-
-/**
- * Gets the number of unread News Feed Cards for a category. The result is returned as an integer argument to the successCallback function. The card count uses the cards present in the cache. News Feed cards are not refreshed as a result of this call.
- */
-BrazePlugin.prototype.getUnreadCardCountForCategories = function (successCallback, errorCallback, cardCategories) {
-    cordova.exec(successCallback, errorCallback, "BrazePlugin", "getUnreadCardCountForCategories", cardCategories);
-}
-
-/**
- * Wipes Data on the Braze SDK. On iOS, the SDK will be disabled for the rest of the app run.
+ * Deletes all locally stored Braze SDK data and disables the SDK.
+ *
+ * After this operation, Braze functionality will not work until `enableSdk()` is called.
  */
 BrazePlugin.prototype.wipeData = function () {
     cordova.exec(null, null, "BrazePlugin", "wipeData");
 }
 
 /**
- * Enables the Braze SDK after a previous call to disableSDK().
- * On iOS, the SDK will be enabled only after a subsequent call to startWithApiKey().
+ * Enables the Braze SDK after a previous call to `disableSdk()`.
  */
 BrazePlugin.prototype.enableSdk = function () {
     cordova.exec(null, null, "BrazePlugin", "enableSdk");
@@ -477,29 +435,29 @@ BrazePlugin.prototype.launchContentCards = function () {
 }
 
 /**
- * Logs a click for the given Content Card id.
+ * Logs a click for the given Content Card ID.
  */
 BrazePlugin.prototype.logContentCardClicked = function (cardId) {
     cordova.exec(null, null, "BrazePlugin", "logContentCardClicked", [cardId]);
 }
 
 /**
- * Logs an impression for the given Content Card id.
+ * Logs an impression for the given Content Card ID.
  */
 BrazePlugin.prototype.logContentCardImpression = function (cardId) {
     cordova.exec(null, null, "BrazePlugin", "logContentCardImpression", [cardId]);
 }
 
 /**
- * Logs a dismissal for the given Content Card id.
+ * Logs a dismissal for the given Content Card ID.
  */
 BrazePlugin.prototype.logContentCardDismissed = function (cardId) {
     cordova.exec(null, null, "BrazePlugin", "logContentCardDismissed", [cardId]);
 }
 
 /**
- * Subscribes to in app messages
- * @param {boolean} useBrazeUI - Whether to use Braze's UI for in app messages
+ * Subscribes to Braze in-app messages
+ * @param {boolean} useBrazeUI - Whether to use Braze's UI for in-app messages
  */
 BrazePlugin.prototype.subscribeToInAppMessage = function (successCallback, errorCallback, useBrazeUI = true) {
     cordova.exec(successCallback, errorCallback, "BrazePlugin", "subscribeToInAppMessage", [useBrazeUI]);
@@ -583,7 +541,7 @@ BrazePlugin.prototype.getDeviceId = function (successCallback, errorCallback) {
 }
 
 /**
- * Requests a specific Feature Flags. This will pull the data from a local cache and does
+ * Requests a specific Feature Flag by its ID. This will pull the data from a local cache and does
  * not force a refresh.
  *
  * @param id The ID of the Feature Flag to retrieve.
@@ -600,7 +558,7 @@ BrazePlugin.prototype.getFeatureFlag = function (id) {
 }
 
 /**
- * Retrieves the offline/cached list of Feature Flags from offline storage.
+ * Retrieves the cached list of Feature Flags from offline storage.
  *
  * @return A promise containing the list of cached Feature Flags. Note that this does not request a
  * fresh list of Feature Flags from Braze. If the SDK is disabled or the

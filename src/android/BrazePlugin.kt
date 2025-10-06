@@ -15,7 +15,6 @@ import com.braze.enums.*
 import com.braze.enums.inappmessage.ClickAction
 import com.braze.events.ContentCardsUpdatedEvent
 import com.braze.events.FeatureFlagsUpdatedEvent
-import com.braze.events.FeedUpdatedEvent
 import com.braze.events.IEventSubscriber
 import com.braze.models.outgoing.AttributionData
 import com.braze.models.outgoing.BrazeProperties
@@ -30,8 +29,6 @@ import com.braze.support.BrazeLogger.logLevel
 import com.braze.support.requestPushPermissionPrompt
 import com.braze.support.toBundle
 import com.braze.ui.BrazeDeeplinkHandler
-import com.braze.ui.actions.NewsfeedAction
-import com.braze.ui.activities.BrazeFeedActivity
 import com.braze.ui.activities.ContentCardsActivity
 import com.braze.ui.inappmessage.BrazeInAppMessageManager
 import com.braze.ui.inappmessage.InAppMessageOperation
@@ -52,7 +49,6 @@ open class BrazePlugin : CordovaPlugin() {
     private lateinit var applicationContext: Context
     private var pluginInitializationFinished = false
     private var disableAutoStartSessions = false
-    private val feedSubscriberMap: MutableMap<String, IEventSubscriber<FeedUpdatedEvent>> = ConcurrentHashMap()
     private var inAppMessageDisplayOperation: InAppMessageOperation = InAppMessageOperation.DISPLAY_NOW
 
     override fun pluginInitialize() {
@@ -96,7 +92,7 @@ open class BrazePlugin : CordovaPlugin() {
                 return true
             }
             "getUserId" -> {
-                runOnUser { 
+                runOnUser {
                     if (it.userId.isBlank()) {
                         callbackContext.sendCordovaSuccessPluginResultAsNull()
                     } else {
@@ -351,11 +347,6 @@ open class BrazePlugin : CordovaPlugin() {
                 runOnUser { it.removeFromSubscriptionGroup(args.getString(0)) }
                 return true
             }
-            "launchNewsFeed" -> {
-                val intent = Intent(applicationContext, BrazeFeedActivity::class.java)
-                cordova.activity.startActivity(intent)
-                return true
-            }
             "launchContentCards" -> {
                 val intent = Intent(applicationContext, ContentCardsActivity::class.java)
                 cordova.activity.startActivity(intent)
@@ -435,15 +426,6 @@ open class BrazePlugin : CordovaPlugin() {
                         }
                         brazelog { "got action: $clickUri, $openUriInWebView, $clickAction" }
                         when (clickAction) {
-                            ClickAction.NEWS_FEED -> {
-                                val newsfeedAction = NewsfeedAction(
-                                    inAppMessage.extras.toBundle(),
-                                    Channel.INAPP_MESSAGE
-                                )
-                                BrazeDeeplinkHandler.getInstance()
-                                    .gotoNewsFeed(activity, newsfeedAction)
-                            }
-
                             ClickAction.URI -> {
                                 if (clickUri != null) {
                                     val uriAction =
@@ -599,9 +581,6 @@ open class BrazePlugin : CordovaPlugin() {
                 }
                 return true
             }
-            GET_NEWS_FEED_METHOD,
-            GET_CARD_COUNT_FOR_CATEGORIES_METHOD,
-            GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD -> return handleNewsFeedGetters(action, args, callbackContext)
             GET_CONTENT_CARDS_FROM_SERVER_METHOD,
             GET_CONTENT_CARDS_FROM_CACHE_METHOD -> return handleContentCardsUpdateGetters(action, callbackContext)
             LOG_CONTENT_CARDS_CLICKED_METHOD,
@@ -882,75 +861,6 @@ open class BrazePlugin : CordovaPlugin() {
         Braze.configure(applicationContext, configBuilder.build())
     }
 
-    private fun handleNewsFeedGetters(action: String, args: JSONArray, callbackContext: CallbackContext): Boolean {
-        var feedUpdatedSubscriber: IEventSubscriber<FeedUpdatedEvent>? = null
-        var requestingFeedUpdateFromCache = false
-        val braze = Braze.getInstance(applicationContext)
-        val callbackId = callbackContext.callbackId
-        when (action) {
-            GET_CARD_COUNT_FOR_CATEGORIES_METHOD -> {
-                val categories = getCategoriesFromJSONArray(args)
-                feedUpdatedSubscriber = IEventSubscriber { event: FeedUpdatedEvent ->
-                    // Each callback context is by default made to only be called once and is afterwards "finished". We want to ensure
-                    // that we never try to call the same callback twice. This could happen since we don't know the ordering of the feed
-                    // subscription callbacks from the cache.
-                    if (!callbackContext.isFinished) {
-                        callbackContext.success(event.getCardCount(categories))
-                    }
-
-                    // Remove this listener from the map
-                    braze.removeSingleSubscription(feedSubscriberMap[callbackId], FeedUpdatedEvent::class.java)
-                    feedSubscriberMap.remove(callbackId)
-                }
-                requestingFeedUpdateFromCache = true
-            }
-            GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD -> {
-                val categories = getCategoriesFromJSONArray(args)
-                feedUpdatedSubscriber = IEventSubscriber { event: FeedUpdatedEvent ->
-                    if (!callbackContext.isFinished) {
-                        callbackContext.success(event.getUnreadCardCount(categories))
-                    }
-
-                    // Remove this listener from the map
-                    braze.removeSingleSubscription(feedSubscriberMap[callbackId], FeedUpdatedEvent::class.java)
-                    feedSubscriberMap.remove(callbackId)
-                }
-                requestingFeedUpdateFromCache = true
-            }
-            GET_NEWS_FEED_METHOD -> {
-                val categories = getCategoriesFromJSONArray(args)
-                feedUpdatedSubscriber = IEventSubscriber { event: FeedUpdatedEvent ->
-                    if (!callbackContext.isFinished) {
-                        val cards = event.getFeedCards(categories)
-                        val result = JSONArray()
-                        var i = 0
-                        while (i < cards.size) {
-                            result.put(cards[i].forJsonPut())
-                            i++
-                        }
-                        callbackContext.success(result)
-                    }
-
-                    // Remove this listener from the map
-                    braze.removeSingleSubscription(feedSubscriberMap[callbackId], FeedUpdatedEvent::class.java)
-                    feedSubscriberMap.remove(callbackId)
-                }
-                requestingFeedUpdateFromCache = false
-            }
-        }
-        if (feedUpdatedSubscriber != null) {
-            // Put the subscriber into a map so we can remove it later from future subscriptions
-            feedSubscriberMap[callbackId] = feedUpdatedSubscriber
-            braze.subscribeToFeedUpdates(feedUpdatedSubscriber)
-            if (requestingFeedUpdateFromCache) {
-                braze.requestFeedRefreshFromCache()
-            } else {
-                braze.requestFeedRefresh()
-            }
-        }
-        return true
-    }
-
     private fun handleContentCardsUpdateGetters(action: String, callbackContext: CallbackContext): Boolean {
         // Setup a one-time subscriber for the update event
         val subscriber: IEventSubscriber<ContentCardsUpdatedEvent> = object : IEventSubscriber<ContentCardsUpdatedEvent> {
@@ -1068,36 +978,12 @@ open class BrazePlugin : CordovaPlugin() {
         // Numeric preference prefix
         private const val NUMERIC_PREFERENCE_PREFIX = "str_"
 
-        // News Feed method names
-        private const val GET_NEWS_FEED_METHOD = "getNewsFeed"
-        private const val GET_CARD_COUNT_FOR_CATEGORIES_METHOD = "getCardCountForCategories"
-        private const val GET_UNREAD_CARD_COUNT_FOR_CATEGORIES_METHOD = "getUnreadCardCountForCategories"
-
         // Content Card method names
         private const val GET_CONTENT_CARDS_FROM_SERVER_METHOD = "getContentCardsFromServer"
         private const val GET_CONTENT_CARDS_FROM_CACHE_METHOD = "getContentCardsFromCache"
         private const val LOG_CONTENT_CARDS_CLICKED_METHOD = "logContentCardClicked"
         private const val LOG_CONTENT_CARDS_IMPRESSION_METHOD = "logContentCardImpression"
         private const val LOG_CONTENT_CARDS_DISMISSED_METHOD = "logContentCardDismissed"
-
-        private fun getCategoriesFromJSONArray(jsonArray: JSONArray): EnumSet<CardCategory> {
-            val categories = EnumSet.noneOf(CardCategory::class.java)
-            for (i in 0 until jsonArray.length()) {
-                val category = jsonArray.getString(i)
-                val categoryArgument: CardCategory? = if (category == "all") {
-                    // "All categories" maps to a enumset and not a specific enum so we have to return that here
-                    return CardCategory.getAllCategories()
-                } else {
-                    CardCategory.get(category)
-                }
-                if (categoryArgument != null) {
-                    categories.add(categoryArgument)
-                } else {
-                    brazelog(W) { "Tried to add unknown card category: $category" }
-                }
-            }
-            return categories
-        }
 
         /**
          * Map a Kotlin string to a JavaScript-representable version.

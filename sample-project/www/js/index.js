@@ -48,7 +48,6 @@ var app = {
         document.getElementById("setCustomUserAttributeBtn").addEventListener("click", setCustomUserAttribute);
         document.getElementById("mergeCustomUserAttributeBtn").addEventListener("click", mergeCustomUserAttribute);
         document.getElementById("setUserPropertiesBtn").addEventListener("click", setUserProperties);
-        document.getElementById("launchNewsFeedBtn").addEventListener("click", launchNewsFeed);
         document.getElementById("launchContentCardsBtn").addEventListener("click", launchContentCards);
         document.getElementById("unsetCustomUserAttributeBtn").addEventListener("click", unsetCustomUserAttribute);
         document.getElementById("setCustomUserAttributeArrayBtn").addEventListener("click", setCustomUserAttributeArray);
@@ -57,11 +56,6 @@ var app = {
         document.getElementById("addToCustomUserAttributeArrayBtn").addEventListener("click", addToCustomUserAttributeArray);
         document.getElementById("removeFromCustomUserAttributeArrayBtn").addEventListener("click", removeFromCustomUserAttributeArray);
         document.getElementById("setAttributionDataBtn").addEventListener("click", setAttributionData);
-        document.getElementById("getNewsFeedUnreadCountBtn").addEventListener("click", getNewsFeedUnreadCount);
-        document.getElementById("getNewsFeedCardCountBtn").addEventListener("click", getNewsFeedCardCount);
-        document.getElementById("getCardCountForCategoriesBtn").addEventListener("click", getCardCountForCategories);
-        document.getElementById("getUnreadCardCountForCategoriesBtn").addEventListener("click", getUnreadCardCountForCategories);
-        document.getElementById("getAllNewsFeedCardsBtn").addEventListener("click", getAllNewsFeedCards);
         document.getElementById("getAllContentCardsBtn").addEventListener("click", getContentCardsFromServer);
         document.getElementById("logContentCardAnalyticsBtn").addEventListener("click", logContentCardAnalytics);
         document.getElementById("addAliasBtn").addEventListener("click", addAlias);
@@ -114,10 +108,11 @@ function changeUser() {
     }
     if (!sdkAuthSignature) {
         BrazePlugin.changeUser(userId);
+        showTextBubble(`User changed to ${userId}`);
     } else {
         BrazePlugin.changeUser(userId, sdkAuthSignature);
+        showTextBubble(`User changed to ${userId} with auth signature ${sdkAuthSignature}`);
     }
-    showTextBubble(`User changed to ${userId} with auth signature ${sdkAuthSignature}`);
 }
 
 async function getUserId() {
@@ -405,36 +400,9 @@ function requestDataFlush() {
     showTextBubble("Requesting data flush");
 }
 
-// Launch functions
-function launchNewsFeed() {
-    BrazePlugin.launchNewsFeed();
-}
-
+// Content Cards
 function launchContentCards() {
     BrazePlugin.launchContentCards();
-}
-
-// News feed functions
-function getNewsFeedUnreadCount() {
-    BrazePlugin.getNewsFeedUnreadCount(customPluginSuccessCallback("get Unread News Feed Count is : "), customPluginErrorCallback);
-}
-
-function getNewsFeedCardCount() {
-    BrazePlugin.getNewsFeedCardCount(customPluginSuccessCallback("get News Feed Card Count is : "), customPluginErrorCallback);
-}
-
-function getCardCountForCategories() {
-    BrazePlugin.getCardCountForCategories(customPluginSuccessCallback("get Card Count For Categories is : "), customPluginErrorCallback,
-        [BrazePlugin.CardCategories.ADVERTISING, BrazePlugin.CardCategories.SOCIAL]);
-}
-
-function getUnreadCardCountForCategories() {
-    BrazePlugin.getUnreadCardCountForCategories(customPluginSuccessCallback("get Unread Card Count For Categories is : "), customPluginErrorCallback,
-        [BrazePlugin.CardCategories.NEWS, BrazePlugin.CardCategories.ANNOUNCEMENTS]);
-}
-
-function getAllNewsFeedCards() {
-    BrazePlugin.getNewsFeed(customPluginSuccessArrayCallback("test"), customPluginErrorCallback);
 }
 
 function getContentCardsFromServer() {
@@ -454,6 +422,8 @@ function logContentCardAnalytics() {
         BrazePlugin.logContentCardDismissed(firstCardId);
     });
 }
+
+// In-App Messages
 
 function subscribeToInAppMessage() {
     BrazePlugin.subscribeToInAppMessage(true);
