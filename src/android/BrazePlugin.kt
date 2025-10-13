@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
+import android.webkit.WebView
 import com.braze.Braze
 import com.braze.BrazeUser
 import com.braze.configuration.BrazeConfig
@@ -50,6 +51,8 @@ open class BrazePlugin : CordovaPlugin() {
     private var pluginInitializationFinished = false
     private var disableAutoStartSessions = false
     private var inAppMessageDisplayOperation: InAppMessageOperation = InAppMessageOperation.DISPLAY_NOW
+    private var inAppMessageClicksSubscribed = false
+    private var inAppMessageHandleClickActions = false
 
     override fun pluginInitialize() {
         applicationContext = cordova.activity.applicationContext
@@ -362,6 +365,13 @@ open class BrazePlugin : CordovaPlugin() {
                     }
                     setDefaultInAppMessageListener()
                 }
+            }
+            "subscribeToInAppMessageClicks" -> {
+              runOnBraze {
+                inAppMessageClicksSubscribed = true
+                val useBrazeActions = args.getBoolean(0)
+                inAppMessageHandleClickActions = !useBrazeActions
+              }
             }
             "hideCurrentInAppMessage" -> {
                 BrazeInAppMessageManager.getInstance().hideCurrentlyDisplayingInAppMessage(true)
@@ -865,15 +875,26 @@ open class BrazePlugin : CordovaPlugin() {
         // Setup a one-time subscriber for the update event
         val subscriber: IEventSubscriber<ContentCardsUpdatedEvent> = object : IEventSubscriber<ContentCardsUpdatedEvent> {
             override fun trigger(message: ContentCardsUpdatedEvent) {
-                runOnBraze { it.removeSingleSubscription(this, ContentCardsUpdatedEvent::class.java) }
+                // WORKAROUND: Only send current user messages to cordova layer
+                runOnUser {
+                  if (it.userId == message.userId) {
+                    runOnBraze { it.removeSingleSubscription(this, ContentCardsUpdatedEvent::class.java) }
 
-                // Map the content cards to JSON and return to the client
-                callbackContext.success(mapContentCards(message.allCards))
+                    // Map the content cards to JSON and return to the client
+                    callbackContext.success(mapContentCards(message.allCards))
+                  }
+                }
             }
         }
 
         Braze.getInstance(applicationContext).subscribeToContentCardsUpdates(subscriber)
-        Braze.getInstance(applicationContext).requestContentCardsRefreshFromCache()
+
+        if (action == GET_CONTENT_CARDS_FROM_SERVER_METHOD) {
+            Braze.getInstance(applicationContext).requestContentCardsRefresh()
+        } else {
+            Braze.getInstance(applicationContext).requestContentCardsRefreshFromCache()
+        }
+     
         return true
     }
 
@@ -930,10 +951,51 @@ open class BrazePlugin : CordovaPlugin() {
                     // Send in-app message string back to JavaScript in an `inAppMessageReceived` event
                     val jsStatement = "app.inAppMessageReceived('$inAppMessageString');"
                     cordova.activity.runOnUiThread {
-                        webView.engine.evaluateJavascript(jsStatement, null)
+                        (webView.getView() as WebView).evaluateJavascript(jsStatement, null)
                     }
 
                     return inAppMessageDisplayOperation
+                }
+
+                override fun onInAppMessageButtonClicked(inAppMessage: IInAppMessage, button: MessageButton): Boolean {
+                  if (inAppMessageClicksSubscribed) {
+                    // Convert in-app message to string
+                    val inAppMessageString = escapeStringForJavaScript(inAppMessage.forJsonPut().toString())
+
+                    // Convert button message to string
+                    val buttonMessageClicked = escapeStringForJavaScript(button.forJsonPut().toString())
+
+                    val buttonMessageUri = button.uri?.toString()
+
+                    brazelog { "In-app message button clicked: $inAppMessageString $buttonMessageClicked" }
+
+                    // Send in-app message string and button back to JavaScript in an `inAppMessageClicked` event
+                    val jsStatement = "app.inAppMessageClicked('$inAppMessageString', '$buttonMessageClicked', '$buttonMessageUri');"
+                    cordova.activity.runOnUiThread {
+                      (webView.getView() as WebView).evaluateJavascript(jsStatement, null)
+                    }
+                  }
+                  return inAppMessageHandleClickActions
+                }
+
+                override fun onInAppMessageClicked(inAppMessage: IInAppMessage): Boolean {
+                  if (inAppMessageClicksSubscribed) {
+                    // Convert in-app message to string
+                    val inAppMessageString = escapeStringForJavaScript(inAppMessage.forJsonPut().toString())
+
+                    // Getting message URI
+                    val inAppMessageUri = inAppMessage.uri?.toString()
+
+                    brazelog { "In-app message clicked: $inAppMessageString" }
+
+                    // Send in-app message string back to javascript on `inAppMessageClicked` event'
+                    val jsStatement = "app.inAppMessageClicked('$inAppMessageString', undefined, '$inAppMessageUri');"
+                    cordova.activity.runOnUiThread {
+                      (webView.getView() as WebView).evaluateJavascript(jsStatement, null)
+                    }
+                  }
+
+                  return inAppMessageHandleClickActions
                 }
             }
         )

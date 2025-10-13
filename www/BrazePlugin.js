@@ -464,6 +464,14 @@ BrazePlugin.prototype.subscribeToInAppMessage = function (successCallback, error
 }
 
 /**
+* Subscribes to in app messages clicks
+* @param {boolean} useBrazeAction - Whether to use Braze's action handler
+*/
+BrazePlugin.prototype.subscribeToInAppMessageClicks = function(successCallback, errorCallback, useBrazeAction = true) {
+    cordova.exec(successCallback, errorCallback, "BrazePlugin", "subscribeToInAppMessageClicks", [useBrazeAction]);
+}
+
+/**
  * Hides the currently displayed in-app message.
  */
 BrazePlugin.prototype.hideCurrentInAppMessage = function () {
