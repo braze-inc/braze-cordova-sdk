@@ -4,8 +4,8 @@
   "displayName": "HelloCordova",
   "cordova": {
     "platforms": [
-      "ios",
-      "android"
+      "android",
+      "ios"
     ],
     "plugins": {
       "cordova-plugin-braze": {}
@@ -24,6 +24,6 @@
   "devDependencies": {
     "braze-cordova-sdk": "file:../local",
     "cordova-android": "^13.0.0",
-    "cordova-ios": "^7.1.1"
+    "cordova-ios": "^8.0.1"
   }
 }

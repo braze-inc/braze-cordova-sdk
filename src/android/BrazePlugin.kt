@@ -50,6 +50,7 @@ open class BrazePlugin : CordovaPlugin() {
     private var pluginInitializationFinished = false
     private var disableAutoStartSessions = false
     private var inAppMessageDisplayOperation: InAppMessageOperation = InAppMessageOperation.DISPLAY_NOW
+    private var subscribeToInAppMessageCallbackContext: CallbackContext? = null
 
     override fun pluginInitialize() {
         applicationContext = cordova.activity.applicationContext
@@ -353,15 +354,18 @@ open class BrazePlugin : CordovaPlugin() {
                 return true
             }
             "subscribeToInAppMessage" -> {
-                runOnBraze {
-                    val useBrazeUI = args.getBoolean(0)
-                    inAppMessageDisplayOperation = if (useBrazeUI) {
-                        InAppMessageOperation.DISPLAY_NOW
-                    } else {
-                        InAppMessageOperation.DISCARD
-                    }
-                    setDefaultInAppMessageListener()
+                val useBrazeUI = args.getBoolean(0)
+                inAppMessageDisplayOperation = if (useBrazeUI) {
+                    InAppMessageOperation.DISPLAY_NOW
+                } else {
+                    InAppMessageOperation.DISCARD
                 }
+                subscribeToInAppMessageCallbackContext = callbackContext
+                runOnBraze { setDefaultInAppMessageListener() }
+                val pluginResult = PluginResult(PluginResult.Status.NO_RESULT)
+                pluginResult.keepCallback = true
+                callbackContext.sendPluginResult(pluginResult)
+                return true
             }
             "hideCurrentInAppMessage" -> {
                 BrazeInAppMessageManager.getInstance().hideCurrentlyDisplayingInAppMessage(true)
@@ -817,7 +821,7 @@ open class BrazePlugin : CordovaPlugin() {
 
         // Set whether Braze should automatically collect location (if the user permits).
         if (cordovaPreferences.contains(ENABLE_LOCATION_PREFERENCE)) {
-            configBuilder.setIsLocationCollectionEnabled(cordovaPreferences.getBoolean(ENABLE_LOCATION_PREFERENCE, false))
+            configBuilder.setIsAutomaticLocationCollectionEnabled(cordovaPreferences.getBoolean(ENABLE_LOCATION_PREFERENCE, false))
         }
 
         // Set whether the Braze Geofences feature should be enabled.
@@ -923,11 +927,15 @@ open class BrazePlugin : CordovaPlugin() {
                 override fun beforeInAppMessageDisplayed(inAppMessage: IInAppMessage): InAppMessageOperation {
                     super.beforeInAppMessageDisplayed(inAppMessage)
 
-                    // Convert in-app message to string
                     val inAppMessageString = escapeStringForJavaScript(inAppMessage.forJsonPut().toString())
                     brazelog { "In-app message received: $inAppMessageString" }
 
-                    // Send in-app message string back to JavaScript in an `inAppMessageReceived` event
+                    subscribeToInAppMessageCallbackContext?.let { context ->
+                        val pluginResult = PluginResult(PluginResult.Status.OK, inAppMessageString)
+                        pluginResult.keepCallback = true
+                        context.sendPluginResult(pluginResult)
+                    }
+
                     val jsStatement = "app.inAppMessageReceived('$inAppMessageString');"
                     cordova.activity.runOnUiThread {
                         webView.engine.evaluateJavascript(jsStatement, null)
