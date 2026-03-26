@@ -67,7 +67,7 @@
     <platform name="ios">
         <allow-intent href="itms:*" />
         <allow-intent href="itms-apps:*" />
-        <preference name="deployment-target" value="12.0" />
+        <preference name="deployment-target" value="16.0" />
         <preference name="com.braze.ios_api_endpoint" value="sondheim.braze.com" />
         <preference name="com.braze.ios_api_key" value="56614add-1d2c-4bd3-a22d-023164fca958" />
         <preference name="com.braze.ios_disable_automatic_push_registration" value="NO" />

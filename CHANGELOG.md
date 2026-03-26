@@ -1,4 +1,11 @@
-⚠️ In version 2.33.0, we changed the iOS bridge from AppboyKit, which is written in Objective-C, to the new [Swift SDK](https://github.com/braze-inc/braze-swift-sdk). If you are upgrading from a version below 2.33.0 to a version above 2.33.0, please read [the instructions](https://github.com/braze-inc/braze-cordova-sdk/blob/master/CHANGELOG.md#2330) to ensure a smooth transition and backward compatibility.
+## 15.0.0
+
+##### Breaking
+- Updated the native Android bridge [from Braze Android SDK 39.0.0 to 41.1.1](https://github.com/braze-inc/braze-android-sdk/compare/v39.0.0...v41.1.1#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+- Updated the native iOS bridge [from Braze Swift SDK 13.2.0 to 14.0.1](https://github.com/braze-inc/braze-swift-sdk/compare/13.2.0...14.0.1#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+
+##### Fixed
+- Fixed `subscribeToInAppMessage` on both iOS and Android to properly invoke the success callback with in-app message data and correctly respect the `useBrazeUI` parameter. [#103](https://github.com/braze-inc/braze-cordova-sdk/issues/103)
 
 ## 14.0.0
 

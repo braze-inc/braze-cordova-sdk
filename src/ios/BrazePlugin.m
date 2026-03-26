@@ -37,6 +37,7 @@
 
   // Others
   @property NSString *sdkAuthCallbackID;
+  @property NSString *subscribeToInAppMessageCallbackID;
 @end
 
 static Braze *_braze;
@@ -838,9 +839,10 @@ bool useBrazeUIForInAppMessages;
 
 /// Subscribes to in-app message updates.
 - (void)subscribeToInAppMessage:(CDVInvokedUrlCommand *)command {
-  bool useBrazeUI = [command argumentAtIndex:0 withDefault:nil];
+  BOOL useBrazeUI = [[command argumentAtIndex:0 withDefault:@YES] boolValue];
   useBrazeUIForInAppMessages = useBrazeUI;
   isInAppMessageSubscribed = YES;
+  self.subscribeToInAppMessageCallbackID = command.callbackId;
 }
 
 /// Hides the currently displayed in-app message.
@@ -1261,12 +1263,17 @@ bool useBrazeUIForInAppMessages;
 // MARK: - BrazeInAppMessageUIDelegate
 
 - (enum BRZInAppMessageUIDisplayChoice)inAppMessage:(BrazeInAppMessageUI *)ui displayChoiceForMessage:(BRZInAppMessageRaw *)message {
-  // Convert in-app message to string
   if (isInAppMessageSubscribed) {
     NSData *inAppMessageData = [message json];
     NSString *inAppMessageString = [[NSString alloc] initWithData:inAppMessageData encoding:NSUTF8StringEncoding];
     inAppMessageString = [self escapeStringForJavaScript:inAppMessageString];
     NSLog(@"In-app message received: %@", inAppMessageString);
+
+    if (self.subscribeToInAppMessageCallbackID) {
+      CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:inAppMessageString];
+      [result setKeepCallbackAsBool:YES];
+      [self.commandDelegate sendPluginResult:result callbackId:self.subscribeToInAppMessageCallbackID];
+    }
 
     // Send in-app message string back to JavaScript in an `inAppMessageReceived` event
     NSString* jsStatement = [NSString stringWithFormat:@"app.inAppMessageReceived('%@');", inAppMessageString];
