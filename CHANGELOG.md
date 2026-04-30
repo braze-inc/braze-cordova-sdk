@@ -1,3 +1,8 @@
+## 16.0.0
+
+##### Breaking
+- Updated the native Android bridge [from Braze Android SDK 41.1.1 to 42.2.0](https://github.com/braze-inc/braze-android-sdk/compare/v41.1.1...v42.2.0#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+
 ## 15.0.0
 
 ##### Breaking
