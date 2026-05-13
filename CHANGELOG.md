@@ -1,3 +1,8 @@
+## 16.0.1
+
+##### Fixed
+- Fixed iOS initialization when using cordova-ios 8 with the Swift `AppDelegate` template, where plugins can load after `UIApplicationDidFinishLaunchingNotification` and Braze would never start.
+
 ## 16.0.0
 
 ##### Breaking
