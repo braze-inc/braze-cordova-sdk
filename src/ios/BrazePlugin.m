@@ -95,9 +95,26 @@ bool useBrazeUIForInAppMessages;
   useBrazeUIForInAppMessages = YES;
 
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didFinishLaunchingListener:) name:UIApplicationDidFinishLaunchingNotification object:nil];
+
+  // Cordova iOS 8+ (Swift AppDelegate template) can load plugins after
+  // UIApplicationDidFinishLaunchingNotification has already been delivered, so the observer
+  // above would never fire. Run launch setup on the next main runloop pass if Braze is still unset.
+  __weak BrazePlugin *weakSelf = self;
+  dispatch_async(dispatch_get_main_queue(), ^{
+    BrazePlugin *strongSelf = weakSelf;
+    if (strongSelf == nil || [BrazePlugin braze] != nil) {
+      return;
+    }
+    [strongSelf didFinishLaunchingListener:nil];
+  });
 }
 
 - (void)didFinishLaunchingListener:(NSNotification *)notification {
+  if ([BrazePlugin braze] != nil) {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidFinishLaunchingNotification object:nil];
+    return;
+  }
+
   BRZConfiguration *configuration = [[BRZConfiguration alloc] initWithApiKey:self.APIKey
                                                                     endpoint:self.apiEndpoint];
   
@@ -273,6 +290,8 @@ bool useBrazeUIForInAppMessages;
   } else {
     NSLog(@"SDK authentication disabled.");
   }
+
+  [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidFinishLaunchingNotification object:nil];
 }
 
 // MARK: - Braze

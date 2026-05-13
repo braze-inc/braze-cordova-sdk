@@ -22,7 +22,7 @@
     "xcode": "^3.0.1"
   },
   "devDependencies": {
-    "braze-cordova-sdk": "file:../local",
+    "braze-cordova-sdk": "file:../.cordova-plugin-staging",
     "cordova-android": "^13.0.0",
     "cordova-ios": "^8.0.1"
   }
