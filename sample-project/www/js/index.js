@@ -406,12 +406,13 @@ function launchContentCards() {
 }
 
 function getContentCardsFromServer() {
-    BrazePlugin.getContentCardsFromServer(customPluginSuccessArrayCallback("test"), customPluginErrorCallback);
+    BrazePlugin.requestContentCardsRefresh();
+    BrazePlugin.getContentCardsFromCache(customPluginSuccessArrayCallback("test"), customPluginErrorCallback);
 }
 
 function logContentCardAnalytics() {
     // Log all the analytics methods for the first returned card
-    BrazePlugin.getContentCardsFromServer(function(cards) {
+    BrazePlugin.getContentCardsFromCache(function(cards) {
         if (cards.length < 1) {
             return;
         }

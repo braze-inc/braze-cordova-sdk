@@ -25,10 +25,9 @@
         <allow-intent href="market:*" />
         <preference name="GradlePluginKotlinEnabled" value="true" />
         <preference name="GradlePluginKotlinCodeStyle" value="official" />
-        <preference name="GradlePluginKotlinVersion" value="2.1.0" />
+        <preference name="GradlePluginKotlinVersion" value="2.1.21" />
         <preference name="android-targetSdkVersion" value="36" />
         <preference name="android-compileSdkVersion" value="36" />
-        <preference name="GradleVersion" value="8.7" />
         <preference name="AndroidXEnabled" value="true" />
         <preference name="com.braze.android_api_key" value="ec67377e-c490-4959-8c58-c045a254a65a" />
         <preference name="com.braze.android_api_endpoint" value="sondheim.braze.com" />
@@ -83,6 +82,7 @@
         <preference name="com.braze.ios_push_app_group" value="group.com.braze.hellocordova.PushStories" />
         <preference name="com.braze.ios_forward_universal_links" value="YES" />
         <preference name="com.braze.ios_log_level" value="2" />
+        <!-- Deprecated: `ios_use_uuid_as_device_id` is deprecated and will be removed in a future major release. -->
         <preference name="com.braze.ios_use_uuid_as_device_id" value="YES" />
         <preference name="com.braze.ios_flush_interval_seconds" value="10" />
         <preference name="com.braze.ios_use_automatic_request_policy" value="YES" />

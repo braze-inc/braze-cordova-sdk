@@ -13,9 +13,7 @@ import com.braze.cordova.CordovaInAppMessageViewWrapper.CordovaInAppMessageViewW
 import com.braze.cordova.FeatureFlagUtils.mapFeatureFlags
 import com.braze.enums.*
 import com.braze.enums.inappmessage.ClickAction
-import com.braze.events.ContentCardsUpdatedEvent
 import com.braze.events.FeatureFlagsUpdatedEvent
-import com.braze.events.IEventSubscriber
 import com.braze.models.outgoing.AttributionData
 import com.braze.models.outgoing.BrazeProperties
 import com.braze.models.inappmessage.IInAppMessage
@@ -60,16 +58,24 @@ open class BrazePlugin : CordovaPlugin() {
 
         // Since we've likely passed the first Application.onCreate() (due to the plugin lifecycle), lets call the
         // in-app message manager and session handling now
-        BrazeInAppMessageManager.getInstance().registerInAppMessageManager(cordova.activity)
+        getInAppMessageManager().registerInAppMessageManager(cordova.activity)
         pluginInitializationFinished = true
     }
 
+    protected open fun getBraze(): Braze {
+        return Braze.getInstance(applicationContext)
+    }
+
+    protected open fun getInAppMessageManager(): BrazeInAppMessageManager {
+        return BrazeInAppMessageManager.getInstance()
+    }
+
     private fun runOnBraze(block: (instance: Braze) -> Unit) {
-        block(Braze.getInstance(applicationContext))
+        block(getBraze())
     }
 
     private fun runOnUser(block: (currentUser: BrazeUser) -> Unit) {
-        Braze.getInstance(applicationContext).getCurrentUser { block(it) }
+        getBraze().getCurrentUser { block(it) }
     }
 
     @Suppress("ComplexMethod", "LongMethod", "MagicNumber", "ReturnCount")
@@ -161,7 +167,7 @@ open class BrazePlugin : CordovaPlugin() {
                 return true
             }
             "getDeviceId" -> {
-                callbackContext.success(Braze.getInstance(applicationContext).deviceId)
+                callbackContext.success(getBraze().deviceId)
                 return true
             }
             "requestPushPermission" -> {
@@ -368,7 +374,8 @@ open class BrazePlugin : CordovaPlugin() {
                 return true
             }
             "hideCurrentInAppMessage" -> {
-                BrazeInAppMessageManager.getInstance().hideCurrentlyDisplayingInAppMessage(true)
+                getInAppMessageManager().hideCurrentlyDisplayingInAppMessage(true)
+                return true
             }
             "logInAppMessageImpression" -> {
                 runOnBraze {
@@ -465,7 +472,7 @@ open class BrazePlugin : CordovaPlugin() {
             "getAllFeatureFlags" -> {
                 callbackContext.success(
                     mapFeatureFlags(
-                        Braze.getInstance(applicationContext).getAllFeatureFlags()
+                        getBraze().getAllFeatureFlags()
                     )
                 )
                 return true
@@ -564,7 +571,7 @@ open class BrazePlugin : CordovaPlugin() {
             }
             "logFeatureFlagImpression" -> {
                 runOnBraze {
-                    Braze.getInstance(applicationContext).logFeatureFlagImpression(args.getString(0))
+                    it.logFeatureFlagImpression(args.getString(0))
                 }
                 return true
             }
@@ -585,8 +592,11 @@ open class BrazePlugin : CordovaPlugin() {
                 }
                 return true
             }
-            GET_CONTENT_CARDS_FROM_SERVER_METHOD,
-            GET_CONTENT_CARDS_FROM_CACHE_METHOD -> return handleContentCardsUpdateGetters(action, callbackContext)
+            GET_CONTENT_CARDS_FROM_SERVER_METHOD -> {
+                runOnBraze { it.requestContentCardsRefresh() }
+                return returnCachedContentCards(callbackContext)
+            }
+            GET_CONTENT_CARDS_FROM_CACHE_METHOD -> return returnCachedContentCards(callbackContext)
             LOG_CONTENT_CARDS_CLICKED_METHOD,
             LOG_CONTENT_CARDS_DISMISSED_METHOD,
             LOG_CONTENT_CARDS_IMPRESSION_METHOD -> return handleContentCardsLogMethods(action, args, callbackContext)
@@ -598,7 +608,7 @@ open class BrazePlugin : CordovaPlugin() {
     override fun onPause(multitasking: Boolean) {
         super.onPause(multitasking)
         initializePluginIfAppropriate()
-        BrazeInAppMessageManager.getInstance().unregisterInAppMessageManager(cordova.activity)
+        getInAppMessageManager().unregisterInAppMessageManager(cordova.activity)
     }
 
     override fun onResume(multitasking: Boolean) {
@@ -606,14 +616,14 @@ open class BrazePlugin : CordovaPlugin() {
         initializePluginIfAppropriate()
         // Registers the BrazeInAppMessageManager for the current Activity. This Activity will now listen for
         // in-app messages from Braze.
-        BrazeInAppMessageManager.getInstance().registerInAppMessageManager(cordova.activity)
+        getInAppMessageManager().registerInAppMessageManager(cordova.activity)
     }
 
     override fun onStart() {
         super.onStart()
         initializePluginIfAppropriate()
         if (!disableAutoStartSessions) {
-            Braze.getInstance(applicationContext).openSession(cordova.activity)
+            getBraze().openSession(cordova.activity)
         }
     }
 
@@ -621,7 +631,7 @@ open class BrazePlugin : CordovaPlugin() {
         super.onStop()
         initializePluginIfAppropriate()
         if (!disableAutoStartSessions) {
-            Braze.getInstance(applicationContext).closeSession(cordova.activity)
+            getBraze().closeSession(cordova.activity)
         }
     }
 
@@ -843,7 +853,7 @@ open class BrazePlugin : CordovaPlugin() {
         val enableRequestFocusFix = cordovaPreferences.getBoolean(ENABLE_CORDOVA_WEBVIEW_REQUEST_FOCUS_FIX_PREFERENCE, true)
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P && enableRequestFocusFix) {
             // Addresses Cordova bug in https://issuetracker.google.com/issues/36915710
-            BrazeInAppMessageManager.getInstance().setCustomInAppMessageViewWrapperFactory(CordovaInAppMessageViewWrapperFactory())
+            getInAppMessageManager().setCustomInAppMessageViewWrapperFactory(CordovaInAppMessageViewWrapperFactory())
         }
 
         // Set whether SDK authentication should be enabled.
@@ -865,25 +875,15 @@ open class BrazePlugin : CordovaPlugin() {
         Braze.configure(applicationContext, configBuilder.build())
     }
 
-    private fun handleContentCardsUpdateGetters(action: String, callbackContext: CallbackContext): Boolean {
-        // Setup a one-time subscriber for the update event
-        val subscriber: IEventSubscriber<ContentCardsUpdatedEvent> = object : IEventSubscriber<ContentCardsUpdatedEvent> {
-            override fun trigger(message: ContentCardsUpdatedEvent) {
-                runOnBraze { it.removeSingleSubscription(this, ContentCardsUpdatedEvent::class.java) }
-
-                // Map the content cards to JSON and return to the client
-                callbackContext.success(mapContentCards(message.allCards))
-            }
-        }
-
-        Braze.getInstance(applicationContext).subscribeToContentCardsUpdates(subscriber)
-        Braze.getInstance(applicationContext).requestContentCardsRefreshFromCache()
+    private fun returnCachedContentCards(callbackContext: CallbackContext): Boolean {
+        val cards = getBraze().getCachedContentCards() ?: emptyList()
+        callbackContext.success(mapContentCards(cards))
         return true
     }
 
     @Suppress("ReturnCount")
     private fun handleContentCardsLogMethods(action: String, args: JSONArray, callbackContext: CallbackContext): Boolean {
-        val braze = Braze.getInstance(applicationContext)
+        val braze = getBraze()
         if (args.length() != 1) {
             brazelog { "Cannot handle logging method for $action due to improper number of arguments. Args: $args" }
             callbackContext.error("Failed for action $action")
@@ -922,7 +922,7 @@ open class BrazePlugin : CordovaPlugin() {
     }
 
     private fun setDefaultInAppMessageListener() {
-        BrazeInAppMessageManager.getInstance().setCustomInAppMessageManagerListener(
+        getInAppMessageManager().setCustomInAppMessageManagerListener(
             object : DefaultInAppMessageManagerListener() {
                 override fun beforeInAppMessageDisplayed(inAppMessage: IInAppMessage): InAppMessageOperation {
                     super.beforeInAppMessageDisplayed(inAppMessage)
@@ -937,14 +937,29 @@ open class BrazePlugin : CordovaPlugin() {
                     }
 
                     val jsStatement = "app.inAppMessageReceived('$inAppMessageString');"
-                    cordova.activity.runOnUiThread {
-                        webView.engine.evaluateJavascript(jsStatement, null)
-                    }
+                    evaluateJavascriptOnWebView(jsStatement)
 
                     return inAppMessageDisplayOperation
                 }
             }
         )
+    }
+
+    // Cordova/Capacitor may destroy the WebView after this work is posted to the UI thread.
+    private fun evaluateJavascriptOnWebView(jsStatement: String) {
+        val activity = cordova?.activity
+        if (activity == null) {
+            brazelog(W) { "Skipping JavaScript evaluation; Cordova activity is unavailable." }
+            return
+        }
+        activity.runOnUiThread {
+            val engine = webView?.engine
+            if (engine == null) {
+                brazelog(W) { "Skipping JavaScript evaluation; Cordova WebView engine is unavailable." }
+                return@runOnUiThread
+            }
+            engine.evaluateJavascript(jsStatement, null)
+        }
     }
 
     companion object {
@@ -1002,9 +1017,13 @@ open class BrazePlugin : CordovaPlugin() {
                 .replace("\\", "\\\\")
                 .replace("\"", "\\\"")
                 .replace("\'", "\\\'")
+                .replace("\b", "\\b")
+                .replace("\u000C", "\\f")
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\t", "\\t")
+                .replace("\u2028", "\\u2028")
+                .replace("\u2029", "\\u2029")
         }
 
         /**
@@ -1012,7 +1031,7 @@ open class BrazePlugin : CordovaPlugin() {
          *
          * Each value in the JSONArray is converted to a String if it has a string representation, otherwise it is set to null.
          */
-        private fun parseJSONArrayToStringArray(jsonArray: JSONArray): Array<String?> {
+        internal fun parseJSONArrayToStringArray(jsonArray: JSONArray): Array<String?> {
             return Array(jsonArray.length()) { index -> jsonArray.optString(index) }
         }
 
@@ -1020,7 +1039,7 @@ open class BrazePlugin : CordovaPlugin() {
          * This takes the JSONArray of Any and creates a JSONArray of
          * explicitly typed JSONObject.
          */
-        private fun parseJSONArraytoJsonObjectArray(jsonArray: JSONArray): JSONArray {
+        internal fun parseJSONArraytoJsonObjectArray(jsonArray: JSONArray): JSONArray {
             return JSONArray().apply {
                 for (i in 0 until jsonArray.length()) {
                     try {
@@ -1037,7 +1056,7 @@ open class BrazePlugin : CordovaPlugin() {
          *
          * A value is converted to Double when it is a non-null number, otherwise it is set to null
          */
-        private fun parseJSONArraytoDoubleArray(jsonArray: JSONArray): Array<Double?> {
+        internal fun parseJSONArraytoDoubleArray(jsonArray: JSONArray): Array<Double?> {
             return Array(jsonArray.length()) { index ->
                 jsonArray.opt(index)?.let { value ->
                     if (isAnyNumeric(value)) value.toString().toDouble() else null
@@ -1048,7 +1067,7 @@ open class BrazePlugin : CordovaPlugin() {
         /**
          * This takes an Any value and returns whether or not it is numeric
          */
-        private fun isAnyNumeric(value: Any): Boolean {
+        internal fun isAnyNumeric(value: Any): Boolean {
             return when (value) {
                 is Int, is Long, is Double -> true
                 is String -> value.toDoubleOrNull() != null || value.toLongOrNull() != null || value.toIntOrNull() != null
@@ -1062,7 +1081,7 @@ open class BrazePlugin : CordovaPlugin() {
          *
          * I.e. {"PREFIX-value", "value"} -> {"value"}
          */
-        private fun parseNumericPreferenceAsString(preference: String?): String? {
+        internal fun parseNumericPreferenceAsString(preference: String?): String? {
             return preference?.removePrefix(NUMERIC_PREFERENCE_PREFIX)?.also {
                 brazelog { "Parsed numeric preference $preference into value: $it" }
             }
@@ -1074,7 +1093,7 @@ open class BrazePlugin : CordovaPlugin() {
          *
          * I.e. {"PREFIX-value", "value"} -> {"value"}
          */
-        private fun parseNumericPreferenceAsInteger(preference: String?): Int {
+        internal fun parseNumericPreferenceAsInteger(preference: String?): Int {
             val preferenceValue = preference?.removePrefix(NUMERIC_PREFERENCE_PREFIX)?.also {
                 brazelog { "Parsed numeric preference $preference into value: $it" }
             }
@@ -1092,7 +1111,7 @@ open class BrazePlugin : CordovaPlugin() {
          *
          * I.e. {"0x0000"} -> {0}
          */
-        private fun parseNumericPreferenceAsHexadecimalInteger(preference: String): Int {
+        internal fun parseNumericPreferenceAsHexadecimalInteger(preference: String): Int {
             val preferenceValue = preference.removePrefix("0x").also {
                 brazelog { "Parsed numeric preference $preference into value: $it" }
             }
