@@ -118,7 +118,7 @@ BrazePlugin.prototype.updateTrackingPropertyAllowList = async function (allowLis
  * Informs Braze whether ad-tracking has been enabled for this device.
  * Note that the SDK does not automatically collect this data.
  * 
- * @param {string} adTrackingEnabled - Whether ad-tracking is enabled.
+ * @param {boolean} adTrackingEnabled - Whether ad-tracking is enabled.
  * @param {string} googleAdvertisingId - The Google Advertising ID. (Android only)
  */
 BrazePlugin.prototype.setAdTrackingEnabled = function (adTrackingEnabled, googleAdvertisingId) {
@@ -332,7 +332,7 @@ BrazePlugin.prototype.setEmailNotificationSubscriptionType = function (notificat
 }
 
 /**
- * Adds a string to a custom atttribute string array, or creates that array if one doesn't exist.
+ * Adds a string to a custom attribute string array, or creates that array if one doesn't exist.
  * @param {string} key - The identifier of the custom attribute. Limited to 255 characters in length, cannot begin with
  *    a $, and can only contain alphanumeric characters and punctuation.
  * @param {string} value - The string to be added to the array. Strings are limited to 255 characters in length, cannot
@@ -347,7 +347,7 @@ BrazePlugin.prototype.addToCustomUserAttributeArray = function (key, value) {
  * @param {string} key - The identifier of the custom attribute. Limited to 255 characters in length, cannot begin with
  *    a $, and can only contain alphanumeric characters and punctuation.
  * @param {string} value - The string to be removed from the array. Strings are limited to 255 characters in length,
- *    cannot beging with a $, and can only contain alphanumeric characters and punctuation.
+ *    cannot begin with a $, and can only contain alphanumeric characters and punctuation.
  */
 BrazePlugin.prototype.removeFromCustomUserAttributeArray = function (key, value) {
     cordova.exec(null, null, "BrazePlugin", "removeFromCustomAttributeArray", [key, value]);
@@ -405,23 +405,32 @@ BrazePlugin.prototype.requestImmediateDataFlush = function () {
 
 /**
  * Requests the latest Content Cards from the Braze SDK server.
+ * The refresh runs in the background. Use {@link BrazePlugin#getContentCardsFromCache}
+ * to read the most recently cached cards.
  */
 BrazePlugin.prototype.requestContentCardsRefresh = function () {
     cordova.exec(null, null, "BrazePlugin", "requestContentCardsRefresh");
 }
 
 /**
- * Retrieves Content Cards from the Braze SDK. This will return the latest list of cards from the server.
+ * Requests a background Content Cards refresh and immediately returns the cached cards.
  *
- * @param {function} successCallback - The function to call when the cards are successfully retrieved.
- * @param {function} errorCallback - The function to call when an error occurs. No-op on Android.
+ * @deprecated Use {@link BrazePlugin#getContentCardsFromCache} to retrieve the most recently
+ * cached Content Cards, and {@link BrazePlugin#requestContentCardsRefresh} to trigger a
+ * background refresh. This method will be removed in a future major version.
+ *
+ * @param {function} successCallback - The function to call with the cached cards.
+ * @param {function} errorCallback - The function to call when an error occurs.
  */
 BrazePlugin.prototype.getContentCardsFromServer = function (successCallback, errorCallback) {
     cordova.exec(successCallback, errorCallback, "BrazePlugin", "getContentCardsFromServer");
 }
 
 /**
- * Retrieves Content Cards from the Braze SDK. This will return the latest list of cards from the cache.
+ * Returns the most recent Content Cards from the SDK cache. This does not make a network request.
+ *
+ * @param {function} successCallback - The function to call with the cached cards.
+ * @param {function} errorCallback - The function to call when an error occurs.
  */
 BrazePlugin.prototype.getContentCardsFromCache = function (successCallback, errorCallback) {
     cordova.exec(successCallback, errorCallback, "BrazePlugin", "getContentCardsFromCache");

@@ -4,7 +4,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.braze:android-sdk-ui:42.2.0'
+    implementation 'com.braze:android-sdk-ui:43.1.1'
     implementation 'com.google.firebase:firebase-messaging:23.0.0'
 }
 
@@ -19,15 +19,21 @@ buildscript {
     }
 }
 
-// apply the google services plugin by its class name since we're not
-// in the root gradle file
+// Do not set kotlinOptions.jvmTarget. cordova-android 14+ defaults Java/Kotlin
+// to 11; a hardcoded 1.8 causes an inconsistent JVM target with Java.
 ext.postBuildExtras = {
-    apply plugin: com.google.gms.googleservices.GoogleServicesPlugin
+    def googleServicesJson = [
+        file("${project.projectDir}/google-services.json"),
+        file("${rootProject.projectDir}/google-services.json")
+    ].find { it.exists() }
+    if (googleServicesJson != null) {
+        // Apply by class name since this file is not the root Gradle script.
+        apply plugin: com.google.gms.googleservices.GoogleServicesPlugin
+    }
 
     android {
         kotlinOptions {
             freeCompilerArgs = ['-Xjvm-default=all']
-            jvmTarget = "1.8"
         }
     }
 }

@@ -1,3 +1,23 @@
+## 17.0.0
+
+##### Breaking
+- Updated the native Android bridge [from Braze Android SDK 42.2.0 to 43.1.1](https://github.com/braze-inc/braze-android-sdk/compare/v42.2.0...v43.1.1#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+- Updated the native iOS bridge [from Braze Swift SDK 14.0.1 to 18.2.0](https://github.com/braze-inc/braze-swift-sdk/compare/14.0.1...18.2.0#diff-06572a96a58dc510037d5efa622f9bec8519bc1beab13c9f251e97e657a9d4ed).
+  - `Braze.init` and `changeUser` no longer block the calling thread. Refer to the full release notes for Swift SDK [17.0.0](https://github.com/braze-inc/braze-swift-sdk/releases/tag/17.0.0) for more details.
+- Content Card `extras` on iOS is now a JavaScript object instead of a JSON-encoded string, matching Android. Integrators that called `JSON.parse` on `extras` should use the object directly.
+
+##### Fixed
+- Fixed an Android crash when an in-app message arrived while the Cordova WebView was torn down. JavaScript delivery is now skipped instead of throwing a `NullPointerException`. [#109](https://github.com/braze-inc/braze-cordova-sdk/issues/109)
+- Fixed Android Gradle builds on `cordova-android` 14 and 15 failing with an inconsistent Java/Kotlin JVM target. The plugin no longer hardcodes Kotlin `jvmTarget` to `1.8` and now inherits the host project's configured Java/Kotlin target.
+- Fixed Android builds that do not use Firebase Cloud Messaging failing because `google-services.json` was missing. The Google Services Gradle plugin is now applied only when that file is present.
+
+##### Changed
+- Deprecated `getContentCardsFromServer`. This method will be removed in a future major version.
+  - Use `requestContentCardsRefresh()` to request a background refresh, then `getContentCardsFromCache()` to read the latest cached cards.
+  - The deprecated method now kicks a background refresh and immediately returns the cached cards on both platforms.
+- `getContentCardsFromCache` on Android now returns the current cached cards immediately.
+- `com.braze.ios_use_uuid_as_device_id` is now deprecated and will be removed in a future release. Once removed, the SDK will always use a randomly generated UUID as the device ID.
+
 ## 16.0.1
 
 ##### Fixed

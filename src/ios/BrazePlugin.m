@@ -87,6 +87,9 @@ bool useBrazeUIForInAppMessages;
   self.sessionTimeout = settings[@"com.braze.ios_session_timeout"];
   self.triggerActionMinimumTimeInterval = settings[@"com.braze.trigger_action_minimum_time_interval_seconds"];
   self.useUUIDAsDeviceId = settings[@"com.braze.ios_use_uuid_as_device_id"];
+  if (self.useUUIDAsDeviceId != nil) {
+    NSLog(@"com.braze.ios_use_uuid_as_device_id is deprecated and will be removed in a future version, at which point the SDK will always use a randomly generated UUID as the device ID.");
+  }
   self.forwardUniversalLinks = settings[@"com.braze.ios_forward_universal_links"];
   self.optInWhenPushAuthorized = settings[@"com.braze.should_opt_in_when_push_authorized"];
   self.enableIDFACollection = settings[@"com.braze.ios_enable_idfa_automatic_collection"];
@@ -179,7 +182,7 @@ bool useBrazeUIForInAppMessages;
 
   // Set location collection from preferences
   if ([[self sanitizeString:self.enableLocationCollection] isEqualToString:@"yes"]) {
-    configuration.location.automaticLocationCollection = @YES;
+    configuration.location.automaticLocationCollection = YES;
     NSLog(@"Location collection enabled.");
   } else {
     NSLog(@"Location collection disabled.");
@@ -187,7 +190,7 @@ bool useBrazeUIForInAppMessages;
   
   // Set geofences from preferences
   if ([[self sanitizeString:self.enableGeofences] isEqualToString:@"yes"]) {
-    configuration.location.geofencesEnabled = @YES;
+    configuration.location.geofencesEnabled = YES;
     NSLog(@"Geofences enabled.");
   } else {
     NSLog(@"Geofences disabled.");
@@ -205,7 +208,7 @@ bool useBrazeUIForInAppMessages;
   
   // Sets if a randomly generated UUID should be used as the device ID
   if ([[self sanitizeString:self.useUUIDAsDeviceId] isEqualToString:@"yes"]) {
-    configuration.useUUIDAsDeviceId = @YES;
+    configuration.useUUIDAsDeviceId = YES;
     NSLog(@"Using UUID as Device ID enabled.");
   } else {
     NSLog(@"Using UUID as Device ID disabled.");
@@ -213,7 +216,7 @@ bool useBrazeUIForInAppMessages;
 
   // Set if the SDK should automatically recognize and forward universal links to the system methods
   if ([[self sanitizeString:self.forwardUniversalLinks] isEqualToString:@"yes"]) {
-    configuration.forwardUniversalLinks = @YES;
+    configuration.forwardUniversalLinks = YES;
     NSLog(@"iOS universal link forwarding enabled.");
   } else {
     NSLog(@"iOS universal link forwarding disabled.");
@@ -221,7 +224,7 @@ bool useBrazeUIForInAppMessages;
   
   // Set if a user’s notification subscription state should be set to optedIn when push permissions are authorized
   if ([[self sanitizeString:self.optInWhenPushAuthorized] isEqualToString:@"no"]) {
-    configuration.optInWhenPushAuthorized = @NO;
+    configuration.optInWhenPushAuthorized = NO;
     NSLog(@"User notification subscription state not automatically optedIn when push is authorized.");
   } else {
     NSLog(@"User notification subscription state automatically optedIn when push is authorized.");
@@ -306,12 +309,13 @@ bool useBrazeUIForInAppMessages;
 }
 
 - (void)getUserId:(CDVInvokedUrlCommand *)command {
-  NSString *userId = self.braze.user.identifier;
-  if (!userId) {
-    [self sendCordovaSuccessPluginResultAsNull:command];
-  } else {
-    [self sendCordovaSuccessPluginResultWithString:userId andCommand:command];
-  }
+  [self.braze.user getIdWithCompletion:^(NSString * _Nullable userId) {
+    if (!userId) {
+      [self sendCordovaSuccessPluginResultAsNull:command];
+    } else {
+      [self sendCordovaSuccessPluginResultWithString:userId andCommand:command];
+    }
+  }];
 }
 
 - (void)setSdkAuthenticationSignature:(CDVInvokedUrlCommand *)command {
@@ -646,8 +650,9 @@ bool useBrazeUIForInAppMessages;
 }
 
 - (void)getDeviceId:(CDVInvokedUrlCommand *)command {
-  NSString *deviceId = self.braze.deviceId;
-  [self sendCordovaSuccessPluginResultWithString:deviceId andCommand:command];
+  [self.braze getDeviceIdWithCompletion:^(NSString * _Nonnull deviceId) {
+    [self sendCordovaSuccessPluginResultWithString:deviceId andCommand:command];
+  }];
 }
 
 - (void)updateTrackingPropertyAllowList:(CDVInvokedUrlCommand *)command {
@@ -756,26 +761,19 @@ bool useBrazeUIForInAppMessages;
 }
 
 - (void)getContentCardsFromServer:(CDVInvokedUrlCommand *)command {
-  [self.braze.contentCards requestRefreshWithCompletion:^(NSArray<BRZContentCardRaw *> * _Nullable cards, NSError * _Nullable error) {
-    if (error) {
-      NSLog(@"%@", error.debugDescription);
-      [self sendCordovaErrorPluginResultWithString:error.debugDescription andCommand:command];
-    } else {
-      NSLog(@"Got Content Cards from server callback");
-      [self getContentCardsFromCache:command];
-    }
-  }];
+  [self.braze.contentCards requestRefresh];
+  [self getContentCardsFromCache:command];
 }
 
 - (void)getContentCardsFromCache:(CDVInvokedUrlCommand *)command {
-  NSArray<BRZContentCardRaw *> *cards = [self.braze.contentCards cards];
+  [self.braze.contentCards getCachedContentCardsWithCompletion:^(NSArray<BRZContentCardRaw *> *cards) {
+    NSMutableArray *mappedCards = [NSMutableArray arrayWithCapacity:[cards count]];
+    [cards enumerateObjectsUsingBlock:^(id card, NSUInteger idx, BOOL *stop) {
+       [mappedCards addObject:[BrazePlugin formattedContentCard:card]];
+    }];
 
-  NSMutableArray *mappedCards = [NSMutableArray arrayWithCapacity:[cards count]];
-  [cards enumerateObjectsUsingBlock:^(id card, NSUInteger idx, BOOL *stop) {
-     [mappedCards addObject:[BrazePlugin formattedContentCard:card]];
+    [self sendCordovaSuccessPluginResultWithArray:mappedCards andCommand:command];
   }];
-
-  [self sendCordovaSuccessPluginResultWithArray:mappedCards andCommand:command];
 }
 
 - (nullable BRZContentCardRaw *)getContentCardById:(NSString *)idString {
@@ -808,9 +806,7 @@ bool useBrazeUIForInAppMessages;
   BOOL isControl = card.type == BRZContentCardRawTypeControl;
   formattedContentCardData[@"isControl"] = @(isControl);
 
-  if (card.extras != nil) {
-    formattedContentCardData[@"extras"] = [BrazePlugin getJsonFromExtras:card.extras];
-  }
+  formattedContentCardData[@"extras"] = card.extras ?: @{};
   
   switch (card.type) {
     case BRZContentCardRawTypeClassic:
@@ -838,20 +834,6 @@ bool useBrazeUIForInAppMessages;
   }
 
   return formattedContentCardData;
-}
-
-+ (NSString *)getJsonFromExtras:(NSDictionary *)extras {
-  NSError *error;
-  NSData *jsonData = [NSJSONSerialization dataWithJSONObject:extras
-                                                     options:0
-                                                       error:&error];
-
-  if (!jsonData) {
-    NSLog(@"Got an error in getJsonFromExtras: %@", error);
-    return @"{}";
-  } else {
-    return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-  }
 }
 
 // MARK: - In-App Messages
@@ -970,8 +952,10 @@ bool useBrazeUIForInAppMessages;
 }
 
 - (void)getAllFeatureFlags:(CDVInvokedUrlCommand *)command {
-  [self sendCordovaSuccessPluginResultWithArray:[BrazePlugin formattedFeatureFlagsMap:self.braze.featureFlags.featureFlags]
-                                     andCommand:command];
+  [self.braze.featureFlags getAllFeatureFlagsWithCompletion:^(NSArray<BRZFeatureFlag *> *featureFlags) {
+    [self sendCordovaSuccessPluginResultWithArray:[BrazePlugin formattedFeatureFlagsMap:featureFlags]
+                                       andCommand:command];
+  }];
 }
 
 - (void)refreshFeatureFlags:(CDVInvokedUrlCommand *)command {
